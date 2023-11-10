@@ -67,6 +67,7 @@ for epoch in range(NUM_EPOCHS):
         
 # Model Training is complete and save the model
 torch.save(model.state_dict(), "icu_model.pkl")
+# Define function to predict ICU mortality
 def predict_icu_mortality(patient_data):
     model = ICUModel(INPUT_DIM, HIDDEN_DIM).to(device)
     model.load_state_dict(torch.load("icu_model.pkl"))
