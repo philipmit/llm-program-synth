@@ -36,7 +36,7 @@ class LSTM(nn.Module):
     def forward(self, input_seq):
         lstm_out, _ = self.lstm(input_seq)
         predictions = self.sigmoid(self.linear(lstm_out[:, -1, :]))
-        return predictions
+        return predictions.squeeze()
 # Instantiate model, loss function (Binary Cross Entropy) and optimizer (Adam)
 model = LSTM().to(device)
 loss_function = nn.BCELoss().to(device)
@@ -46,7 +46,6 @@ def train(num_epoch):
     dataset = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
     dataloader = DataLoader(dataset, batch_size=1, shuffle=True)
     model.train()
-    
     for epoch in range(num_epoch):
         for seq, labels in dataloader:
             seq, labels = seq.to(device), labels.to(device)
@@ -59,8 +58,8 @@ def train(num_epoch):
     print('Finished Training')
 # Predict ICU mortality
 def predict_icu_mortality(patient_data):
+    model.eval()
     with torch.no_grad():
-        model.eval()
         patient_data_normalized = torch.tensor(patient_data.drop(columns=['Hours']).values[np.newaxis, :], dtype=torch.float32).to(device)
         output = model(patient_data_normalized)
         return output.item()
