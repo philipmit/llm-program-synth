@@ -1,4 +1,3 @@
-
 **********
 import os
 import pandas as pd
@@ -51,7 +50,7 @@ NUM_LAYERS = 2
 NUM_CLASSES = 1
 LEARNING_RATE = 0.001
 NUM_EPOCHS = 20
-train_data = DataLoader(dataset=ICUData(TRAIN_DATA_PATH, LABEL_FILE))
+train_data = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
 train_data_loader = DataLoader(train_data, batch_size=BATCH_SIZE, shuffle=True)
 model = LSTMModel(INPUT_SIZE, HIDDEN_SIZE, NUM_LAYERS, NUM_CLASSES)
 criterion = nn.BCEWithLogitsLoss()
