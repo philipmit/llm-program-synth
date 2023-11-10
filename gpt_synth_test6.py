@@ -23,15 +23,15 @@ class ICUData(Dataset):
         self.data_path = data_path
         label_data = pd.read_csv(label_file)
         self.file_names = label_data['stay']
-        self.labels = label_data['y_true'].values.tolist()
+        self.labels = label_data['y_true'].values
     def __len__(self):
         return len(self.file_names)
     def __getitem__(self, idx):
         file_path = os.path.join(self.data_path, self.file_names[idx])
         data = pd.read_csv(file_path)
         data['Glascow coma scale total'] = data['Glascow coma scale total'].apply(lambda x: ''.join(filter(str.isdigit, str(x))) if pd.notnull(x) else "0").astype(float)
-        features = data.drop(columns='Hours').values
-        label = self.labels[idx]
+        features = torch.from_numpy(data.drop(columns='Hours').values)
+        label = torch.tensor(self.labels[idx], dtype=torch.float32)
         return features, label
 class LSTM(nn.Module):
     def __init__(self, input_dim, hidden_dim, output_dim, n_layers, bidirectional, dropout):
@@ -46,20 +46,4 @@ class LSTM(nn.Module):
         return output.squeeze(1)
 train_data = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
 train_loader = DataLoader(dataset=train_data, batch_size=BATCH_SIZE, shuffle=True)
-model = LSTM(INPUT_DIM, HIDDEN_DIM, OUTPUT_DIM, N_LAYERS, BIDIRECTIONAL, DROPOUT).to(device)
-criterion = nn.BCEWithLogitsLoss()
-optimizer = optim.Adam(model.parameters(), lr=LR)
-# Training loop
-for epoch in range(N_EPOCHS):
-    for features, labels in train_loader:
-        features = features.float().to(device)
-        labels = labels.float().to(device)
-        model.train()
-        optimizer.zero_grad()
-        outputs = model(features)
-        loss = criterion(outputs, labels)
-        loss.backward()
-        optimizer.step()
-print("Finished Training")
-# Save the model
-torch.save(model.state_dict(), 'model.pth')
+model
