@@ -1,4 +1,3 @@
-
 import os
 import pandas as pd
 import numpy as np
@@ -29,7 +28,7 @@ class ICUData(Dataset):
 # Define LSTM Model
 class LSTM(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers, num_classes):
-        super(LSTM, self).__init__()
+        super().__init__()
         self.hidden_size = hidden_size
         self.num_layers = num_layers
         self.lstm = nn.LSTM(input_size, hidden_size, num_layers, batch_first=True)
@@ -70,7 +69,7 @@ def predict_icu_mortality(patient_data):
     model.eval()    
     patient_data = patient_data.fillna(0)
     features = patient_data.drop(columns=['Hours']).values
-    features = features.reshape(-1, features.shape[0], input_size)
+    features = features.reshape(1, features.shape[0], input_size)
     features = torch.tensor(features, dtype=torch.float32).to(device)
     output = model(features)
     return torch.sigmoid(output).item()
