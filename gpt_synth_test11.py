@@ -1,19 +1,15 @@
-
-**********
+Python
 import os
 import pandas as pd
 import numpy as np
 import torch
 from torch.utils.data import Dataset, DataLoader
 from torch import nn
-from torch.nn.utils.rnn import pad_sequence
+from torch.nn.utils.rnn import pad_sequence, pack_padded_sequence
 import torch.optim as optim
-# File paths
 TRAIN_DATA_PATH = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/"
 LABEL_FILE = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/listfile.csv"
-# Device configuration
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-# Define the Dataset
 class ICUData(Dataset):
     def __init__(self, data_path, label_file):
         self.data_path = data_path
@@ -25,11 +21,9 @@ class ICUData(Dataset):
     def __getitem__(self, idx):
         file_path = os.path.join(self.data_path, self.file_names[idx])
         data = pd.read_csv(file_path).fillna(0)
-        features = data.select_dtypes(include=[np.number])
+        features = data.iloc[:, 1:]
         label = self.labels[idx]
         return torch.tensor(features.values, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
-
-# Define the LSTM
 class LSTM(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers, output_size):
         super(LSTM, self).__init__()
@@ -42,8 +36,7 @@ class LSTM(nn.Module):
         c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(device)
         out, _ = self.lstm(x, (h0, c0))
         out = self.fc(out[:, -1, :])
-        return out
-
+        return out.sigmoid()
 def train(model, loader, criterion, optimizer, epochs):
     model.train()
     for epoch in range(epochs):
@@ -55,18 +48,16 @@ def train(model, loader, criterion, optimizer, epochs):
             loss = criterion(outputs, labels.unsqueeze(1))
             loss.backward()
             optimizer.step()
-
 icu_data = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
 dataloader = DataLoader(icu_data, batch_size=32, shuffle=True)
-model = LSTM(input_size=15, hidden_size=128, num_layers=2, output_size=1).to(device)
-criterion = nn.BCEWithLogitsLoss()
+model = LSTM(input_size=14, hidden_size=128, num_layers=2, output_size=1).to(device)
+criterion = nn.BCELoss()
 optimizer = optim.Adam(model.parameters(), lr=0.001)
 train(model, dataloader, criterion, optimizer, epochs=10)
 def predict_icu_mortality(patient_data):
     model.eval()
     patient_data = pd.read_csv(patient_data).fillna(0)
-    features = patient_data.select_dtypes(include=[np.number])
+    features = patient_data.iloc[:, 1:]
     patient_tensor = torch.tensor(features.values, dtype=torch.float32).unsqueeze(0).to(device)
-    pred = torch.sigmoid(model(patient_tensor))
+    pred = model(patient_tensor)
     return pred.item()
-**********
