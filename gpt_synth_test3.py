@@ -1,3 +1,4 @@
+
 import os
 import pandas as pd
 import numpy as np
@@ -31,9 +32,9 @@ class ICUData(Dataset):
     def __getitem__(self, idx):
         file_path = os.path.join(self.data_path, self.file_names[idx])
         data = pd.read_csv(file_path).fillna(0)
-        features = data.select_dtypes(include=[np.number])
-        label = self.labels[idx]
-        return torch.tensor(features.values, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
+        features = torch.tensor(data.select_dtypes(include=[np.number]).values, dtype=torch.float32)
+        label = torch.tensor(self.labels[idx], dtype=torch.float32)
+        return features, label
 # Define the LSTM
 class LSTM(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers=2):
@@ -66,13 +67,13 @@ for epoch in range(num_epochs):
         outputs = model(data)
         loss = criterion(outputs, labels.view(-1, 1))
         
+        # Backward and optimize
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
 def predict_icu_mortality(patient_data):
     patient_data = patient_data.fillna(0)
-    patient_features = patient_data.select_dtypes(include=[np.number])
-    patient_tensor = torch.tensor(patient_features.values, dtype=torch.float32).unsqueeze(0).to(device)
-    output = model(patient_tensor)
+    patient_features = torch.tensor(patient_data.select_dtypes(include=[np.number]).values, dtype=torch.float32).unsqueeze(0).to(device)
+    output = model(patient_features)
     prob = torch.sigmoid(output).item()
     return prob
