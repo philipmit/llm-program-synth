@@ -5,7 +5,6 @@ import numpy as np
 import torch
 from torch.utils.data import Dataset, DataLoader
 from torch import nn
-from torch.nn.utils.rnn import pad_sequence
 import torch.optim as optim
 # File paths
 TRAIN_DATA_PATH = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/"
@@ -25,9 +24,9 @@ class ICUData(Dataset):
     def __getitem__(self, idx):
         file_path = os.path.join(self.data_path, self.file_names[idx])
         data = pd.read_csv(file_path).fillna(0)
-        features = data.select_dtypes(include=[np.number])
-        return torch.tensor(features.values, dtype=torch.float32), torch.tensor(self.labels[idx], dtype=torch.float32)
-# LSTM Model
+        features = data.drop(columns=['Hours']).values 
+        return torch.tensor(features, dtype=torch.float32).to(device), torch.tensor(self.labels[idx], dtype=torch.float32).to(device)
+# Define LSTM Model
 class LSTM(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers, num_classes):
         super(LSTM, self).__init__()
@@ -44,7 +43,7 @@ class LSTM(nn.Module):
 # Model parameters
 num_epochs = 100
 learning_rate = 0.001
-input_size = 14    # number of features
+input_size = 14   # number of features except 'Hours'
 hidden_size = 64
 num_layers = 2
 num_classes = 1
@@ -58,20 +57,20 @@ loader = DataLoader(dataset=dataset, batch_size=32, shuffle=True)
 # Train the model
 for epoch in range(num_epochs):
     for i, (records, labels) in enumerate(loader):
-        records = records.reshape(-1, records.shape[1], records.shape[2]).to(device)
-        labels = labels.to(device)
+        records = records.reshape(-1, records.shape[1], input_size)
         outputs = model(records)
         loss = criterion(outputs, labels.unsqueeze(1))
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
-        if i % 100 == 0:
-            print ('Epoch [{}/{}], Loss: {:.4f}'.format(epoch+1, num_epochs, loss.item()))
+        if (i+1) % 100 == 0:
+            print ('Epoch [{}/{}], Loss: {:.4f}'
+                   .format(epoch+1, num_epochs, loss.item()))
 def predict_icu_mortality(patient_data):
     model.eval()    
     patient_data = patient_data.fillna(0)
-    features = patient_data.select_dtypes(include=[np.number])
-    features = features.values.reshape(1, features.shape[0], features.shape[1])
+    features = patient_data.drop(columns=['Hours']).values
+    features = features.reshape(-1, features.shape[0], input_size)
     features = torch.tensor(features, dtype=torch.float32).to(device)
     output = model(features)
     return torch.sigmoid(output).item()
