@@ -19,6 +19,7 @@ class ICUData(Dataset):
         label_data = pd.read_csv(label_file)
         self.file_names = label_data['stay']
         self.labels = label_data['y_true']
+        
     def __len__(self):
         return len(self.file_names)
     def __getitem__(self, idx):
@@ -65,8 +66,7 @@ for epoch in range(num_epochs):
         loss.backward()
         optimizer.step()
         if i % 100 == 0:
-            print ('Epoch [{}/{}], Loss: {:.4f}'
-                   .format(epoch+1, num_epochs, loss.item()))
+            print ('Epoch [{}/{}], Loss: {:.4f}'.format(epoch+1, num_epochs, loss.item()))
 def predict_icu_mortality(patient_data):
     model.eval()    
     patient_data = patient_data.fillna(0)
