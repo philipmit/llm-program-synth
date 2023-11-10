@@ -5,7 +5,6 @@ import numpy as np
 import torch
 from torch.utils.data import Dataset, DataLoader
 from torch import nn
-from torch.nn.utils.rnn import pad_sequence, pack_padded_sequence
 import torch.optim as optim
 TRAIN_DATA_PATH = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/"
 LABEL_FILE = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/listfile.csv"
