@@ -24,19 +24,19 @@ class ICUData(Dataset):
         data = pd.read_csv(file_path).fillna(0)
         features = data.drop(columns=['Hours']).select_dtypes(include=[np.number])
         label = self.labels[idx]
-        return torch.tensor(features.values, dtype=torch.float32).view(-1, 1, features.shape[1]), torch.tensor(label, dtype=torch.float32)
+        return torch.tensor(features.values, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
 # Define the LSTM Model
 class LSTM(nn.Module):
     def __init__(self, input_size=14, hidden_layer_size=100, output_size=1):
         super().__init__()
         self.hidden_layer_size = hidden_layer_size
-        self.lstm = nn.LSTM(input_size, hidden_layer_size)
+        self.lstm = nn.LSTM(input_size, hidden_layer_size, batch_first=True)
         self.linear = nn.Linear(hidden_layer_size, output_size)
         self.sigmoid = nn.Sigmoid()
     def forward(self, input_seq):
         lstm_out, _ = self.lstm(input_seq)
-        predictions = self.sigmoid(self.linear(lstm_out.view(len(input_seq), -1)))
-        return predictions[-1]
+        predictions = self.sigmoid(self.linear(lstm_out[:, -1, :]))
+        return predictions
 # Instantiate model, loss function (Binary Cross Entropy) and optimizer (Adam)
 model = LSTM().to(device)
 loss_function = nn.BCELoss().to(device)
@@ -61,8 +61,7 @@ def train(num_epoch):
 def predict_icu_mortality(patient_data):
     with torch.no_grad():
         model.eval()
-        patient_data_normalized = torch.tensor(patient_data.drop(columns=['Hours']).values, dtype=torch.float32).to(device)
-        patient_data_normalized = patient_data_normalized.view(-1, 1, patient_data_normalized.shape[1])
+        patient_data_normalized = torch.tensor(patient_data.drop(columns=['Hours']).values[np.newaxis, :], dtype=torch.float32).to(device)
         output = model(patient_data_normalized)
         return output.item()
 train(10)
