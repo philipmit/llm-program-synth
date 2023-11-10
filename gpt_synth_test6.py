@@ -27,15 +27,15 @@ class ICUData(Dataset):
         self.data_path = data_path
         label_data = pd.read_csv(label_file)
         self.file_names = label_data['stay']
-        self.labels = label_data['y_true']
+        self.labels = label_data['y_true'].astype(float).values.tolist()
     def __len__(self):
         return len(self.file_names)
     def __getitem__(self, idx):
         file_path = os.path.join(self.data_path, self.file_names[idx])
-        data = pd.read_csv(file_path).fillna(0) # Replacing missing values with 0
-        features = torch.tensor(data.drop(columns='Hours').values, dtype=torch.float32) # Dropping the 'Hours' column
-        label = torch.tensor(self.labels[idx], dtype=torch.float32)
-        return features, label
+        data = pd.read_csv(file_path).fillna(0) 
+        data = data.drop(columns='Hours').astype(float).values.tolist() # Dropping the 'Hours' column and make sure it's float
+        label = self.labels[idx]
+        return data, label
 # Define the LSTM model
 class Model(nn.Module):
     def __init__(self, input_dim, hidden_dim, output_dim, n_layers, bidirectional, dropout):
@@ -45,12 +45,12 @@ class Model(nn.Module):
         self.dropout = nn.Dropout(dropout)
     def forward(self, x):
         packed_output, (hidden, cell) = self.rnn(x)
-        hidden = self.dropout(torch.cat((hidden[-2, :, :], hidden[-1, :, :]), dim=-1))
-        outputs = self.fc(hidden.squeeze(0))
-        return outputs
+        hidden = self.dropout(torch.cat((hidden[-2,:,:], hidden[-1,:,:]), dim = 1))
+        output = self.fc(hidden)
+        return output
 # Create DataLoader
 train_data = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
-train_loader = DataLoader(dataset=train_data, batch_size=BATCH_SIZE, shuffle=True)
+train_loader = DataLoader(dataset=train_data, batch_size=BATCH_SIZE, shuffle=True, collate_fn=lambda x:x)
 # Initialize the model
 model = Model(INPUT_DIM, HIDDEN_DIM, OUTPUT_DIM, N_LAYERS, BIDIRECTIONAL, DROPOUT).to(device)
 # Loss and optimizer
@@ -58,9 +58,10 @@ criterion = nn.BCEWithLogitsLoss()
 optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
 # Training loop
 for epoch in range(EPOCHS):
-    for i, (sequences, labels) in enumerate(train_loader):
-        sequences = sequences.to(device)
-        labels = labels.to(device)
+    for i, batches in enumerate(train_loader):
+        sequences, labels = zip(*batches)
+        sequences = pad_sequence([torch.tensor(seq).float() for seq in sequences], batch_first=True).transpose(0, 1).to(device) # pad sequence
+        labels = torch.tensor(labels).unsqueeze(1).float().to(device)
         outputs = model(sequences)
         loss = criterion(outputs, labels)
         
@@ -74,7 +75,7 @@ print('Finished Training.')
 def predict_icu_mortality(patient_data):
     model.eval()
     with torch.no_grad():
-        data = torch.tensor(patient_data.drop(columns='Hours').values, dtype=torch.float32).to(device) # Dropping the 'Hours' column
+        data = torch.tensor(patient_data.drop(columns='Hours').astype(float).values.tolist()).unsqueeze(1).float().to(device) # ensure data is float and in correct shape
         output = model(data)
         pred = torch.sigmoid(output).cpu().numpy() # Applying sigmoid function
         return pred[0]
