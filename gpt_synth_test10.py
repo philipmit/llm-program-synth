@@ -10,6 +10,13 @@ TRAIN_DATA_PATH = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-ho
 LABEL_FILE = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/listfile.csv"
 # Device configuration
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+# Function for checking whether a value is convertible to float 
+def is_float(x):
+    try:
+        float(x)
+    except ValueError:
+        return False
+    return True
 # Define the Dataset
 class ICUData(Dataset):
     def __init__(self, data_path, label_file):
@@ -21,7 +28,9 @@ class ICUData(Dataset):
         return len(self.file_names)
     def __getitem__(self, idx):
         file_path = os.path.join(self.data_path, self.file_names[idx])
-        data = pd.read_csv(file_path).fillna(0)
+        data = pd.read_csv(file_path)
+        data = data[data.applymap(is_float)]
+        data.fillna(0, inplace=True)
         features = data.drop(columns=['Hours']).values.astype(np.float32)
         label = np.array(self.labels[idx]).astype(np.float32)
         return torch.from_numpy(features).to(device), torch.from_numpy(label).to(device)
@@ -42,7 +51,7 @@ class LSTM(nn.Module):
 # Model parameters
 num_epochs = 100
 learning_rate = 0.001
-input_size = 14 # number of features except 'Hours'
+input_size = 14   # number of features except 'Hours'
 hidden_size = 64
 num_layers = 2
 num_classes = 1
@@ -66,7 +75,8 @@ for epoch in range(num_epochs):
             print(f'Epoch [{epoch+1}/{num_epochs}], Loss: {loss.item():.4f}')
 def predict_icu_mortality(patient_data):
     model.eval() 
-    patient_data = patient_data.fillna(0)
+    patient_data = patient_data[patient_data.applymap(is_float)]
+    patient_data.fillna(0, inplace=True)
     features = patient_data.drop(columns=['Hours']).values.astype(np.float32)
     features = features.reshape(1, features.shape[0], input_size)
     features = torch.from_numpy(features).to(device)
