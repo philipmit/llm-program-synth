@@ -5,7 +5,6 @@ import numpy as np
 import torch
 from torch.utils.data import Dataset, DataLoader
 from torch import nn
-from torch.nn.utils.rnn import pad_sequence
 import torch.optim as optim
 # Device configuration
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
