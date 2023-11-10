@@ -9,8 +9,7 @@ import torch.optim as optim
 # File paths
 TRAIN_DATA_PATH = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/"
 LABEL_FILE = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/listfile.csv"
-# Device configuration
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
 # Define the Dataset
 class ICUData(Dataset):
     def __init__(self, data_path, label_file):
@@ -18,10 +17,10 @@ class ICUData(Dataset):
         label_data = pd.read_csv(label_file)
         self.file_names = label_data['stay']
         self.labels = label_data['y_true']
-   
+    
     def __len__(self):
         return len(self.file_names)
-   
+    
     def __getitem__(self, idx):
         file_path = os.path.join(self.data_path, self.file_names[idx])
         data = pd.read_csv(file_path).fillna(0)
@@ -43,7 +42,7 @@ class LSTMModel(nn.Module):
         self.num_layers = num_layers
         self.lstm = nn.LSTM(input_size, hidden_size, num_layers, batch_first=True)
         self.fc = nn.Linear(hidden_size, num_classes)
-   
+    
     def forward(self, x):
         h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(device) 
         c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(device)
@@ -52,6 +51,8 @@ class LSTMModel(nn.Module):
         out = self.fc(out[:, -1, :])
         return out
 
+# Device configuration
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 # Hyperparameters
 num_classes = 1
 num_epochs = 100
