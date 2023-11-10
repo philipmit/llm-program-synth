@@ -35,7 +35,7 @@ class ICUData(Dataset):
         return features, label
 class LSTM(nn.Module):
     def __init__(self, input_dim, hidden_dim, output_dim, n_layers, bidirectional, dropout):
-        super(LSTM, self).__init__()
+        super().__init__()
         self.rnn = nn.LSTM(input_dim, hidden_dim, n_layers, bidirectional=bidirectional, dropout=dropout, batch_first=True)
         self.fc = nn.Linear(hidden_dim * 2, output_dim)
         self.dropout = nn.Dropout(dropout)
