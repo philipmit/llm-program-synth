@@ -21,6 +21,7 @@ class ICUData(Dataset):
         self.labels = label_data['y_true']
     def __len__(self):
         return len(self.file_names)
+        
     def __getitem__(self, idx):
         file_path = os.path.join(self.data_path, self.file_names[idx])
         data = pd.read_csv(file_path).fillna(0)
