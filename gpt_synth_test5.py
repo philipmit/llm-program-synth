@@ -4,7 +4,6 @@ import numpy as np
 import torch
 from torch.utils.data import Dataset, DataLoader
 from torch import nn
-from torch.nn.utils.rnn import pad_sequence
 import torch.optim as optim
 # File paths
 TRAIN_DATA_PATH = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/"
@@ -23,10 +22,9 @@ class ICUData(Dataset):
     def __getitem__(self, idx):
         file_path = os.path.join(self.data_path, self.file_names[idx])
         data = pd.read_csv(file_path).fillna(0)
-        features = data.set_index('Hours').sort_index().select_dtypes(include=[np.number])
+        features = data.drop(columns=['Hours']).select_dtypes(include=[np.number])
         label = self.labels[idx]
-        return torch.tensor(features.values, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
-        
+        return torch.tensor(features.values, dtype=torch.float32).view(-1, 1, features.shape[1]), torch.tensor(label, dtype=torch.float32)
 # Define the LSTM Model
 class LSTM(nn.Module):
     def __init__(self, input_size=14, hidden_layer_size=100, output_size=1):
@@ -36,7 +34,7 @@ class LSTM(nn.Module):
         self.linear = nn.Linear(hidden_layer_size, output_size)
         self.sigmoid = nn.Sigmoid()
     def forward(self, input_seq):
-        lstm_out, _ = self.lstm(input_seq.view(len(input_seq), 1, -1))
+        lstm_out, _ = self.lstm(input_seq)
         predictions = self.sigmoid(self.linear(lstm_out.view(len(input_seq), -1)))
         return predictions[-1]
 # Instantiate model, loss function (Binary Cross Entropy) and optimizer (Adam)
@@ -63,7 +61,8 @@ def train(num_epoch):
 def predict_icu_mortality(patient_data):
     with torch.no_grad():
         model.eval()
-        patient_data_normalized = torch.tensor(patient_data.values, dtype=torch.float32).to(device)
+        patient_data_normalized = torch.tensor(patient_data.drop(columns=['Hours']).values, dtype=torch.float32).to(device)
+        patient_data_normalized = patient_data_normalized.view(-1, 1, patient_data_normalized.shape[1])
         output = model(patient_data_normalized)
         return output.item()
 train(10)
