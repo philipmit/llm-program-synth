@@ -1,4 +1,3 @@
-**********
 import os
 import pandas as pd
 import numpy as np
@@ -41,7 +40,6 @@ class LSTMModel(nn.Module):
         out, _ = self.lstm(x, (h0, c0))
         out = self.fc(out[:, -1, :])
         return out
-
 # Hyperparameters
 BATCH_SIZE = 64
 INPUT_SIZE = 14
@@ -80,5 +78,3 @@ def predict_icu_mortality(patient_data):
     with torch.no_grad():
         output = model(patient_data)
     return torch.sigmoid(output).item()
-    
-**********
