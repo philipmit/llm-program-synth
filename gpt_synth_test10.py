@@ -14,17 +14,17 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 class ICUData(Dataset):
     def __init__(self, data_path, label_file):
         self.data_path = data_path
-        label_data = pd.read_csv(label_file)
-        self.file_names = label_data['stay']
-        self.labels = label_data['y_true']
-        
+        self.label_data = pd.read_csv(label_file)
+        self.file_names = self.label_data['stay'].values
+        self.labels = self.label_data['y_true'].values
     def __len__(self):
         return len(self.file_names)
     def __getitem__(self, idx):
         file_path = os.path.join(self.data_path, self.file_names[idx])
         data = pd.read_csv(file_path).fillna(0)
-        features = data.drop(columns=['Hours']).values 
-        return torch.tensor(features, dtype=torch.float32).to(device), torch.tensor(self.labels[idx], dtype=torch.float32).to(device)
+        features = data.drop(columns=['Hours']).values.astype(np.float32)
+        label = np.array(self.labels[idx]).astype(np.float32)
+        return torch.from_numpy(features).to(device), torch.from_numpy(label).to(device)
 # Define LSTM Model
 class LSTM(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers, num_classes):
@@ -42,7 +42,7 @@ class LSTM(nn.Module):
 # Model parameters
 num_epochs = 100
 learning_rate = 0.001
-input_size = 14   # number of features except 'Hours'
+input_size = 14 # number of features except 'Hours'
 hidden_size = 64
 num_layers = 2
 num_classes = 1
@@ -63,13 +63,12 @@ for epoch in range(num_epochs):
         loss.backward()
         optimizer.step()
         if (i+1) % 100 == 0:
-            print ('Epoch [{}/{}], Loss: {:.4f}'
-                   .format(epoch+1, num_epochs, loss.item()))
+            print(f'Epoch [{epoch+1}/{num_epochs}], Loss: {loss.item():.4f}')
 def predict_icu_mortality(patient_data):
-    model.eval()    
+    model.eval() 
     patient_data = patient_data.fillna(0)
-    features = patient_data.drop(columns=['Hours']).values
+    features = patient_data.drop(columns=['Hours']).values.astype(np.float32)
     features = features.reshape(1, features.shape[0], input_size)
-    features = torch.tensor(features, dtype=torch.float32).to(device)
+    features = torch.from_numpy(features).to(device)
     output = model(features)
     return torch.sigmoid(output).item()
