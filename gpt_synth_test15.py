@@ -6,12 +6,12 @@ import numpy as np
 import torch
 import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
-# Set the device for GPU
+# Setting the device for GPU if available
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # File paths
 TRAIN_DATA_PATH = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/"
 LABEL_FILE = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/listfile.csv"
-# Define the Dataset
+# Defining the Dataset
 class ICUData(Dataset):
     def __init__(self, data_path, label_file):
         self.data_path = data_path
@@ -26,7 +26,7 @@ class ICUData(Dataset):
         features = data.select_dtypes(include=[np.number])
         label = self.labels[idx]
         return torch.tensor(features.values, dtype=torch.float32).unsqueeze(0), torch.tensor(label, dtype=torch.float32)
-# Define the LSTM
+# Defining the LSTM
 class LSTMPredictor(nn.Module):
     def __init__(self, n_features, n_hidden, seq_len, n_layers=2):
         super(LSTMPredictor, self).__init__()
@@ -84,11 +84,10 @@ lstm_model = LSTMPredictor(n_features=n_features, n_hidden=512, seq_len=seq_leng
 lstm_model, train_hist, _ = train_model(lstm_model, train_loader)
 # The predict function
 def predict_icu_mortality(patient_data):
-    model.eval()
+    lstm_model.eval()
     with torch.no_grad():
         test_seq = torch.tensor(patient_data).float().view(-1, 48, n_features).to(device)
-        test_seq = test_seq.view(-1, 48, n_features)
-        y_test_pred = model(test_seq)
+        y_test_pred = lstm_model(test_seq)
         predicted = torch.sigmoid(y_test_pred).item()
     return predicted
 **********
