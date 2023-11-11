@@ -19,8 +19,10 @@ class IcuLstm(nn.Module):
     def forward(self, x):
         h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device)
         c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device)
+        
         out, _ = self.lstm(x, (h0, c0))
         out = self.fc(out[:, -1, :])
+        
         return out
 # Define the Dataset
 class ICUData(Dataset):
@@ -36,6 +38,7 @@ class ICUData(Dataset):
         data = pd.read_csv(file_path).fillna(0)
         features = data.select_dtypes(include=[np.number])
         label = self.labels[idx]
+        
         return torch.tensor(features.values, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
 # Initialize dataset
 dataset = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
@@ -62,7 +65,6 @@ def train_model(model, criterion, optimizer, dataloader, num_epochs=20):
             optimizer.step()
             running_loss += loss.item()
         print('Epoch [{}/{}], Loss: {:.4f}'.format(epoch+1, num_epochs, running_loss / len(dataloader)))
-# Start Training
 print('Start Training procedure...')
 train_model(model, criterion, optimizer, dataloader, num_epochs=20)
 # Define the prediction function
