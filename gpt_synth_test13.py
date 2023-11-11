@@ -8,6 +8,8 @@ from torch.optim import Adam
 # File paths
 TRAIN_DATA_PATH = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/"
 LABEL_FILE = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/listfile.csv"
+# Device configuration
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 # Define the Dataset
 class ICUData(Dataset):
     def __init__(self, data_path, label_file):
@@ -47,8 +49,6 @@ input_size = icu_data[0][0].size(0)
 hidden_size = 50
 num_layers = 2
 num_classes = 1
-# Device configuration
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 # Create LSTM Model
 model = LSTMModel(input_size, hidden_size, num_layers, num_classes).to(device)
 # Loss and optimizer
