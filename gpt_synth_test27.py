@@ -1,4 +1,3 @@
-
 # Required libraries
 import os
 import pandas as pd
@@ -6,7 +5,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader, Dataset
-# Set the device
+#Set the device
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 # Define Dataset class
 class ICUData(Dataset):
@@ -15,8 +14,10 @@ class ICUData(Dataset):
         label_data = pd.read_csv(label_file)
         self.file_names = label_data['stay']
         self.labels = label_data['y_true']
+        
     def __len__(self):
         return len(self.file_names)
+    
     def __getitem__(self, idx):
         file_path = os.path.join(self.data_path, self.file_names[idx])
         data = pd.read_csv(file_path).fillna(0)
