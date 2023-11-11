@@ -20,9 +20,9 @@ class ICUData(Dataset):
         file_path = os.path.join(self.data_path, self.file_names[idx])
         data = pd.read_csv(file_path).fillna(0)
         features = data.select_dtypes(include=[np.number])
+        features = features.drop('Hours', axis=1) # Exclude 'Hours' from the feature list
         label = self.labels[idx]
         return torch.tensor(features.values, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
-        
 class CollateFn:
     def __call__(self, batch):
         batch.sort(key=lambda x: x[0].shape[0], reverse=True)
@@ -53,7 +53,7 @@ def train_model(model, data_loader, num_epochs, criterion, optimizer):
             loss.backward()
             optimizer.step()
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-model = LSTMModel(input_size=14, hidden_size=32, num_layers=2, num_classes=1)
+model = LSTMModel(input_size=13, hidden_size=32, num_layers=2, num_classes=1) # Update input_size to match the amount of columns in the processed data
 model = model.to(device)
 criterion = nn.BCEWithLogitsLoss()
 optimizer = Adam(model.parameters(), lr=0.001)
@@ -63,6 +63,7 @@ train_model(model, data_loader, num_epochs=10, criterion=criterion, optimizer=op
 def predict_icu_mortality(patient_data):
     model.eval()
     with torch.no_grad():
+        patient_data = patient_data.drop('Hours', axis=1) # Exclude 'Hours' from the feature list
         patient_data = torch.tensor(patient_data.values, dtype=torch.float32).to(device)
         prediction = torch.sigmoid(model(patient_data.unsqueeze(0)))
         return prediction.item()
