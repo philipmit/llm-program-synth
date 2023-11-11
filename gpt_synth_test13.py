@@ -4,6 +4,7 @@ import numpy as np
 import torch
 from torch.utils.data import Dataset, DataLoader
 from torch import nn
+from torch.nn.utils.rnn import pad_sequence
 from torch.optim import Adam
 # File paths
 TRAIN_DATA_PATH = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/"
@@ -24,7 +25,16 @@ class ICUData(Dataset):
         data = pd.read_csv(file_path)
         numeric_data = data.select_dtypes(include=[np.number]).fillna(0)
         label = self.labels[idx]
-        return torch.tensor(numeric_data.values).unsqueeze(0).float(), torch.tensor(label).float()
+        return torch.tensor(numeric_data.values).float(), torch.tensor(label).float()
+# function to create batch of sequences of different length
+def pad_collate(batch):
+    (xx, yy) = zip(*batch)
+    x_lens = [len(x) for x in xx]
+    y_lens = [len(y) for y in yy]
+    
+    xx_pad = pad_sequence(xx, batch_first=True, padding_value=0)
+    yy_pad = pad_sequence(yy, batch_first=True, padding_value=0)
+    return xx_pad, yy_pad, x_lens, y_lens
 # Define LSTM Model
 class LSTMModel(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers, num_classes):
@@ -42,9 +52,9 @@ class LSTMModel(nn.Module):
         return out
 # Create Dataset and DataLoader
 icu_data = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
-data_loader = DataLoader(icu_data, batch_size=32, shuffle=True)
+data_loader = DataLoader(icu_data, batch_size=32, shuffle=True, collate_fn=pad_collate)
 # Model parameters
-input_size = icu_data[0][0].size(2)  # Number of features
+input_size = icu_data[0][0].size(1)  # Number of features
 hidden_size = 50
 num_layers = 2
 num_classes = 1
@@ -56,7 +66,7 @@ optimizer = Adam(model.parameters(), lr=0.001)
 # Train the model
 num_epochs = 10
 for epoch in range(num_epochs):
-    for i, (sequences, labels) in enumerate(data_loader):
+    for i, (sequences, labels, _, _) in enumerate(data_loader):
         sequences = sequences.to(device)
         labels = labels.unsqueeze(1).to(device)
         # Forward pass
