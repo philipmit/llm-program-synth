@@ -3,12 +3,11 @@ import pandas as pd
 import numpy as np
 import torch
 import torch.nn as nn
+from torch.nn.utils.rnn import pad_sequence
 from torch.utils.data import DataLoader, Dataset
 from torch.optim import Adam
-# File paths
 TRAIN_DATA_PATH = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/"
 LABEL_FILE = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/listfile.csv"
-# Define the Dataset
 class ICUData(Dataset):
     def __init__(self, data_path, label_file):
         self.data_path = data_path
@@ -23,7 +22,13 @@ class ICUData(Dataset):
         features = data.select_dtypes(include=[np.number])
         label = self.labels[idx]
         return torch.tensor(features.values, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
-# Define the LSTM model
+        
+class CollateFn:
+    def __call__(self, batch):
+        batch.sort(key=lambda x: x[0].shape[0], reverse=True)
+        sequences, labels = zip(*batch)
+        sequences_padded = pad_sequence(sequences, batch_first=True)
+        return sequences_padded, torch.tensor(labels, dtype=torch.float32)
 class LSTMModel(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers, num_classes):
         super().__init__()
@@ -37,7 +42,6 @@ class LSTMModel(nn.Module):
         out, _ = self.lstm(x, (h0, c0))
         out = self.fc(out[:, -1, :])
         return out
-# Training procedure
 def train_model(model, data_loader, num_epochs, criterion, optimizer):
     model.train()
     for epoch in range(num_epochs):
@@ -54,9 +58,8 @@ model = model.to(device)
 criterion = nn.BCEWithLogitsLoss()
 optimizer = Adam(model.parameters(), lr=0.001)
 icu_dataset = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
-data_loader = DataLoader(icu_dataset, batch_size=16, shuffle=True)
+data_loader = DataLoader(icu_dataset, batch_size=16, shuffle=True, collate_fn=CollateFn())
 train_model(model, data_loader, num_epochs=10, criterion=criterion, optimizer=optimizer)
-# Define predict function
 def predict_icu_mortality(patient_data):
     model.eval()
     with torch.no_grad():
