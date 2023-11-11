@@ -23,7 +23,7 @@ class ICUData(Dataset):
     def __getitem__(self, idx):
         file_path = os.path.join(self.data_path, self.file_names[idx])
         data = pd.read_csv(file_path).fillna(0)
-        features = data.select_dtypes(include=[np.number])
+        features = data.drop('Hours', axis=1)
         label = self.labels[idx]
         return torch.tensor(features.values, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
 # Define LSTM Model
@@ -46,7 +46,7 @@ class LSTMModel(nn.Module):
 icu_data = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
 data_loader = DataLoader(icu_data, batch_size=32, shuffle=True)
 # Model parameters
-input_size = icu_data[0][0].size(0)
+input_size = icu_data[0][0].size(1)  # Number of features
 hidden_size = 50
 num_layers = 2
 num_classes = 1
@@ -60,7 +60,7 @@ num_epochs = 100
 for epoch in range(num_epochs):
     for i, (features, labels) in enumerate(data_loader):
         features = features.to(device)
-        labels = labels.to(device)
+        labels = labels.view(-1, 1).to(device)
         # Forward pass
         outputs = model(features)
         loss = criterion(outputs, labels)
@@ -72,7 +72,7 @@ for epoch in range(num_epochs):
             print ('Epoch [{}/{}], Step [{}/{}], Loss: {:.4f}'.format(epoch+1, num_epochs, i+1, len(data_loader), loss.item()))
 def predict_icu_mortality(raw_data):
     raw_data = raw_data.fillna(0)
-    features = raw_data.select_dtypes(include=[np.number])
+    features = raw_data.drop('Hours', axis=1)
     tensor_data = torch.tensor(features.values, dtype=torch.float32).unsqueeze(0).to(device)
     output = model(tensor_data)
     return torch.sigmoid(output).item()
