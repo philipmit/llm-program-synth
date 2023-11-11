@@ -27,7 +27,7 @@ class ICUData(Dataset):
 # Collate function for DataLoader
 def collate_fn(batch):
     features, labels = zip(*batch)
-    features = pad_sequence(features, batch_first=True)
+    features = pad_sequence([torch.tensor(f) for f in features], batch_first=True)
     labels = torch.as_tensor(labels)
     return features, labels
 # Define an LSTM model
