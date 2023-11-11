@@ -38,31 +38,31 @@ class LSTM(nn.Module):
         out, _ = self.lstm(x, (h0, c0))
         out = self.fc(out[:, -1, :])
         return out
-# Train the model
-def train_model(model, criterion, optimizer, data_loader, epochs=10):
-    model.train()
-    for epoch in range(epochs):
-        for i, (inputs, labels) in enumerate(data_loader):
-            inputs = inputs.to(device)
-            labels = labels.to(device)
-            optimizer.zero_grad()
-            outputs = model(inputs)
-            loss = criterion(outputs, labels)
-            loss.backward()
-            optimizer.step()
-        print(f"Epoch {epoch+1}/{epochs} Loss: {loss.item()}")
 # Prepare data
 dataset = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
 data_loader = DataLoader(dataset, batch_size=32, shuffle=True)
-
 # Create LSTM model
 input_size = 14  # Number of features
 hidden_size = 50
 num_layers = 2
 output_size = 1
-model = LSTM(input_size, hidden_size, num_layers, output_size)
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+model = LSTM(input_size, hidden_size, num_layers, output_size)
 model.to(device)
+# Train the model
+def train_model(model, criterion, optimizer, data_loader, epochs=10):
+    for epoch in range(epochs):
+        model.train()
+        for i, (inputs, labels) in enumerate(data_loader):
+            inputs = inputs.to(device)
+            labels = labels.to(device)
+            optimizer.zero_grad()
+            outputs = model(inputs)
+            loss = criterion(outputs, labels.view(-1, 1))
+            loss.backward()
+            optimizer.step()
+        print(f"Epoch {epoch+1}/{epochs} Loss: {loss.item()}")
+    
 # Set loss and optimizer
 criterion = nn.BCEWithLogitsLoss()
 optimizer = Adam(model.parameters(), lr=0.001)
