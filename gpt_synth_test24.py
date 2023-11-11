@@ -21,7 +21,7 @@ class ICUData(Dataset):
     def __getitem__(self, idx):
         file_path = os.path.join(self.data_path, self.file_names[idx])
         data = pd.read_csv(file_path).fillna(0)
-        features = data.select_dtypes(include=[np.number])
+        features = data.drop(['Hours'], axis=1)  # Exclude 'Hours' from features
         label = self.labels[idx]
         return torch.tensor(features.values, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
 # Define the Model
@@ -39,7 +39,7 @@ class LSTMModel(nn.Module):
         out = self.fc(out[:, -1, :])
         return F.sigmoid(out)
 # Model parameters
-input_size = 14  # The number of expected features in the input x
+input_size = 13  # The number of expected features in the input x (excluding 'Hours')
 hidden_size = 32  # The number of features in the hidden state h
 num_layers = 2  # Number of recurrent layers
 output_size = 1  # Number of expected features in the output
@@ -49,6 +49,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model = LSTMModel(input_size, hidden_size, num_layers, output_size).to(device)
 criterion = nn.BCELoss()
 optimizer = Adam(model.parameters(), lr=learning_rate)
+
 def train_model():
     model.train()  # Make sure the model is in train mode
     total_step = len(train_loader)
@@ -67,7 +68,7 @@ def train_model():
 def predict_icu_mortality(data):
     model.eval()  # Make sure the model is in eval mode
     with torch.no_grad():
-        features = torch.tensor(data.values, dtype=torch.float32).unsqueeze(0).to(device)
+        features = torch.tensor(data.select_dtypes(include=[np.number]).values, dtype=torch.float32).unsqueeze(0).to(device)
         output = model(features)
         mortality_prob = torch.sigmoid(output).item()
     return mortality_prob
