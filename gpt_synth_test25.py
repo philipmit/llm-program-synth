@@ -4,6 +4,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
+from torch.nn.utils.rnn import pad_sequence
 from torch.utils.data import DataLoader, Dataset
 TRAIN_DATA_PATH = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/"
 TEST_DATA_PATH = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/test/"
@@ -21,7 +22,13 @@ class ICUData(Dataset):
         data = pd.read_csv(file_path).fillna(0)
         features = data.select_dtypes(include=[np.number])
         label = self.labels[idx]
-        return torch.tensor(features.values, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
+        return features.values, label
+def collate_fn(batch):
+    data, target = zip(*batch)
+    data = [torch.FloatTensor(d) for d in data]
+    data = pad_sequence(data, batch_first=True)
+    target = torch.FloatTensor(target)
+    return data, target
 class ICUModel(nn.Module):
     def __init__(self, input_dim, hidden_dim, num_layers, output_dim):
         super(ICUModel, self).__init__()
@@ -33,47 +40,31 @@ class ICUModel(nn.Module):
         h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_dim).to(x.device) 
         c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_dim).to(x.device)
         out, (hn, cn) = self.lstm(x, (h0.detach(), c0.detach()))
-        
         out = self.fc(out[:, -1, :]) 
         return out.squeeze()
-def binary_accuracy(preds, y):
-    rounded_preds = torch.round(torch.sigmoid(preds)).squeeze()
-    correct = (rounded_preds == y).float()
-    acc = correct.sum() / len(correct)
-    return acc
-def train_model(model, iterator, optimizer, criterion):
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+epochs = 10
+lr = 0.001
+batch_size = 32 
+input_dim = 14  
+hidden_dim = 50 
+output_dim = 1 
+num_layers = 1 
+model = ICUModel(input_dim, hidden_dim, num_layers, output_dim).to(device)
+criterion = nn.BCEWithLogitsLoss()
+optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+train_data = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
+train_loader = DataLoader(dataset=train_data, batch_size=batch_size, shuffle=True, collate_fn=collate_fn)
+for epoch in range(epochs): 
     epoch_loss = 0
     epoch_acc = 0
-    model.train()
-    for batch, (x, y) in enumerate(iterator):
+    for batch, (x, y) in enumerate(train_loader): 
         x = x.to(device)
         y = y.to(device)
         optimizer.zero_grad()
         predictions = model(x)
         loss = criterion(predictions, y)
-        acc = binary_accuracy(predictions, y)
         loss.backward()
         optimizer.step()
         epoch_loss += loss.item()
-        epoch_acc += acc.item()
-    return epoch_loss / len(iterator), epoch_acc / len(iterator)
-def predict_icu_mortality(patient_data):
-    patient_data_tensor = torch.tensor(patient_data.values, dtype=torch.float32).unsqueeze(0)
-    probas = torch.sigmoid(model(patient_data_tensor.to(device)))
-    return probas.item()
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-epochs = 10
-lr = 0.001
-batch_size = 32 
-input_dim = 14 # number of columns excluding Hours 
-hidden_dim = 50 
-output_dim = 1 
-num_layers = 1
-model = ICUModel(input_dim, hidden_dim, num_layers, output_dim).to(device)
-criterion = nn.BCEWithLogitsLoss()
-optimizer = torch.optim.Adam(model.parameters(), lr=lr)
-train_data = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
-train_loader = DataLoader(dataset=train_data, batch_size=batch_size, shuffle=True)
-for epoch in range(epochs):
-    train_loss, train_acc = train_model(model, train_loader, optimizer, criterion)
-    print(f'Epoch: {epoch+1:02} | Loss: {train_loss:.3f} | Acc: {train_acc:.3f}')
+    print(f'Epoch: {epoch+1:02} | Loss: {epoch_loss/len(train_loader):.3f}')
