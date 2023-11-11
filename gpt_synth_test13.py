@@ -26,7 +26,6 @@ class ICUData(Dataset):
         features = data.select_dtypes(include=[np.number])
         label = self.labels[idx]
         return torch.tensor(features.values, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
-df = pd.DataFrame()
 # Define LSTM Model
 class LSTMModel(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers, num_classes):
@@ -43,15 +42,16 @@ class LSTMModel(nn.Module):
         out, _ = self.lstm(x, (h0, c0))
         out = self.fc(out[:, -1, :])
         return out
+
 # Create Dataset and DataLoader
 icu_data = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
 data_loader = DataLoader(icu_data, batch_size=32, shuffle=True)
 # Model parameters
-input_size = icu_data[0][0].size(0)
+input_size = icu_data[0][0].shape[0]  # Number of features
 hidden_size = 50
 num_layers = 2
 num_classes = 1
-# Create LSTM Model
+# Instantiate the LSTMModel
 model = LSTMModel(input_size, hidden_size, num_layers, num_classes).to(device)
 # Loss and optimizer
 criterion = nn.BCEWithLogitsLoss()
