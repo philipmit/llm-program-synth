@@ -33,7 +33,7 @@ class CollateFn:
         return sequences_padded, torch.tensor(labels, dtype=torch.float32)
 class LSTMModel(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers, num_classes):
-        super(LSTMModel, self).__init__()
+        super().__init__()
         self.hidden_size = hidden_size
         self.num_layers = num_layers
         self.lstm = nn.LSTM(input_size, hidden_size, num_layers, batch_first=True)
@@ -69,7 +69,7 @@ for epoch in range(10):  # loop over the dataset multiple times
         optimizer.step()
         running_loss += loss.item()
     # print statistics
-    print("Epoch {}, Loss {}".format(epoch, running_loss / len(loader)))
+    print(f"Epoch {epoch}, Loss {running_loss / len(loader)}")
 print("Finished Training")
 # Prediction function
 def predict_icu_mortality(patient_data):
