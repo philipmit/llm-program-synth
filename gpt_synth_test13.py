@@ -37,7 +37,6 @@ class LSTMModel(nn.Module):
     def forward(self, x):
         h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(device) 
         c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(device)
-        
         out, _ = self.lstm(x, (h0, c0))
         out = self.fc(out[:, -1, :])
         return out
@@ -45,11 +44,11 @@ class LSTMModel(nn.Module):
 icu_data = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
 data_loader = DataLoader(icu_data, batch_size=32, shuffle=True)
 # Model parameters
-input_size = icu_data[0][0].size(2)
+input_size = icu_data[0][0].size(2)  # Number of features
 hidden_size = 50
 num_layers = 2
 num_classes = 1
-# Create LSTM Model
+# LSTM Model definition must be after LSTMModel Class
 model = LSTMModel(input_size, hidden_size, num_layers, num_classes).to(device)
 # Loss and optimizer
 criterion = nn.BCEWithLogitsLoss()
