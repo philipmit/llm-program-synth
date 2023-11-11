@@ -26,7 +26,7 @@ class ICUData(torch.utils.data.Dataset):
 # Define the LSTM model
 class LSTM(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers, output_size):
-        super(LSTM, self).__init__()
+        super().__init__() # corrected here
         self.hidden_size = hidden_size
         self.num_layers = num_layers
         self.lstm = nn.LSTM(input_size, hidden_size, num_layers, batch_first=True)
