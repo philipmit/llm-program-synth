@@ -18,14 +18,14 @@ class ICUData(Dataset):
     def __getitem__(self, idx):
         file_path = os.path.join(self.data_path, self.file_names[idx])
         data = pd.read_csv(file_path)
-        data = data.drop(['Hours'], axis=1)  # Ensure that the 'Hours' column is properly dropped
-        data = data.fillna(0)  # Replace NA values with 0
-        data = data.select_dtypes(include=[np.number])  # Select numerical columns
+        data = data.drop(['Hours'], axis=1)  
+        data = data.fillna(0)  
+        data = data.select_dtypes(include=[np.number]) 
         label = self.labels[idx]
         return torch.tensor(data.values, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
 class LSTM(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers):
-        super(LSTM, self).__init__()
+        super().__init__()
         self.hidden_size = hidden_size
         self.num_layers = num_layers
         self.lstm = nn.LSTM(input_size, hidden_size, num_layers, batch_first=True)
@@ -42,10 +42,8 @@ def collate_fn(batch):
     lengths = torch.tensor([len(x) for x in sequences])
     labels = torch.tensor([x[1] for x in batch])
     return pad_sequence(sequences, batch_first=True), labels, lengths
-# Initialize the dataset and dataloader
 dataset = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
 dataloader = DataLoader(dataset, batch_size=32, shuffle=True, collate_fn=collate_fn)
-# Define the LSTM model
 model = LSTM(input_size=14, hidden_size=64, num_layers=2)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model.to(device)
@@ -64,12 +62,9 @@ for epoch in range(10):
 def predict_icu_mortality(patient_csv_file):
     model.eval()
     with torch.no_grad():
-        # Load patient data and process it
         patient_data = pd.read_csv(patient_csv_file)
-        patient_data = patient_data.drop(['Hours'], axis=1)  # Ensure 'Hours' is dropped here too
+        patient_data = patient_data.drop(['Hours'], axis=1)  
         patient_data = patient_data.fillna(0).select_dtypes(include=[np.number]).values
-        # Transform to tensor and add batch dimension
         patient_data_tensor = torch.tensor(patient_data, dtype=torch.float32).unsqueeze(0).to(device)
-        # Model prediction
         output = model(patient_data_tensor)
         return output.item()
