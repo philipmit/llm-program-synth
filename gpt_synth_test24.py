@@ -5,6 +5,7 @@ import torch
 import torch.nn as nn
 from torch.optim import Adam
 from torch.utils.data import Dataset, DataLoader
+# File paths
 TRAIN_DATA_PATH = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/"
 LABEL_FILE = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/listfile.csv"
 class ICUData(Dataset):
@@ -13,63 +14,52 @@ class ICUData(Dataset):
         label_data = pd.read_csv(label_file)
         self.file_names = label_data['stay']
         self.labels = torch.from_numpy(label_data['y_true'].values.astype(np.float32))
+            
     def __len__(self):
         return len(self.file_names)
     def __getitem__(self, idx):
         file_path = os.path.join(self.data_path, self.file_names[idx])
-        data = pd.read_csv(file_path)
-        data = data.drop('Hours', axis=1)  # Exclude 'Hours' from features
-        data = data.apply(pd.to_numeric, errors='coerce')  # Coerce non-numeric values to NaN
-        data = data.fillna(0)  # NaNs filled with 0
-        data_tensor = torch.from_numpy(data.values.astype(np.float32))
-        label = self.labels[idx]
-        return data_tensor, label
+        data = pd.read_csv(file_path).drop('Hours', axis=1).fillna(0)
+        data_tensor = torch.from_numpy(data.values.astype(np.float32)).unsqueeze(0)  # unsqueeze to have 3D tensor
+        return data_tensor, self.labels[idx]
+
 class LSTMModel(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers, output_size):
         super(LSTMModel, self).__init__()
-        self.hidden_size = hidden_size
-        self.layers = num_layers
         self.lstm = nn.LSTM(input_size, hidden_size, num_layers, batch_first=True)
         self.fc = nn.Linear(hidden_size, output_size)
     def forward(self, x):
-        h0 = torch.zeros(self.layers, x.size(0), self.hidden_size).to(device)
-        c0 = torch.zeros(self.layers, x.size(0), self.hidden_size).to(device)
-        out, _ = self.lstm(x, (h0, c0))
+        out, _ = self.lstm(x)
         out = self.fc(out[:, -1, :])
-        return torch.sigmoid(out)
-hidden_size = 32 
-num_layers = 2 
-output_size = 1 
-learning_rate = 0.001 
-epochs = 100 
+        return out.squeeze() # Ensure 1D output for binary cross entropy loss
+
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-criterion = nn.BCELoss()
-train_data = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
-train_loader = DataLoader(train_data, batch_size=1, shuffle=True)
-def train_model():
-    for epoch in range(epochs):
-        for i, (features, labels) in enumerate(train_loader):
-            # Define model inside the loop
-            if epoch == 0 and i == 0:
-                input_size = features.shape[2] 
-                model = LSTMModel(input_size, hidden_size, num_layers, output_size).to(device)
-                optimizer = Adam(model.parameters(), lr=learning_rate)
-            features = features.to(device)
-            labels = labels.to(device)
-            outputs = model(features)
-            loss = criterion(outputs.squeeze(), labels)
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
+input_size = 14  # 14 features
+hidden_size = 32
+num_layers = 1
+output_size = 1
+epochs = 20
+learning_rate = 0.001
+dataset = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
+dataloader = DataLoader(dataset, batch_size=1, shuffle=True)
+model = LSTMModel(input_size, hidden_size, num_layers, output_size).to(device)
+criterion = nn.BCEWithLogitsLoss()  # BCE with built-in sigmoid
+optimizer = Adam(model.parameters(), lr=learning_rate)
+for epoch in range(epochs):
+    for i, (seq, label) in enumerate(dataloader):
+        seq, label = seq.to(device), label.to(device)
+        model.zero_grad()
+        output = model(seq)
+        loss = criterion(output, label)
+        loss.backward()
+        optimizer.step()
+        if (i + 1) % 100 == 0:
+            print(f'Epoch: {epoch+1}, Iteration: {i+1}, Loss: {loss.item()}') 
             
-            if (i+1) % 100 == 0:
-                print ('Epoch [{}/{}], Step [{}/{}], Loss: {:.4f}'.format(epoch+1, epochs, i+1, total_step, loss.item()))
-    return model  # Return trained model
-trained_model = train_model()
-def predict_icu_mortality(data):
-    trained_model.eval()
+def predict_icu_mortality(patient_data):
+    model.eval()
     with torch.no_grad():
-        features = torch.tensor(data.drop('Hours', axis=1).values, dtype=torch.float32).unsqueeze(0).to(device)
-        output = trained_model(features)
+        patient_data = torch.tensor(patient_data.drop('Hours', axis=1).values.astype(np.float32)).unsqueeze(0).to(device)
+        output = model(patient_data)
         mortality_prob = torch.sigmoid(output).item()
     return mortality_prob
