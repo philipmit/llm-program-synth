@@ -1,3 +1,4 @@
+
 import os
 import pandas as pd
 import numpy as np
@@ -25,6 +26,7 @@ class ICUData(Dataset):
         features = data.select_dtypes(include=[np.number])
         label = self.labels[idx]
         return torch.tensor(features.values, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
+df = pd.DataFrame()
 # Define LSTM Model
 class LSTMModel(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers, num_classes):
