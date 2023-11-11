@@ -1,4 +1,3 @@
-
 import os
 import pandas as pd
 import numpy as np
@@ -27,7 +26,7 @@ class ICUData(Dataset):
 # Define the LSTM model
 class LSTMModel(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers, num_classes):
-        super(LSTMModel, self).__init__()
+        super().__init__()
         self.num_layers = num_layers
         self.hidden_size = hidden_size
         self.lstm = nn.LSTM(input_size, hidden_size, num_layers, batch_first=True)
