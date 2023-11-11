@@ -1,3 +1,4 @@
+
 import os
 import pandas as pd
 import numpy as np
@@ -15,6 +16,7 @@ class ICUData(Dataset):
         self.labels = label_data['y_true']
     def __len__(self):
         return len(self.file_names)
+    
     def __getitem__(self, idx):
         file_path = os.path.join(self.data_path, self.file_names[idx])
         data = pd.read_csv(file_path).drop(columns=["Hours"]).fillna(0)
@@ -23,7 +25,7 @@ class ICUData(Dataset):
         return torch.tensor(features.values, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
 class LSTM(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers):
-        super(LSTM, self).__init__()
+        super().__init__()
         self.hidden_size = hidden_size
         self.num_layers = num_layers
         self.lstm = nn.LSTM(input_size, hidden_size, num_layers, batch_first=True)
@@ -46,7 +48,7 @@ criterion = nn.BCEWithLogitsLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 for epoch in range(num_epochs):
     for i, (sequences, labels) in enumerate(train_loader):
-        labels = labels.unsqueeze(1)  
+        labels = labels.unsqueeze(1)
         outputs = model(sequences)
         loss = criterion(outputs, labels)
         optimizer.zero_grad()
