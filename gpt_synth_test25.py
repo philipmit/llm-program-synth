@@ -20,6 +20,8 @@ class ICUData(Dataset):
     def __getitem__(self, idx):
         file_path = os.path.join(self.data_path, self.file_names[idx])
         data = pd.read_csv(file_path).fillna(0)
+        # Exclude 'Hours' column from the features
+        data = data.drop(columns='Hours')
         features = data.select_dtypes(include=[np.number])
         label = self.labels[idx]
         return features.values, label
