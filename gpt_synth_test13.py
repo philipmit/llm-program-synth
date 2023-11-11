@@ -23,8 +23,6 @@ class ICUData(Dataset):
         features = data.select_dtypes(include=[np.number])
         label = self.labels[idx]
         return torch.tensor(features.values, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
-# Device configuration
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 # Define LSTM Model
 class LSTMModel(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers, num_classes):
@@ -49,6 +47,8 @@ input_size = icu_data[0][0].size(0)
 hidden_size = 50
 num_layers = 2
 num_classes = 1
+# Device configuration
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 # Create LSTM Model
 model = LSTMModel(input_size, hidden_size, num_layers, num_classes).to(device)
 # Loss and optimizer
