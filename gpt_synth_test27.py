@@ -8,6 +8,20 @@ from torch.nn.utils.rnn import pack_sequence, pad_packed_sequence
 # File paths
 TRAIN_DATA_PATH = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/"
 LABEL_FILE = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/listfile.csv"
+# Define the LSTM model
+class IcuLstm(nn.Module):
+    def __init__(self, input_size, hidden_size, num_layers, output_size):
+        super(IcuLstm, self).__init__()
+        self.hidden_size = hidden_size
+        self.num_layers = num_layers
+        self.lstm = nn.LSTM(input_size, hidden_size, num_layers, batch_first=True)
+        self.fc = nn.Linear(hidden_size, output_size)
+    def forward(self, x):
+        h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device)
+        c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device)
+        out, _ = self.lstm(x, (h0, c0))
+        out = self.fc(out[:, -1, :])
+        return out
 # Define the Dataset
 class ICUData(Dataset):
     def __init__(self, data_path, label_file):
@@ -23,20 +37,6 @@ class ICUData(Dataset):
         features = data.select_dtypes(include=[np.number])
         label = self.labels[idx]
         return torch.tensor(features.values, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
-# Define LSTM model
-class IcuLstm(nn.Module):
-    def __init__(self, input_size, hidden_size, num_layers, output_size):
-        super(IcuLstm, self).__init__()
-        self.hidden_size = hidden_size
-        self.num_layers = num_layers
-        self.lstm = nn.LSTM(input_size, hidden_size, num_layers, batch_first=True)
-        self.fc = nn.Linear(hidden_size, output_size)
-    def forward(self, x):
-        h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device)
-        c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device)
-        out, _ = self.lstm(x, (h0, c0))
-        out = self.fc(out[:, -1, :])
-        return out
 # Initialize dataset
 dataset = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
 dataloader = DataLoader(dataset, batch_size=64, shuffle=True)
@@ -45,7 +45,7 @@ device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 model = IcuLstm(input_size=15, hidden_size=50, num_layers=1, output_size=1).to(device)
 criterion = nn.BCEWithLogitsLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
-# Train Model
+# Define the function that trains the model
 def train_model(model, criterion, optimizer, dataloader, num_epochs=20):
     model.train()
     for epoch in range(num_epochs):
