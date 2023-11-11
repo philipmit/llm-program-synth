@@ -26,15 +26,11 @@ class ICUData(Dataset):
         numeric_data = data.select_dtypes(include=[np.number]).fillna(0)
         label = self.labels[idx]
         return torch.tensor(numeric_data.values).float(), torch.tensor(label).float()
-# function to create batch of sequences of different length
+# Function to create a batch of sequences of different length
 def pad_collate(batch):
     (xx, yy) = zip(*batch)
-    x_lens = [len(x) for x in xx]
-    y_lens = [len(y) for y in yy]
-    
-    xx_pad = pad_sequence(xx, batch_first=True, padding_value=0)
-    yy_pad = pad_sequence(yy, batch_first=True, padding_value=0)
-    return xx_pad, yy_pad, x_lens, y_lens
+    xx_pad = pad_sequence([x for x in xx], batch_first=True, padding_value=0)
+    return xx_pad, torch.tensor(yy, dtype=torch.float32)
 # Define LSTM Model
 class LSTMModel(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers, num_classes):
@@ -43,10 +39,10 @@ class LSTMModel(nn.Module):
         self.num_layers = num_layers
         self.lstm = nn.LSTM(input_size, hidden_size, num_layers, batch_first=True)
         self.fc = nn.Linear(hidden_size, num_classes)
-   
     def forward(self, x):
-        h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(device) 
+        h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(device)
         c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(device)
+        
         out, _ = self.lstm(x, (h0, c0))
         out = self.fc(out[:, -1, :])
         return out
@@ -66,7 +62,7 @@ optimizer = Adam(model.parameters(), lr=0.001)
 # Train the model
 num_epochs = 10
 for epoch in range(num_epochs):
-    for i, (sequences, labels, _, _) in enumerate(data_loader):
+    for i, (sequences, labels) in enumerate(data_loader):
         sequences = sequences.to(device)
         labels = labels.unsqueeze(1).to(device)
         # Forward pass
