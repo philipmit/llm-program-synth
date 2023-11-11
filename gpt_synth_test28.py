@@ -1,3 +1,4 @@
+
 import os
 import pandas as pd
 import numpy as np
@@ -44,15 +45,15 @@ def train_model(model, data_loader, num_epochs, criterion, optimizer):
         for i, (inputs, labels) in enumerate(data_loader):
             inputs, labels = inputs.to(device), labels.to(device)
             outputs = model(inputs)
-            loss = criterion(outputs, labels)
+            loss = criterion(outputs.unsqueeze(1), labels.unsqueeze(1))
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model = LSTMModel(input_size=14, hidden_size=32, num_layers=2, num_classes=1)
+model = model.to(device)
 criterion = nn.BCEWithLogitsLoss()
 optimizer = Adam(model.parameters(), lr=0.001)
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-model.to(device)
 icu_dataset = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
 data_loader = DataLoader(icu_dataset, batch_size=16, shuffle=True)
 train_model(model, data_loader, num_epochs=10, criterion=criterion, optimizer=optimizer)
