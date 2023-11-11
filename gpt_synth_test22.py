@@ -7,7 +7,6 @@ from torch.nn.utils.rnn import pad_sequence
 from sklearn.preprocessing import StandardScaler
 from torch import nn
 from torch.nn import functional as F
-
 # File paths
 TRAIN_DATA_PATH = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/"
 LABEL_FILE = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/listfile.csv"
@@ -26,8 +25,7 @@ class ICUData(Dataset):
         data = pd.read_csv(file_path).fillna(0)
         features = self.scaler.fit_transform(data.select_dtypes(include=[np.number]))
         label = self.labels[idx]
-        return torch.tensor(features, dtype=torch.float32), torch.tensor(label, dtype=torch.float32), features.shape[0]
-# Custom collate_fn to handle padding of tensors
+        return torch.tensor(features, dtype=torch.float32), torch.tensor(label, dtype=torch.float32), torch.tensor(features.shape[0])
 def collate_fn(batch):
     sequences, labels, lengths = zip(*batch)
     sequences_padded = pad_sequence(sequences, batch_first=True, padding_value=0)
