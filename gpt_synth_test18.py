@@ -28,7 +28,7 @@ dataloader = DataLoader(dataset, batch_size=32, shuffle=True)
 # Define the LSTM model
 class LSTM(nn.Module):
     def __init__(self, input_dim, hidden_dim, num_layers, output_dim):
-        super(LSTM, self).__init__()
+        super().__init__()
         self.hidden_dim = hidden_dim
         self.num_layers = num_layers
         self.lstm = nn.LSTM(input_dim, hidden_dim, num_layers, batch_first=True)
