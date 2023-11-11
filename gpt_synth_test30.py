@@ -3,8 +3,8 @@ import pandas as pd
 import numpy as np
 import torch
 from torch import nn, optim
-from torch.utils.data import DataLoader, Dataset
 from torch.nn.utils.rnn import pad_sequence
+from torch.utils.data import DataLoader, Dataset
 # File paths
 TRAIN_DATA_PATH = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/"
 LABEL_FILE = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/listfile.csv"
@@ -14,7 +14,7 @@ class ICUData(Dataset):
         self.data_path = data_path
         label_data = pd.read_csv(label_file)
         self.file_names = label_data['stay']
-        self.labels = label_data['y_true']
+        self.labels = torch.tensor(label_data['y_true'].values, dtype=torch.float32)
     def __len__(self):
         return len(self.file_names)
     def __getitem__(self, idx):
@@ -22,7 +22,7 @@ class ICUData(Dataset):
         data = pd.read_csv(file_path).drop(columns='Hours').fillna(0)
         features = data.select_dtypes(include=[np.number])
         label = self.labels[idx]
-        return torch.tensor(features.values, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
+        return features.values, label
 # Define the LSTM
 class LSTM(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers):
@@ -32,40 +32,41 @@ class LSTM(nn.Module):
         self.lstm = nn.LSTM(input_size, hidden_size, num_layers, batch_first=True)
         self.fc = nn.Linear(hidden_size, 1)
     def forward(self, x):
-        h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device)
-        c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device)
+        h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size)
+        c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size)
         out, _ = self.lstm(x, (h0, c0))
         out = self.fc(out[:, -1, :])
-        return torch.sigmoid(out)
+        return torch.sigmoid(out).squeeze()
 # Collate_fn for data loader
-def collate_fn(data):
-    data.sort(key=lambda x: len(x[0]), reverse=True)
-    seqs, labels = zip(*data)
-    lengths = [len(seq) for seq in seqs]
-    seqs_padded = pad_sequence([torch.tensor(s) for s in seqs], batch_first=True)
-    return seqs_padded.float(), torch.tensor(labels).float(), lengths
-train_data = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
-train_data_loader = DataLoader(train_data, batch_size=32, shuffle=True, collate_fn=collate_fn)
+def collate_fn(batch):
+    sequences = [torch.tensor(x[0]) for x in batch]
+    sequences.sort(key=len, reverse=True)
+    sequences_padded = pad_sequence(sequences, batch_first=True)
+    lenghts = torch.tensor([len(x) for x in sequences])
+    labels = torch.tensor([x[1] for x in batch])
+    return sequences_padded.float(), labels, lenghts
+dataset = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
+dataloader = DataLoader(dataset, batch_size=32, shuffle=True, collate_fn=collate_fn)
+device = "cuda" if torch.cuda.is_available() else "cpu"
 model = LSTM(input_size=13, hidden_size=64, num_layers=2)
+model = model.to(device)
 criterion = nn.BCELoss()
-optimizer = optim.Adam(model.parameters(), lr=0.001)
+optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 model.train()
-for epoch in range(5):
-    print(f'------ Epoch {epoch + 1} ------')
-    for i, (seqs, labels, lengths) in enumerate(train_data_loader):
-        seqs = torch.nn.utils.rnn.pack_padded_sequence(seqs, lengths, batch_first=True)
-        seqs = seqs.to(device)
+for epoch in range(10):
+    for i, (sequences, labels, lengths) in enumerate(dataloader):
+        sequences = sequences.to(device)
         labels = labels.to(device)
-        outputs = model(seqs)
+        outputs = model(sequences)
         loss = criterion(outputs, labels)
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
-def predict_icu_mortality(patient_data):
+# Function to predict ICU mortality
+def predict_icu_mortality(patient_csv_file):
     model.eval()
     with torch.no_grad():
-        seq = torch.tensor(patient_data.drop(columns='Hours').fillna(0).select_dtypes(include=[np.number]).values).unsqueeze(0)
-        seq = seq.to(device)
-        output = model(seq)
-        predicted_mortality = output.cpu().numpy().flatten()[0]
-    return predicted_mortality
+        patient_data = pd.read_csv(patient_csv_file).drop(columns='Hours').fillna(0).select_dtypes(include=[np.number]).values
+        patient_data_tensor = torch.tensor(patient_data).unsqueeze(0).float().to(device)
+        output = model(patient_data_tensor)
+        return output.item()
