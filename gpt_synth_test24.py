@@ -1,3 +1,4 @@
+
 import os
 import pandas as pd
 import numpy as np
@@ -15,7 +16,7 @@ class ICUData(Dataset):
         self.data_path = data_path
         label_data = pd.read_csv(label_file)
         self.file_names = label_data['stay']
-        self.labels = label_data['y_true']
+        self.labels = label_data['y_true'].values.astype(np.int64)
     def __len__(self):
         return len(self.file_names)
     def __getitem__(self, idx):
@@ -23,7 +24,7 @@ class ICUData(Dataset):
         data = pd.read_csv(file_path).fillna(0)
         features = data.drop(['Hours'], axis=1)  # Exclude 'Hours' from features
         label = self.labels[idx]
-        return torch.tensor(features.values, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
+        return torch.tensor(features.values, dtype=torch.float32), torch.tensor(label, dtype=torch.int64)
 # Define the Model
 class LSTMModel(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers, output_size):
@@ -49,7 +50,6 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model = LSTMModel(input_size, hidden_size, num_layers, output_size).to(device)
 criterion = nn.BCELoss()
 optimizer = Adam(model.parameters(), lr=learning_rate)
-
 def train_model():
     model.train()  # Make sure the model is in train mode
     total_step = len(train_loader)
@@ -58,7 +58,7 @@ def train_model():
             features = features.to(device)
             labels = labels.to(device)
             outputs = model(features)
-            loss = criterion(outputs.squeeze(), labels)
+            loss = criterion(outputs.squeeze(), labels.float())
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
