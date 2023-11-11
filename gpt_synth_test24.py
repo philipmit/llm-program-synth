@@ -16,15 +16,16 @@ class ICUData(Dataset):
         self.data_path = data_path
         label_data = pd.read_csv(label_file)
         self.file_names = label_data['stay']
-        self.labels = label_data['y_true'].values.astype(np.int64)
+        self.labels = torch.from_numpy(label_data['y_true'].values.astype(np.float32))
     def __len__(self):
         return len(self.file_names)
     def __getitem__(self, idx):
         file_path = os.path.join(self.data_path, self.file_names[idx])
         data = pd.read_csv(file_path).fillna(0)
-        features = data.drop(['Hours'], axis=1)  # Exclude 'Hours' from features
+        data = data.drop('Hours', axis=1)  # Exclude 'Hours' from features
+        data_tensor = torch.from_numpy(data.values.astype(np.float32))
         label = self.labels[idx]
-        return torch.tensor(features.values, dtype=torch.float32), torch.tensor(label, dtype=torch.int64)
+        return data_tensor, label
 # Define the Model
 class LSTMModel(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers, output_size):
@@ -68,7 +69,7 @@ def train_model():
 def predict_icu_mortality(data):
     model.eval()  # Make sure the model is in eval mode
     with torch.no_grad():
-        features = torch.tensor(data.select_dtypes(include=[np.number]).values, dtype=torch.float32).unsqueeze(0).to(device)
+        features = torch.tensor(data.drop('Hours', axis=1).values, dtype=torch.float32).unsqueeze(0).to(device)
         output = model(features)
         mortality_prob = torch.sigmoid(output).item()
     return mortality_prob
