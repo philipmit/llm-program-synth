@@ -4,9 +4,8 @@ import numpy as np
 import torch
 import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
-from sklearn.preprocessing import StandardScaler
-from sklearn.model_selection import train_test_split
-from torch.autograd import Variable
+from sklearn.preprocessing import MinMaxScaler
+import math
 # File paths
 TRAIN_DATA_PATH = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/"
 LABEL_FILE = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/listfile.csv"
@@ -41,39 +40,47 @@ class LSTM(nn.Module):
 class ICUData(Dataset):
     def __init__(self, data_path, label_file):
         self.data_path = data_path
-        # read labels
-        label_data = pd.read_csv(label_file)
-        self.file_names = label_data['stay']
-        self.labels = label_data['y_true']
+        self.label_data = pd.read_csv(label_file)
+        self.file_names = self.label_data['stay']
+        self.labels = self.label_data['y_true']       
+        
     def __len__(self):
         return len(self.file_names)
+    
     def __getitem__(self, idx):
         file_path = os.path.join(self.data_path, self.file_names[idx])
-        # read data
         data = pd.read_csv(file_path)
-        # fill NaN
-        data.fillna(method ='pad', inplace=True)
         
-        # standardize the data
-        scaler = StandardScaler()
-        data = pd.DataFrame(scaler.fit_transform(data), columns = data.columns)
+        # Fill NaN values with 0
+        data.fillna(0, inplace=True)
+        # remove non-numeric columns if any
+        data = data.select_dtypes(include=['float64','int64'])
         
-        features = data.select_dtypes(include=[np.number])        
-        label = self.labels[idx]
-        return torch.tensor(features.values, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
+        # normalize the data
+        scaler = MinMaxScaler()
+        scaled_data = scaler.fit_transform(data)
+        
+        features = torch.tensor(scaled_data, dtype=torch.float32)
+        label = torch.tensor(self.labels[idx], dtype=torch.float32)
+        
+        return features, label
 num_epochs = 50
 learning_rate = 0.01
 input_size = 14  # Number of features
 hidden_size = 64  
 num_layers = 2
 num_classes = 1 # binary classification
+batch_size = 10
 lstm = LSTM(num_classes, input_size, hidden_size, num_layers)
-criterion = torch.nn.MSELoss()    # mean-squared error for regression
+criterion = torch.nn.BCEWithLogitsLoss()
 optimizer = torch.optim.Adam(lstm.parameters(), lr=learning_rate)
 dataset = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
-dataloader = DataLoader(dataset=dataset, batch_size=10, shuffle=True)
+dataloader = DataLoader(dataset=dataset, batch_size=batch_size, shuffle=True)
 for epoch in range(num_epochs):
     for i, (data, labels) in enumerate(dataloader):
+        # reshape input data to [batch_size, seq_len, n_features]
+        data = data.view(-1, 48, input_size)
+        labels = labels.view(-1, 1)
         outputs = lstm(data)
         optimizer.zero_grad()
         
@@ -86,5 +93,6 @@ for epoch in range(num_epochs):
 def predict_icu_mortality(patient_data):
     lstm.eval()
     with torch.no_grad():
-        outputs = lstm(patient_data)
-        return torch.sigmoid(outputs).item()
+        patient_data = patient_data.view(-1, 48, input_size)
+        output = lstm(patient_data)
+        return torch.sigmoid(output).item()
