@@ -5,10 +5,8 @@ import torch
 from torch import nn, optim
 from torch.nn.utils.rnn import pad_sequence
 from torch.utils.data import DataLoader, Dataset
-# File paths
 TRAIN_DATA_PATH = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/"
 LABEL_FILE = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/listfile.csv"
-# Define the Dataset
 class ICUData(Dataset):
     def __init__(self, data_path, label_file):
         self.data_path = data_path
@@ -22,29 +20,27 @@ class ICUData(Dataset):
         data = pd.read_csv(file_path).drop(columns='Hours').fillna(0)
         features = data.select_dtypes(include=[np.number])
         label = self.labels[idx]
-        return features.values, label
-# Define the LSTM
+        return torch.tensor(features.values, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
 class LSTM(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers):
-        super(LSTM, self).__init__()
+        super().__init__() # modify this line
         self.hidden_size = hidden_size
         self.num_layers = num_layers
         self.lstm = nn.LSTM(input_size, hidden_size, num_layers, batch_first=True)
         self.fc = nn.Linear(hidden_size, 1)
     def forward(self, x):
-        h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size)
-        c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size)
-        out, _ = self.lstm(x, (h0, c0))
+        h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device)
+        c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device)
+        out, _ = self.lstm(x, (h0.detach(), c0.detach()))
         out = self.fc(out[:, -1, :])
         return torch.sigmoid(out).squeeze()
-# Collate_fn for data loader
 def collate_fn(batch):
-    sequences = [torch.tensor(x[0]) for x in batch]
+    sequences = [x[0] for x in batch]
     sequences.sort(key=len, reverse=True)
     sequences_padded = pad_sequence(sequences, batch_first=True)
-    lenghts = torch.tensor([len(x) for x in sequences])
+    lengths = torch.tensor([len(x) for x in sequences])
     labels = torch.tensor([x[1] for x in batch])
-    return sequences_padded.float(), labels, lenghts
+    return sequences_padded, labels, lengths
 dataset = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
 dataloader = DataLoader(dataset, batch_size=32, shuffle=True, collate_fn=collate_fn)
 device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -62,7 +58,6 @@ for epoch in range(10):
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
-# Function to predict ICU mortality
 def predict_icu_mortality(patient_csv_file):
     model.eval()
     with torch.no_grad():
