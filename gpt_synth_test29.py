@@ -5,10 +5,8 @@ import torch
 from torch.utils.data import Dataset, DataLoader
 from torch import nn
 import torch.optim as optim
-# File paths
 TRAIN_DATA_PATH = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/"
 LABEL_FILE = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/listfile.csv"
-# Define the Dataset
 class ICUData(Dataset):
     def __init__(self, data_path, label_file):
         self.data_path = data_path
@@ -23,35 +21,32 @@ class ICUData(Dataset):
         features = data.select_dtypes(include=[np.number])
         label = self.labels[idx]
         return torch.tensor(features.values, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
-# Define the LSTM model
 class LSTM(nn.Module):
-    def __init__(self):
+    def __init__(self, input_size, hidden_size, num_layers):
         super(LSTM, self).__init__()
-        self.hidden_size = 32
-        self.num_layers = 2
-        self.lstm = nn.LSTM(13, self.hidden_size, self.num_layers, batch_first=True)
-        self.fc = nn.Linear(self.hidden_size, 1)
+        self.hidden_size = hidden_size
+        self.num_layers = num_layers
+        self.lstm = nn.LSTM(input_size, hidden_size, num_layers, batch_first=True)
+        self.fc = nn.Linear(hidden_size, 1)
     def forward(self, x):
         h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device)
         c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device)
         out, _ = self.lstm(x, (h0, c0))
         out = self.fc(out[:, -1, :])
         return out
-
 # Hyperparameters
-num_epochs = 100  # Number of epochs
-learning_rate = 0.01  # Learning rate
-# Prepare data
+num_epochs = 100
+learning_rate = 0.01
+hidden_size = 32
+num_layers = 2
 dataset = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
 train_loader = DataLoader(dataset=dataset, batch_size=20, shuffle=True)
-# Initialize model, loss and optimizer
-model = LSTM()
+model = LSTM(13, hidden_size, num_layers)
 criterion = nn.BCEWithLogitsLoss()
-optimizer = optim.Adam(model.parameters(), lr=learning_rate)
-# Train the model
+optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 for epoch in range(num_epochs):
     for i, (sequences, labels) in enumerate(train_loader):
-        labels = labels.unsqueeze(1)  # Add additional dimension
+        labels = labels.unsqueeze(1)  
         outputs = model(sequences)
         loss = criterion(outputs, labels)
         optimizer.zero_grad()
