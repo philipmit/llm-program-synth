@@ -5,8 +5,6 @@ import torch
 import torch.nn as nn
 from torch.optim import Adam
 from torch.utils.data import Dataset, DataLoader
-import torch.nn.functional as F
-# File paths
 TRAIN_DATA_PATH = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/"
 LABEL_FILE = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/listfile.csv"
 class ICUData(Dataset):
@@ -26,6 +24,7 @@ class ICUData(Dataset):
         data_tensor = torch.from_numpy(data.values.astype(np.float32))
         label = self.labels[idx]
         return data_tensor, label
+        
 class LSTMModel(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers, output_size):
         super(LSTMModel, self).__init__()
@@ -38,13 +37,13 @@ class LSTMModel(nn.Module):
         c0 = torch.zeros(self.layers, x.size(0), self.hidden_size).to(device)
         out, _ = self.lstm(x, (h0, c0))
         out = self.fc(out[:, -1, :])
-        return F.sigmoid(out)
-input_size = 13  
-hidden_size = 32  
-num_layers = 2  
-output_size = 1
-learning_rate = 0.001
-epochs = 100
+        return torch.sigmoid(out)
+input_size = len(pd.read_csv(TRAIN_DATA_PATH + '0_episode1_timeseries.csv').columns) - 1  # Update input size to match the actual number of features
+hidden_size = 32 
+num_layers = 2 
+output_size = 1 
+learning_rate = 0.001 
+epochs = 100 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model = LSTMModel(input_size, hidden_size, num_layers, output_size).to(device)
 criterion = nn.BCELoss()
@@ -57,7 +56,7 @@ def train_model():
             features = features.to(device)
             labels = labels.to(device)
             outputs = model(features)
-            loss = criterion(outputs.squeeze(), labels.float())
+            loss = criterion(outputs.squeeze(), labels)
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
@@ -71,5 +70,5 @@ def predict_icu_mortality(data):
         mortality_prob = torch.sigmoid(output).item()
     return mortality_prob
 train_data = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
-train_loader = DataLoader(train_data, batch_size=1, num_workers=1, shuffle=True)
+train_loader = DataLoader(train_data, batch_size=1, shuffle=True)
 train_model()
