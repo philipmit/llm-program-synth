@@ -37,8 +37,14 @@ class IcuLstm(nn.Module):
         out, _ = self.lstm(x, (h0, c0))
         out = self.fc(out[:, -1, :])
         return out
+# Define the Prediction Function
+def predict_icu_mortality(patient_data, model):
+    model.eval()
+    patient_data = torch.Tensor(patient_data.fillna(0).select_dtypes(include=[np.number]).values).float().unsqueeze(0).to(DEVICE)
+    out = model(patient_data)
+    return torch.sigmoid(out).item()
 # Model Training Function
-def train_model():
+def train_model(BATCH_SIZE, EPOCHS, TRAIN_DATA_PATH, LABEL_FILE):
     dataset = ICUData(data_path=TRAIN_DATA_PATH, label_file=LABEL_FILE)
     dataloader = DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=True)
     input_size = dataset[0][0].shape[1]
@@ -57,12 +63,6 @@ def train_model():
             optimizer.step()
             running_loss += loss.item()
     return model
-# Define the Prediction Function
-def predict_icu_mortality(patient_data):
-    model.eval()
-    patient_data = torch.Tensor(patient_data.fillna(0).select_dtypes(include=[np.number]).values).float().unsqueeze(0).to(DEVICE)
-    out = model(patient_data)
-    return torch.sigmoid(out).item()
 # File paths
 TRAIN_DATA_PATH = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/"
 LABEL_FILE = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/listfile.csv"
@@ -70,4 +70,4 @@ LABEL_FILE = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospita
 BATCH_SIZE = 64
 EPOCHS = 20
 # Train the model
-model = train_model()
+model = train_model(BATCH_SIZE, EPOCHS, TRAIN_DATA_PATH, LABEL_FILE)
