@@ -3,8 +3,8 @@ import pandas as pd
 import numpy as np
 import torch
 from torch import nn
-from torch.utils.data import Dataset, DataLoader
 from torch.nn.utils.rnn import pad_sequence
+from torch.utils.data import Dataset, DataLoader
 # File paths
 TRAIN_DATA_PATH = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/"
 TEST_DATA_PATH = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/test/"
@@ -42,12 +42,12 @@ class LSTMModel(nn.Module):
         h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device)
         c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device)
         out, _ = self.lstm(x, (h0, c0))  
-        out = self.fc(out[:, -1, :])  
+        out = self.fc(out[:, -1, :])  # our output tensor
         return out
 # Train the LSTM model 
 dataset = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
 dataloader = DataLoader(dataset, batch_size=len(dataset), shuffle=True, collate_fn=collate_fn)
-input_size = next(iter(dataloader))[0].size(-1)
+input_size = next(iter(dataloader))[0].size(-1)  # number of features
 hidden_size = 50
 num_layers = 2
 output_size = 1
@@ -56,7 +56,7 @@ criterion = nn.BCEWithLogitsLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 num_epochs = 50
 for epoch in range(num_epochs):
-    for i, (features, labels) in enumerate(dataloader):
+    for features, labels in dataloader:
         output = model(features)
         labels = labels.view(-1, 1)
         loss = criterion(output, labels)
@@ -68,6 +68,6 @@ def predict_icu_mortality(patient_data):
     with torch.no_grad():
         data = pd.read_csv(patient_data).fillna(0)
         features = data.select_dtypes(include=[np.number])
-        output = model(torch.tensor(features.values, dtype=torch.float32).view(1, -1, input_size))
+        output = model(torch.tensor(features.values, dtype=torch.float32).unsqueeze(dim=0))  # add extra dimension for batch
         prediction = torch.sigmoid(output)
     return prediction.item()
