@@ -25,6 +25,12 @@ class ICUData(Dataset):
         data = data.fillna(0)
         label = self.labels[idx]
         return torch.tensor(data.values, dtype=torch.float32), label
+def pad_collate(batch):
+    data, target = zip(*batch) 
+    data_length = [len(sq) for sq in data]
+    data = pad_sequence(data, batch_first=True, padding_value=0)
+    target = torch.as_tensor(target)
+    return data, target, data_length
 # Define LSTM model
 class LSTM(nn.Module):
     def __init__(self, input_dim, hidden_dim, n_layers, output_dim=1):
@@ -41,14 +47,13 @@ class LSTM(nn.Module):
         return torch.sigmoid(out).squeeze()
 # Training the Model
 def train(dataset, model, epochs):
-    dataloader = DataLoader(dataset, batch_size=16, shuffle=True)
+    dataloader = DataLoader(dataset, batch_size=16, shuffle=True, collate_fn=pad_collate)
     criterion = nn.BCELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
     model.train()
     for epoch in range(epochs):
         for batch in dataloader:
-            data, target = batch
-            data = data.unsqueeze(0)
+            data, target, _ = batch
             optimizer.zero_grad()
             output = model(data)
             loss = criterion(output, target)
