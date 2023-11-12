@@ -21,13 +21,13 @@ class ICUData(Dataset):
     def __len__(self):
         return len(self.file_names)
     def __getitem__(self, idx):
-        scaler = StandardScaler() # to normalize the data
+        scaler = StandardScaler()  # to normalize the data
         file_path = os.path.join(self.data_path, self.file_names[idx])
         data = pd.read_csv(file_path)
         data = data.drop(['Hours'], axis=1)  
         data = data.fillna(0)  
         data = data.select_dtypes(include=[np.number])
-        data = scaler.fit_transform(data.values) # scale data
+        data = scaler.fit_transform(data.values)  # scale data
         label = self.labels[idx]
         return torch.tensor(data, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
 # Function for padding
@@ -81,6 +81,6 @@ for epoch in range(n_epochs):
 # Prediction function
 def predict_icu_mortality(patient_data):
     model.eval()
-    sequence = torch.tensor(patient_data.values, dtype=torch.float32).unsqueeze(0)
+    sequence = torch.tensor(patient_data.values(), dtype=torch.float32).unsqueeze(0)
     output = model(sequence)
     return torch.sigmoid(output).item()
