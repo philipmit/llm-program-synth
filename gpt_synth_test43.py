@@ -3,8 +3,7 @@ import pandas as pd
 import torch
 from torch.nn import LSTM, Linear, BCELoss, Sigmoid
 from torch.optim import Adam
-from torch.utils.data import Dataset, DataLoader
-from torch.nn.utils.rnn import pad_sequence
+from torch.utils.data import Dataset, DataLoader, BatchSampler, RandomSampler
 TRAIN_DATA_PATH = '/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/'
 LABEL_FILE = '/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/listfile.csv'
 class ICUData(Dataset):
@@ -25,7 +24,7 @@ class ICUData(Dataset):
         patient_data = patient_data.fillna(0)  
         patient_data = patient_data.apply(pd.to_numeric, errors='coerce').fillna(0)
         label = self.labels[idx]
-        return torch.tensor(patient_data.values, dtype=torch.float32).unsqueeze(1), torch.tensor(label, dtype=torch.float32)
+        return torch.tensor(patient_data.values, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
 class ICUModel(torch.nn.Module):
     def __init__(self):
         super(ICUModel, self).__init__()
@@ -42,6 +41,8 @@ def train_model(train_data, model, epochs):
     optimizer = Adam(model.parameters(), lr=0.001)
     for epoch in range(epochs):
         for i, (features, target) in enumerate(train_data):
+            features = features.squeeze(0)
+            target = target.squeeze(0)
             optimizer.zero_grad()
             output = model(features)
             loss = criterion(output, target)
