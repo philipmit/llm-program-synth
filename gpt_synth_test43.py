@@ -3,7 +3,7 @@ import pandas as pd
 import torch
 from torch.nn import LSTM, Linear, BCELoss, Sigmoid
 from torch.optim import Adam
-from torch.utils.data import Dataset, DataLoader, BatchSampler, RandomSampler
+from torch.utils.data import Dataset, DataLoader
 TRAIN_DATA_PATH = '/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/'
 LABEL_FILE = '/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/listfile.csv'
 class ICUData(Dataset):
@@ -21,7 +21,7 @@ class ICUData(Dataset):
                           'Glascow coma scale total', 'Glucose', 'Heart Rate', 'Height', 'Mean blood pressure', 'Oxygen saturation', 
                           'Respiratory rate', 'Systolic blood pressure', 'Temperature', 'Weight', 'pH']
         patient_data = patient_data[valid_features]
-        patient_data = patient_data.fillna(0)  
+        patient_data = patient_data.fillna(0)
         patient_data = patient_data.apply(pd.to_numeric, errors='coerce').fillna(0)
         label = self.labels[idx]
         return torch.tensor(patient_data.values, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
@@ -36,7 +36,7 @@ class ICUModel(torch.nn.Module):
         x = self.linear(x[:,-1,:])
         output = self.sigmoid(x)
         return output.squeeze(-1)
-def train_model(train_data, model, epochs):
+def train_model(train_data, model, epochs=10):
     criterion = BCELoss()
     optimizer = Adam(model.parameters(), lr=0.001)
     for epoch in range(epochs):
@@ -46,7 +46,16 @@ def train_model(train_data, model, epochs):
             loss = criterion(output, target)
             loss.backward()
             optimizer.step()
+def predict_icu_mortality(model, patient_data):
+    model = model.eval()
+    with torch.no_grad():
+        prediction = model(patient_data)
+    return prediction.item()
 model = ICUModel()
 dataset = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
 data_loader = DataLoader(dataset, batch_size=1, shuffle=True)
-train_model(data_loader, model, epochs=10)
+train_model(data_loader, model)
+# Test the predict function
+patient_sample = dataset[0][0].unsqueeze(0)
+predicted_mortality = predict_icu_mortality(model, patient_sample)
+print(predicted_mortality)
