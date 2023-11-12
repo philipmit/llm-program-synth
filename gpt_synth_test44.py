@@ -20,7 +20,7 @@ class ICUData(Dataset):
         data = pd.read_csv(file_path)
         data = data.drop(['Hours'], axis=1)  
         data = data.fillna(0)  
-        data = data.select_dtypes(include=[np.number]) 
+        data = data.select_dtypes(include=[np.number])
         label = self.labels[idx]
         return torch.tensor(data.values, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
 class LSTMModel(nn.Module):
@@ -65,10 +65,15 @@ def train_model():
     return model
 def predict_icu_mortality(patient_data):
     model = train_model()
-    patient_data = patient_data.drop(['Hours'], axis=1)
-    patient_data = patient_data.fillna(0)
-    patient_data = patient_data.select_dtypes(include=[np.number])
-    patient_data_tensor = torch.tensor(patient_data.values[np.newaxis, ...], dtype=torch.float32)
+    patient_data = patient_data.squeeze(0).to('cpu').numpy()
+    # convert it back to DataFrame to apply preprocessing
+    patient_df = pd.DataFrame(patient_data, columns=['Capillary refill rate', 'Diastolic blood pressure', 
+                                                     'Fraction inspired oxygen',  'Glascow coma scale total',  
+                                                     'Glucose', 'Heart Rate', 'Height', 'Mean blood pressure', 
+                                                     'Oxygen saturation', 'Respiratory rate', 'Systolic blood pressure', 
+                                                     'Temperature', 'Weight', 'pH'])
+    patient_df = patient_df.fillna(0)
+    patient_data_tensor = torch.tensor(patient_df.values[np.newaxis, ...], dtype=torch.float32)
     model.eval()
     with torch.no_grad():
         prediction = model(patient_data_tensor)
