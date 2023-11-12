@@ -61,9 +61,16 @@ for epoch in range(EPOCHS):
         loss.backward()
         optimizer.step()
 model.eval()
-def predict_icu_mortality(patient_data):
+def predict_icu_mortality(file_name):
+    file_path = os.path.join(TRAIN_DATA_PATH, file_name)
+    patient_data = pd.read_csv(file_path)
+    patient_data.drop(['Hours'], axis=1, inplace=True)
+    patient_data.fillna(0, inplace=True)
+    numeric_cols = patient_data.select_dtypes(include=[np.number]).columns
+    patient_data = patient_data[numeric_cols].astype(float)
+    patient_data_tensor = torch.tensor(patient_data.values, dtype=torch.float32).unsqueeze(0)
     with torch.no_grad():
-        patient_data = patient_data.to(device)
-        output = model(patient_data)
+        patient_data_tensor = patient_data_tensor.to(device)
+        output = model(patient_data_tensor)
         prediction = torch.sigmoid(output)
     return float(prediction)
