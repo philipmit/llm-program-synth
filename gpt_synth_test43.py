@@ -21,21 +21,20 @@ class ICUData(Dataset):
         data = data.drop(['Hours'], axis=1)
         data = data.fillna(0) 
         data = data.select_dtypes(include=[np.number])
-        # Transform the data to a 3D tensor
-        tensor = torch.tensor(data.values, dtype=torch.float32).transpose(0, 1).unsqueeze(1)
+        data = torch.tensor(data.values, dtype=torch.float32)
+        data = data.unsqueeze(0) # adding a dimension for batch
         label = self.labels[idx]
-        return tensor, label
+        return data, label
 class LSTM(nn.Module):
     def __init__(self, input_size, hidden_size, output_size):
         super(LSTM, self).__init__()
         self.hidden_size = hidden_size
-        self.lstm = nn.LSTM(input_size, hidden_size)
+        self.lstm = nn.LSTM(input_size, hidden_size, batch_first=True)
         self.linear = nn.Linear(hidden_size, output_size)
         self.sigmoid = nn.Sigmoid()
     def forward(self, x):
         lstm_out, _ = self.lstm(x)
-        batch_size, seq_len, _ = lstm_out.shape
-        out = self.linear(lstm_out.view(batch_size, seq_len, -1))
+        out = self.linear(lstm_out[:, -1, :])
         out = self.sigmoid(out)
         return out.squeeze(-1)
 def train_model(dataset, model, epochs=25):
@@ -57,6 +56,7 @@ def predict_icu_mortality(patient_data):
     patient_data = patient_data.drop(['Hours'], axis=1)
     patient_data = patient_data.fillna(0)
     patient_data = patient_data.select_dtypes(include=[np.number])
-    patient_data = torch.tensor(patient_data.values, dtype=torch.float32).transpose(0, 1).unsqueeze(1)
+    patient_data = torch.tensor(patient_data.values, dtype=torch.float32)
+    patient_data = patient_data.unsqueeze(0) # adding a dimension for batch
     prediction = model(patient_data)
     return prediction.item()
