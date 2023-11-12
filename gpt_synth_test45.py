@@ -32,26 +32,26 @@ class LSTMModel(nn.Module):
         super(LSTMModel, self).__init__()
         self.hidden_size = hidden_size
         self.num_layers = num_layers
-        self.lstm = nn.LSTM(input_size, hidden_size, num_layers, batch_first=True, dropout=0.5)  # added dropout
-        self.fc = nn.Linear(hidden_size, num_classes)
+        self.lstm = nn.LSTM(input_size, hidden_size, num_layers, batch_first=True, dropout=0.5, bidirectional=True)  # Bidirectional LSTM
+        self.fc = nn.Linear(hidden_size * 2, num_classes)  # Multiplied hidden size by 2 because the LSTM is bidirectional
     def forward(self, x):
-        h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device)
-        c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device)
+        h0 = torch.zeros(self.num_layers*2, x.size(0), self.hidden_size).to(x.device)
+        c0 = torch.zeros(self.num_layers*2, x.size(0), self.hidden_size).to(x.device)
         out, _ = self.lstm(x, (h0, c0))       
         out = self.fc(out[:, -1, :])
         return out.squeeze(-1)
 input_size = 14
-hidden_size = 128  # increased hidden size
+hidden_size = 256  # increased hidden size
 num_layers = 2
 num_classes = 1
 model = LSTMModel(input_size, hidden_size, num_layers, num_classes)
 if torch.cuda.is_available():
     model = model.cuda()
 criterion = nn.BCEWithLogitsLoss()
-optimizer = torch.optim.Adam(model.parameters(), lr=0.001)  # lowered learning rate
+optimizer = torch.optim.Adam(model.parameters(), lr=0.0005)  # lowered learning rate
 dataset = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
-data_loader = DataLoader(dataset=dataset, batch_size=64, collate_fn=collate_fn)  # increased batch size
-num_epochs = 30  # increased epochs
+data_loader = DataLoader(dataset=dataset, batch_size=32, collate_fn=collate_fn)  # decreased batch size
+num_epochs = 50  # increased epochs
 for epoch in range(num_epochs):
     for i, (data, labels) in enumerate(data_loader):
         data = data.float()
@@ -67,8 +67,8 @@ for epoch in range(num_epochs):
 def predict_icu_mortality(patient_data):
     if torch.cuda.is_available():
         patient_data = patient_data.cuda()
-    model.eval()  # set model to evaluation mode
-    with torch.no_grad():  # turn off gradients for prediction
+    model.eval() 
+    with torch.no_grad(): 
         output = model(patient_data)
     prediction = torch.sigmoid(output)
     return prediction.item()
