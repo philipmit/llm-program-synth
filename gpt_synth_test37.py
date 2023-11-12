@@ -22,10 +22,10 @@ class ICUData(Dataset):
         data = pd.read_csv(file_path)
         data = data.drop(['Hours'], axis=1)  
         data = data.fillna(0)  
-        data = data.select_dtypes(include=[np.number]) 
+        data = data.select_dtypes(include=[np.number])
+        data = data.iloc[:,:13] # Ensuring the right number of features based on LSTM input size
         label = self.labels[idx]
         return torch.tensor(data.values, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
-# Define LSTM model
 class LSTMModel(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers, num_classes):
         super(LSTMModel, self).__init__()
@@ -42,27 +42,22 @@ class LSTMModel(nn.Module):
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 num_epochs = 100
 learning_rate = 0.001
-input_size = 13 # number of features
+input_size = 13
 hidden_size = 64
 num_layers = 2
 num_classes = 1
 model = LSTMModel(input_size, hidden_size, num_layers, num_classes).to(device)
-# Loss and optimizer
 criterion = nn.BCEWithLogitsLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
-# Load data
 dataset = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
 train_loader = DataLoader(dataset=dataset, batch_size=1, shuffle=True)
-# Train the model
 total_step = len(train_loader)
 for epoch in range(num_epochs):
     for i, (data, labels) in enumerate(train_loader):
         data = data.to(device)
         labels = labels.to(device)
-        # Forward pass
         outputs = model(data)
         loss = criterion(outputs, labels)
-        # Backward and optimize
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
@@ -73,6 +68,7 @@ def predict_icu_mortality(raw_dataset):
     raw_dataset = raw_dataset.drop(['Hours'], axis=1)
     raw_dataset = raw_dataset.fillna(0)
     raw_dataset = raw_dataset.select_dtypes(include=[np.number])
+    raw_dataset = raw_dataset.iloc[:,:13] # Ensuring the right number of features based on LSTM input size
     sample = torch.tensor(raw_dataset.values[np.newaxis, ...], dtype=torch.float32).to(device)
     output = model(sample)
     pis = torch.sigmoid(output)
