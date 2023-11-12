@@ -6,8 +6,10 @@ from torch.utils.data import Dataset
 from torch.nn.utils.rnn import pad_sequence
 from torch.utils.data import DataLoader
 import torch.nn as nn
+# File paths
 TRAIN_DATA_PATH = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/"
 LABEL_FILE = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/listfile.csv"
+# Define the Dataset
 class ICUData(Dataset):
     def __init__(self, data_path, label_file):
         self.data_path = data_path
@@ -19,7 +21,9 @@ class ICUData(Dataset):
     def __getitem__(self, idx):
         file_path = os.path.join(self.data_path, self.file_names[idx])
         data = pd.read_csv(file_path)
-        data = data.drop('Hours', axis=1)
+        # Making sure 'Hours' is removed
+        if "Hours" in data.columns:
+            data = data.drop(["Hours"], axis=1)
         data = data.fillna(0)
         data = data.select_dtypes(include=[np.number])
         label = self.labels[idx]
@@ -49,7 +53,9 @@ def train_model(model, epochs, train_loader, criterion, optimizer):
             loss.backward()
             optimizer.step()
 def predict_icu_mortality(patient_data):
-    patient_data = patient_data.drop(['Hours'], axis=1)
+    # Making sure 'Hours' is removed
+    if "Hours" in patient_data.columns:
+        patient_data = patient_data.drop(['Hours'], axis=1)
     patient_data = patient_data.fillna(0)
     patient_data = patient_data.select_dtypes(include=[np.number])
     data_torch = torch.tensor(patient_data.values, dtype=torch.float32).unsqueeze(0).to(device)
@@ -57,7 +63,6 @@ def predict_icu_mortality(patient_data):
         model.eval()
         output = model(data_torch).item()
     return output
-# Collate function to pad the sequences
 def collate_fn(data):
     data.sort(key=lambda x: len(x[0]), reverse=True)
     sequences, labels = zip(*data)
@@ -65,7 +70,7 @@ def collate_fn(data):
     labels = torch.tensor(labels, dtype=torch.float32)
     return sequences_padded, labels
 torch.manual_seed(0)
-n_features = 13
+n_features = 13  # First 13 features are used as input, you can adjust it according to your data
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model = LSTMModel(n_features, 64, 1, 2).to(device)
 icu_data_set = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
@@ -73,4 +78,4 @@ train_loader = DataLoader(dataset=icu_data_set, batch_size=32, shuffle=True, col
 criterion = nn.BCELoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 epochs = 10
-train_model(model, epochs, train_loader, criterion, optimizer)
+train_model(model, epochs, train_loader, criterion, optimizer)
