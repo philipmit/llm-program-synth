@@ -5,7 +5,6 @@ import torch
 from torch.utils.data import Dataset, DataLoader
 import torch.nn as nn
 import torch.optim as optim
-# Path to the Training Dataset
 TRAIN_DATA_PATH = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/"
 LABEL_FILE = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/listfile.csv"
 class ICUData(Dataset):
@@ -23,14 +22,13 @@ class ICUData(Dataset):
         data = data.fillna(0)
         data = data.select_dtypes(include=[np.number])
         data = torch.tensor(data.values, dtype=torch.float32)
-        data = data.unsqueeze(0) # reshaping the dimensions
         label = self.labels[idx]
         return data, label
 class LSTM(nn.Module):
     def __init__(self, input_size, hidden_size, output_size):
         super(LSTM, self).__init__()
         self.hidden_size = hidden_size
-        self.lstm = nn.LSTM(input_size, hidden_size)
+        self.lstm = nn.LSTM(input_size, hidden_size, batch_first=True)
         self.linear = nn.Linear(hidden_size, output_size)
         self.sigmoid = nn.Sigmoid()
     def forward(self, x):
@@ -39,28 +37,25 @@ class LSTM(nn.Module):
         out = self.sigmoid(out)
         return out.squeeze(-1)
 def train_model(dataset, model, epochs=25):
-    dataloader = DataLoader(dataset, shuffle=True)
+    dataloader = DataLoader(dataset, batch_size=32, shuffle=True)
     criterion = nn.BCELoss()
     optimizer = optim.Adam(model.parameters(), lr=0.001)
     for epoch in range(epochs):
-        for i, data in enumerate(dataloader):
+        for i, data in enumerate(dataloader, 0):
             inputs, labels = data
             optimizer.zero_grad()
             outputs = model(inputs)
-            loss = criterion(outputs, labels.unsqueeze(0))
+            loss = criterion(outputs, labels)
             loss.backward()
             optimizer.step()
-# Instanciate Model
-model = LSTM(13, 50, 1) # 13 features
-# Instantiate Dataset
+model = LSTM(13, 50, 1) 
 icu_data = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
-# Train the Model
 train_model(icu_data, model)
 def predict_icu_mortality(patient_data):
     patient_data = patient_data.drop(['Hours'], axis=1)
     patient_data = patient_data.fillna(0)
     patient_data = patient_data.select_dtypes(include=[np.number])
     patient_data = torch.tensor(patient_data.values, dtype=torch.float32)
-    patient_data = patient_data.unsqueeze(0) # reshaping the dimensions
+    patient_data = patient_data.unsqueeze(0) 
     prediction = model(patient_data)
     return prediction.item()
