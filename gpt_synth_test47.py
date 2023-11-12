@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import torch
 from torch.utils.data import Dataset
+from torch.nn.utils.rnn import pad_sequence
 from torch.utils.data import DataLoader
 import torch.nn as nn
 TRAIN_DATA_PATH = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/"
@@ -56,15 +57,20 @@ def predict_icu_mortality(patient_data):
         model.eval()
         output = model(data_torch).item()
     return output
+# Collate function to pad the sequences
+def collate_fn(data):
+    data.sort(key=lambda x: len(x[0]), reverse=True)
+    sequences, labels = zip(*data)
+    sequences_padded = pad_sequence(sequences, batch_first=True, padding_value=0)
+    labels = torch.tensor(labels, dtype=torch.float32)
+    return sequences_padded, labels
 torch.manual_seed(0)
-# The number -1 because we drop the 'Hours' column, modify this to the actual number in your dataset.
-# Please replace n_features = 13 with the appropriate value from your dataset.
 n_features = 13
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model = LSTMModel(n_features, 64, 1, 2).to(device)
 icu_data_set = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
-train_loader = DataLoader(dataset=icu_data_set, batch_size=32, shuffle=True)
+train_loader = DataLoader(dataset=icu_data_set, batch_size=32, shuffle=True, collate_fn=collate_fn)
 criterion = nn.BCELoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 epochs = 10
-train_model(model, epochs, train_loader, criterion, optimizer)
+train_model(model, epochs, train_loader, criterion, optimizer)
