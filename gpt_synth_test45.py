@@ -32,7 +32,7 @@ class LSTMModel(nn.Module):
         super(LSTMModel, self).__init__()
         self.hidden_size = hidden_size
         self.num_layers = num_layers
-        self.lstm = nn.LSTM(input_size, hidden_size, num_layers, batch_first=True)
+        self.lstm = nn.LSTM(input_size, hidden_size, num_layers, batch_first=True, dropout=0.5)  # added dropout
         self.fc = nn.Linear(hidden_size, num_classes)
     def forward(self, x):
         h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device)
@@ -41,17 +41,17 @@ class LSTMModel(nn.Module):
         out = self.fc(out[:, -1, :])
         return out.squeeze(-1)
 input_size = 14
-hidden_size = 64
+hidden_size = 128  # increased hidden size
 num_layers = 2
 num_classes = 1
 model = LSTMModel(input_size, hidden_size, num_layers, num_classes)
 if torch.cuda.is_available():
     model = model.cuda()
 criterion = nn.BCEWithLogitsLoss()
-optimizer = torch.optim.Adam(model.parameters())
+optimizer = torch.optim.Adam(model.parameters(), lr=0.001)  # lowered learning rate
 dataset = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
-data_loader = DataLoader(dataset=dataset, batch_size=32, collate_fn=collate_fn)
-num_epochs = 20
+data_loader = DataLoader(dataset=dataset, batch_size=64, collate_fn=collate_fn)  # increased batch size
+num_epochs = 30  # increased epochs
 for epoch in range(num_epochs):
     for i, (data, labels) in enumerate(data_loader):
         data = data.float()
@@ -67,6 +67,8 @@ for epoch in range(num_epochs):
 def predict_icu_mortality(patient_data):
     if torch.cuda.is_available():
         patient_data = patient_data.cuda()
-    output = model(patient_data)
+    model.eval()  # set model to evaluation mode
+    with torch.no_grad():  # turn off gradients for prediction
+        output = model(patient_data)
     prediction = torch.sigmoid(output)
     return prediction.item()
