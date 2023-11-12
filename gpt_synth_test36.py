@@ -7,7 +7,6 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader, Dataset
 from sklearn.preprocessing import StandardScaler
-from sklearn.model_selection import train_test_split
 # Define Directories
 TRAIN_DATA_PATH = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/"
 LABEL_FILE = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/listfile.csv"
@@ -23,8 +22,10 @@ class ICUData(Dataset):
     def __getitem__(self, idx):
         file_path = os.path.join(self.data_path, self.file_names[idx])
         data = pd.read_csv(file_path)
-        data = data.drop(['Hours'], axis=1)  
-        data = data.fillna(0)  
+        # Drop non-numeric columns 
+        data = data.select_dtypes(include=[np.number])
+        # preprocessing: fill NAs with zeros
+        data = data.fillna(0)
         label = self.labels[idx]
         scaler = StandardScaler()
         data_norm = scaler.fit_transform(data)
@@ -40,17 +41,17 @@ class LSTMNet(nn.Module):
     def forward(self, x):
         h0 = torch.zeros(self.n_layers, x.size(0), self.hidden_dim).to(x.device)
         c0 = torch.zeros(self.n_layers, x.size(0), self.hidden_dim).to(x.device)
-        out, _ = self.lstm(x, (h0, c0)) 
-        out = self.fc(out[:, -1, :]) 
+        out, _ = self.lstm(x, (h0, c0))
+        out = self.fc(out[:, -1, :])
         out = torch.sigmoid(out)
         return out
 # Instantiate the dataset
 data = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
 train_size = int(0.8 * len(data))
 test_size = len(data) - train_size
-train_data, test_data = torch.utils.data.random_split(data, [train_size, test_size])
+train_data, test_data = torch.utils.data.random_split(data, [train_size,test_size])
 # Instantiate the model
-model = LSTMNet(input_dim=13, hidden_dim=50, output_dim=1, n_layers=2)
+model = LSTMNet(input_dim=14, hidden_dim=50, output_dim=1, n_layers=2)
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 model.to(device)
 # Loss and optimizer
