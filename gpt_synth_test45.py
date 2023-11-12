@@ -40,7 +40,7 @@ class LSTMModel(nn.Module):
         out, _ = self.lstm(x, (h0, c0))
         out = self.fc(out[:, -1, :])
         return out
-input_size = 13
+input_size = 14
 hidden_size = 64
 num_layers = 2
 num_classes = 1
