@@ -5,10 +5,8 @@ from torch.nn import LSTM, Linear, BCELoss, Sigmoid
 from torch.optim import Adam
 from torch.utils.data import Dataset, DataLoader
 from torch.nn.utils.rnn import pad_sequence
-# Training data and label file path
 TRAIN_DATA_PATH = '/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/'
 LABEL_FILE = '/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/listfile.csv'
-# Define the dataset
 class ICUData(Dataset):
     def __init__(self, data_path, label_file):
         self.data_path = data_path
@@ -19,42 +17,36 @@ class ICUData(Dataset):
     def __getitem__(self, idx):
         file_path = os.path.join(self.data_path, self.file_names[idx])
         patient_data = pd.read_csv(file_path)
-        # Drop 'Hours' column as it is not needed as a feature
         patient_data = patient_data.drop(['Hours'], axis=1)
-        # Filter only valid features
         valid_features = ['Capillary refill rate', 'Diastolic blood pressure', 'Fraction inspired oxygen',
                           'Glascow coma scale total', 'Glucose', 'Heart Rate', 'Height', 'Mean blood pressure', 'Oxygen saturation', 
                           'Respiratory rate', 'Systolic blood pressure', 'Temperature', 'Weight', 'pH']
         patient_data = patient_data[valid_features]
-        patient_data = patient_data.fillna(0)  # fill NaN values with 0
-        patient_data = patient_data.apply(pd.to_numeric, errors='coerce').fillna(0)  # convert non-numeric values to 0
+        patient_data = patient_data.fillna(0)  
+        patient_data = patient_data.apply(pd.to_numeric, errors='coerce').fillna(0)
         label = self.labels[idx]
-        return torch.tensor(patient_data.values, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
-# Define the model
+        return torch.tensor(patient_data.values, dtype=torch.float32).unsqueeze(1), torch.tensor(label, dtype=torch.float32)
 class ICUModel(torch.nn.Module):
     def __init__(self):
         super(ICUModel, self).__init__()
-        self.lstm = LSTM(input_size=14, hidden_size=50, num_layers=1, batch_first=True)  # LSTM layer
-        self.linear = Linear(in_features=50, out_features=1)  # Linear layer
-        self.sigmoid = Sigmoid()  # Sigmoid function for binary classification
+        self.lstm = LSTM(input_size=14, hidden_size=50, num_layers=1, batch_first=True)
+        self.linear = Linear(in_features=50, out_features=1)
+        self.sigmoid = Sigmoid()
     def forward(self, x):
         x, _ = self.lstm(x)
         x = self.linear(x[:,-1,:])
         output = self.sigmoid(x)
         return output.squeeze(-1)
-# Define the training routine
 def train_model(train_data, model, epochs):
     criterion = BCELoss()
     optimizer = Adam(model.parameters(), lr=0.001)
     for epoch in range(epochs):
         for i, (features, target) in enumerate(train_data):
-            features = features.unsqueeze(0)  # add an extra dimension for batch
-            optimizer.zero_grad()  # zero the gradient
-            output = model(features)  # forward pass
-            loss = criterion(output, target)  # compute the loss
-            loss.backward()  # backpropagation
-            optimizer.step()  # update the weights
-# Initialize the model and start training
+            optimizer.zero_grad()
+            output = model(features)
+            loss = criterion(output, target)
+            loss.backward()
+            optimizer.step()
 model = ICUModel()
 dataset = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
 data_loader = DataLoader(dataset, batch_size=1, shuffle=True)
