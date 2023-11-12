@@ -39,7 +39,7 @@ class LSTMModel(nn.Module):
         c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device)
         out, _ = self.lstm(x, (h0, c0))
         out = self.fc(out[:, -1, :])
-        return out
+        return out.squeeze()
 input_size = 14
 hidden_size = 64
 num_layers = 2
@@ -54,7 +54,7 @@ data_loader = DataLoader(dataset=dataset, batch_size=32, collate_fn=collate_fn)
 num_epochs = 20
 for epoch in range(num_epochs):
     for i, (data, labels) in enumerate(data_loader):
-        data = data.float()  
+        data = data.float()
         if torch.cuda.is_available():
             data = data.cuda()
             labels = labels.cuda()
@@ -66,8 +66,8 @@ for epoch in range(num_epochs):
         optimizer.step()
     print ('Epoch [{}/{}], Loss: {:.4f}'.format(epoch+1, num_epochs, loss.item()))
 def predict_icu_mortality(patient_data):
-    patient_data = patient_data[COLUMNS].fillna(0)
-    patient_data = torch.tensor(patient_data.values, dtype=torch.float32)   
+    patient_data = patient_data[[COLUMNS]].fillna(0)
+    patient_data = torch.tensor(patient_data.values, dtype=torch.float32).unsqueeze(0)
     if torch.cuda.is_available():
         patient_data = patient_data.cuda()
     output = model(patient_data)
