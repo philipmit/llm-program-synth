@@ -60,10 +60,10 @@ for epoch in range(EPOCHS):
         loss = criterion(outputs, Y_train.unsqueeze(1))
         loss.backward()
         optimizer.step()
-model.eval()
-def predict_icu_mortality(patient_data_tensor):
+def predict_icu_mortality(patient_data):
+    model.eval()
     with torch.no_grad():
-        patient_data_tensor = patient_data_tensor.to(device)
-        output = model(patient_data_tensor)
+        patient_data = patient_data.to(device)
+        output = model(patient_data)
         prediction = torch.sigmoid(output)
-    return float(prediction)
+    return float(prediction[0])
