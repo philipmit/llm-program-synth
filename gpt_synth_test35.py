@@ -42,10 +42,8 @@ class ICUData(Dataset):
 def pad_collate(batch):
     (xx, yy) = zip(*batch)
     x_lens = [len(x) for x in xx]
-    y_lens = [len(y) for y in yy]
     xx_pad = pad_sequence(xx, batch_first=True, padding_value=-1)
-    yy_pad = pad_sequence(yy, batch_first=True, padding_value=-1)
-    return xx_pad, yy_pad
+    return xx_pad, yy 
 # Training parameters
 batch_size = 64
 num_epochs = 10
@@ -67,7 +65,7 @@ for epoch in range(num_epochs):
     for i, (data, labels) in enumerate(train_loader):
         model.zero_grad()
         outputs = model(data)
-        loss = criterion(outputs.view(-1), labels)
+        loss = criterion(outputs.view(-1), torch.stack(labels))
         loss.backward()
         optimizer.step()
     print('Epoch: {}/{}, Loss: {:.4f}'.format(epoch+1, num_epochs, loss.item()))
