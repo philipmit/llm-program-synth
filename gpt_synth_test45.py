@@ -67,7 +67,7 @@ for epoch in range(num_epochs):
     print ('Epoch [{}/{}], Loss: {:.4f}'.format(epoch+1, num_epochs, loss.item()))
 def predict_icu_mortality(patient_data):
     patient_data = patient_data[COLUMNS].fillna(0)
-    patient_data = torch.tensor(patient_data.values, dtype=torch.float32).unsqueeze(0)  
+    patient_data = torch.tensor(patient_data.values, dtype=torch.float32)   
     if torch.cuda.is_available():
         patient_data = patient_data.cuda()
     output = model(patient_data)
