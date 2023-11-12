@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import torch
 import torch.nn as nn
+from torch.nn.utils.rnn import pad_sequence
 from torch.utils.data import Dataset, DataLoader
 # Define the LSTM Model 
 class LSTMModel(nn.Module):
@@ -38,6 +39,13 @@ class ICUData(Dataset):
         data = data.select_dtypes(include=[np.number]) 
         label = self.labels[idx]
         return torch.tensor(data.values, dtype=torch.float32), label
+def pad_collate(batch):
+    (xx, yy) = zip(*batch)
+    x_lens = [len(x) for x in xx]
+    y_lens = [len(y) for y in yy]
+    xx_pad = pad_sequence(xx, batch_first=True, padding_value=-1)
+    yy_pad = pad_sequence(yy, batch_first=True, padding_value=-1)
+    return xx_pad, yy_pad
 # Training parameters
 batch_size = 64
 num_epochs = 10
@@ -50,7 +58,7 @@ output_dim = 1  # Binary output
 model = LSTMModel(input_dim, hidden_dim, layer_dim, output_dim)
 # Create DataLoader
 train_dataset = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
-train_loader = DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True)
+train_loader = DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True, collate_fn=pad_collate)
 # Loss and optimizer
 criterion = nn.BCEWithLogitsLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
