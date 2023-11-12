@@ -5,7 +5,6 @@ import torch
 from torch.utils.data import Dataset
 from torch.utils.data import DataLoader
 import torch.nn as nn
-# File paths
 TRAIN_DATA_PATH = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/"
 LABEL_FILE = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/listfile.csv"
 class ICUData(Dataset):
@@ -18,12 +17,10 @@ class ICUData(Dataset):
         return len(self.file_names)
     def __getitem__(self, idx):
         file_path = os.path.join(self.data_path, self.file_names[idx])
-        if not os.path.isfile(file_path):
-            raise FileNotFoundError(f'The file {file_path} does not exist.')
         data = pd.read_csv(file_path)
-        data = data.drop('Hours', axis=1)  
-        data = data.fillna(0)  
-        data = data.select_dtypes(include=[np.number]) 
+        data = data.drop('Hours', axis=1)
+        data = data.fillna(0)
+        data = data.select_dtypes(include=[np.number])
         label = self.labels[idx]
         return torch.tensor(data.values, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
 class LSTMModel(nn.Module):
@@ -59,10 +56,10 @@ def predict_icu_mortality(patient_data):
         model.eval()
         output = model(data_torch).item()
     return output
-# Set random seed for reproducibility
 torch.manual_seed(0)
-# Get number of columns -= 1 (we drop the 'Hours' column)
-n_features = len(pd.read_csv(TRAIN_DATA_PATH + "1_episode1_timeseries.csv").columns) - 1
+# The number -1 because we drop the 'Hours' column, modify this to the actual number in your dataset.
+# Please replace n_features = 13 with the appropriate value from your dataset.
+n_features = 13
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model = LSTMModel(n_features, 64, 1, 2).to(device)
 icu_data_set = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
