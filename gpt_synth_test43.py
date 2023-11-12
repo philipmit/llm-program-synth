@@ -54,7 +54,7 @@ def train_model(dataset, model, epochs=25):
             loss = criterion(outputs, labels)
             loss.backward()
             optimizer.step()
-model = LSTM(13, 50, 1)
+model = LSTM(14, 50, 1)  # change the input size of LSTM to 14
 icu_data = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
 train_model(icu_data, model)
 def predict_icu_mortality(patient_data):
