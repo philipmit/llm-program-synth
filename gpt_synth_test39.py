@@ -1,11 +1,10 @@
-import os
+import torch
+import torch.nn as nn
 import pandas as pd
 import numpy as np
-import torch
-from torch.nn.utils.rnn import pad_sequence
-from torch.utils.data import DataLoader, Dataset
-from torch import nn
 from torch.optim import Adam
+from torch.utils.data import Dataset, DataLoader
+import os
 class LSTM(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers, output_size):
         super(LSTM, self).__init__()
@@ -14,10 +13,10 @@ class LSTM(nn.Module):
         self.lstm = nn.LSTM(input_size, hidden_size, num_layers, batch_first=True)
         self.fc = nn.Linear(hidden_size, output_size)
     def forward(self, x):
-        h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device)
+        h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device) 
         c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device)
         out, _ = self.lstm(x, (h0, c0))
-        out = self.fc(out[:, -1, :])
+        out = self.fc(out[:, -1, :]) 
         return out
 class ICUData(Dataset):
     def __init__(self, data_path, label_file):
@@ -46,22 +45,25 @@ LEARNING_RATE = 0.01
 BATCH_SIZE = 32
 EPOCHS = 50
 model = LSTM(INPUT_SIZE, HIDDEN_SIZE, NUM_LAYERS, OUTPUT_SIZE)
-model.train()
 criterion = nn.BCEWithLogitsLoss()
 optimizer = Adam(model.parameters(), lr=LEARNING_RATE)
 dataset = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
 dataloader = DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=True)
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+model = model.to(device)
+model.train()
 for epoch in range(EPOCHS):
-    for i, (sequences, labels) in enumerate(dataloader):
-        sequences, labels = sequences.to(device), labels.to(device)
-        outputs = model(sequences)
-        loss = criterion(outputs, labels.unsqueeze(1))
+    for i, (X_train, Y_train) in enumerate(dataloader):
+        X_train, Y_train = X_train.to(device), Y_train.to(device)
         optimizer.zero_grad()
+        outputs = model(X_train)
+        loss = criterion(outputs, Y_train.unsqueeze(1))
         loss.backward()
         optimizer.step()
 model.eval()
-def predict_icu_mortality(model, patient_data):
+def predict_icu_mortality(patient_data):
     with torch.no_grad():
+        patient_data = patient_data.to(device)
         output = model(patient_data)
         prediction = torch.sigmoid(output)
     return float(prediction)
