@@ -2,14 +2,13 @@ import os
 import pandas as pd
 import numpy as np
 import torch
-from torch.utils.data import Dataset
 from torch.nn.utils.rnn import pad_sequence
-from torch.utils.data import DataLoader
+from torch.utils.data import Dataset, DataLoader
 import torch.nn as nn
-# File paths
+from torch.nn.functional import leaky_relu
+from torch.optim.lr_scheduler import ReduceLROnPlateau
 TRAIN_DATA_PATH = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/"
 LABEL_FILE = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/listfile.csv"
-# Define the Dataset
 class ICUData(Dataset):
     def __init__(self, data_path, label_file):
         self.data_path = data_path
@@ -28,12 +27,12 @@ class ICUData(Dataset):
         label = self.labels[idx]
         return torch.tensor(data.values, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
 class LSTMModel(nn.Module):
-    def __init__(self, input_dim, hidden_dim, output_dim, n_layers):
+    def __init__(self, input_dim, hidden_dim, output_dim, n_layers, dropout_proba):
         super(LSTMModel, self).__init__()
         self.hidden_dim = hidden_dim
         self.n_layers = n_layers
         self.lstm = nn.LSTM(input_dim, hidden_dim, n_layers, batch_first=True)
-        self.dropout = nn.Dropout(p=0.5)
+        self.dropout = nn.Dropout(dropout_proba)
         self.fc = nn.Linear(hidden_dim * 2, output_dim)
     def forward(self, x):
         h0 = torch.zeros(self.n_layers, x.size(0), self.hidden_dim).to(x.device)
@@ -43,17 +42,19 @@ class LSTMModel(nn.Module):
         out = self.dropout(out)
         out = self.fc(out)
         return torch.sigmoid(out)
-def train_model(model, epochs, train_loader, criterion, optimizer):
+def train_model(model, epochs, train_loader, criterion, optimizer, lr_scheduler=None):
     model.train()
     for epoch in range(epochs):
         for i, (data, labels) in enumerate(train_loader):
             data = data.to(device)
             labels = labels.to(device).view(-1, 1)
-            model.zero_grad()
+            optimizer.zero_grad()
             outputs = model(data)
             loss = criterion(outputs, labels)
             loss.backward()
             optimizer.step()
+        if lr_scheduler:
+            lr_scheduler.step()
 def predict_icu_mortality(patient_data):
     if isinstance(patient_data, torch.Tensor):
         data_torch = patient_data
@@ -67,19 +68,13 @@ def predict_icu_mortality(patient_data):
         model.eval()
         output = model(data_torch).item()
     return output
-def collate_fn(data):
-    data.sort(key=lambda x: len(x[0]), reverse=True)
-    sequences, labels = zip(*data)
-    sequences_padded = pad_sequence(sequences, batch_first=True, padding_value=0)
-    labels = torch.tensor(labels, dtype=torch.float32)
-    return sequences_padded, labels
-torch.manual_seed(0)
 n_features = 14  
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-model = LSTMModel(n_features, 128, 1, 2).to(device)
+model = LSTMModel(n_features, 256, 1, 2, 0.3).to(device)
 icu_data_set = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
-train_loader = DataLoader(dataset=icu_data_set, batch_size=64, shuffle=True, collate_fn=collate_fn)
+train_loader = DataLoader(dataset=icu_data_set, batch_size=32, shuffle=True, collate_fn=pad_sequence)
 criterion = nn.BCELoss()
-optimizer = torch.optim.Adam(model.parameters(), lr=0.0005)
-epochs = 20
-train_model(model, epochs, train_loader, criterion, optimizer)
+optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+lr_scheduler = ReduceLROnPlateau(optimizer, 'min', patience=3, factor=0.1)
+epochs = 50
+train_model(model, epochs, train_loader, criterion, optimizer, lr_scheduler)
