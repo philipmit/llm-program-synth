@@ -65,7 +65,6 @@ for epoch in range(num_epochs):
         optimizer.step()
     print ('Epoch [{}/{}], Loss: {:.4f}'.format(epoch+1, num_epochs, loss.item()))
 def predict_icu_mortality(patient_data):
-    patient_data = torch.tensor(patient_data.values, dtype=torch.float32).unsqueeze(0)
     if torch.cuda.is_available():
         patient_data = patient_data.cuda()
     output = model(patient_data)
