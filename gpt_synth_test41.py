@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import torch
 from torch import nn
+from torch.nn.utils.rnn import pad_sequence
 from torch.utils.data import Dataset, DataLoader
 from torch.optim import Adam
 # File paths
@@ -25,6 +26,13 @@ class ICUData(Dataset):
         data = data.select_dtypes(include=[np.number]) 
         label = self.labels[idx]
         return torch.tensor(data.values, dtype=torch.float32), label
+def pad_collate(batch):
+    (xx, yy) = zip(*batch)
+    x_lens = [len(x) for x in xx]
+    y_lens = [len(y) for y in yy]
+    xx_pad = pad_sequence(xx, batch_first=True, padding_value=0)
+    yy_pad = pad_sequence(yy, batch_first=True, padding_value=0)
+    return xx_pad, yy_pad, x_lens, y_lens
 # LSTM model
 class LSTM(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers, output_size):
@@ -40,8 +48,8 @@ class LSTM(nn.Module):
         out = self.fc(out[:, -1, :])
         return torch.sigmoid(out)
 # Parameters
-INPUT_SIZE = 13  # number of features
-HIDDEN_SIZE = 64
+INPUT_SIZE = 14  # number of features
+HIDDEN_SIZE = 64 
 NUM_LAYERS = 2
 OUTPUT_SIZE = 1
 NUM_EPOCHS = 5
@@ -49,7 +57,7 @@ BATCH_SIZE = 16
 LEARNING_RATE = 0.001
 # Data
 dataset = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
-dataloader = DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=True)
+dataloader = DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=True, collate_fn=pad_collate)  # Padding applied
 # Model 
 model = LSTM(INPUT_SIZE, HIDDEN_SIZE, NUM_LAYERS, OUTPUT_SIZE)
 if torch.cuda.is_available():
@@ -59,12 +67,12 @@ criterion = nn.BCELoss()
 optimizer = Adam(model.parameters(), lr=LEARNING_RATE)
 # Training
 for epoch in range(NUM_EPOCHS):
-    for i, (seq, label) in enumerate(dataloader):
+    for i, (seq, label, seq_lens, label_len) in enumerate(dataloader):
         if torch.cuda.is_available():
             seq = seq.cuda()
             label = label.cuda().view(-1, 1)
         optimizer.zero_grad()
-        output = model(seq)
+        output = model(seq.squeeze())
         loss = criterion(output, label)
         loss.backward()
         optimizer.step()
