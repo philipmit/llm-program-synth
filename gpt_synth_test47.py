@@ -1,6 +1,5 @@
 import os
 import pandas as pd
-import numpy as np
 import torch
 from torch.utils.data import Dataset, DataLoader
 from torch.nn.utils.rnn import pad_sequence
@@ -14,25 +13,21 @@ class ICUData(Dataset):
         self.data_path = data_path
         label_data = pd.read_csv(label_file)
         self.file_names = label_data['stay']
-        self.labels = torch.tensor(label_data['y_true'].values, dtype=torch.float32)
+        self.labels = label_data['y_true'].values.astype(np.float32)
     def __len__(self):
         return len(self.file_names)
     def __getitem__(self, idx):
         file_path = os.path.join(self.data_path, self.file_names[idx])
         data = pd.read_csv(file_path)
-        data = data.drop(['Hours'], axis=1)  
-        data = data.fillna(0)  
-        data = data.select_dtypes(include=[np.number]) 
-        data = (data - data.mean()) / data.std()
-        patient_data = torch.zeros(*data.shape)
-        patient_data = torch.tensor(data.values, dtype=torch.float32)
+        data = data.drop(['Hours'], axis=1)
+        data = data.fillna(0)
+        data = data.select_dtypes(include=[np.number])
+        data = data[['Capillary refill rate', 'Diastolic blood pressure', 'Fraction inspired oxygen',
+                     'Glascow coma scale total', 'Glucose', 'Heart Rate', 'Height', 
+                     'Mean blood pressure', 'Oxygen saturation', 'Respiratory rate', 
+                     'Systolic blood pressure', 'Temperature', 'Weight', 'pH']].values.astype(np.float32)
         label = self.labels[idx]
-        return patient_data, label
-def my_collate(batch):
-    data = [item[0] for item in batch]
-    data = pad_sequence(data)
-    target = torch.Tensor([item[1] for item in batch])
-    return [data, target]
+        return data, label
 class LSTM(nn.Module):
     def __init__(self, hidden_dim, n_layers):
         super(LSTM, self).__init__()
@@ -46,28 +41,22 @@ class LSTM(nn.Module):
 def train(dataset, model):
     criterion = nn.BCELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
-    dataloader = DataLoader(dataset, batch_size=16, shuffle=True, collate_fn=my_collate)
+    dataloader = DataLoader(dataset, batch_size=16, shuffle=True)
     model.train()
-    for epoch in range(10):  # 10 epochs
+    for _ in range(10):  # 10 epochs
         for patient_data, label in dataloader:
-            # Forward pass
-            patient_data = patient_data.permute(1, 0, 2)
             output = model(patient_data)
-            # Compute Loss
             loss = criterion(output, label)
-            # Backward pass and optimization
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-    return model
 def predict_icu_mortality(model, patient_data):
     model.eval()
     with torch.no_grad():
         prediction = model(patient_data)
     return prediction.item()
-# parameters 
 hidden_dim = 32
 n_layers = 2
 icu_dataset = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
-model = LSTM(hidden_dim=hidden_dim, n_layers=n_layers)
-model = train(icu_dataset, model)
+model = LSTM(hidden_dim, n_layers)
+train(icu_dataset, model)
