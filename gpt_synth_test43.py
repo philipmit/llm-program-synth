@@ -5,7 +5,6 @@ import torch
 from torch.utils.data import Dataset, DataLoader
 import torch.nn as nn
 import torch.optim as optim
-from torch.nn.utils.rnn import pad_sequence
 TRAIN_DATA_PATH = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/"
 LABEL_FILE = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/listfile.csv"
 class ICUData(Dataset):
@@ -19,9 +18,9 @@ class ICUData(Dataset):
     def __getitem__(self, idx):
         file_path = os.path.join(self.data_path, self.file_names[idx])
         data = pd.read_csv(file_path)
+        data = data.select_dtypes(include=[np.number])
         data = data.drop(['Hours'], axis=1)
         data = data.fillna(0)
-        data = data.select_dtypes(include=[np.number])
         data = torch.tensor(data.values, dtype=torch.float32)
         label = self.labels[idx]
         return data, label
@@ -39,9 +38,12 @@ class LSTM(nn.Module):
         return out.squeeze(-1)
 def collate_fn(batch):
     data, labels = zip(*batch)
-    data = pad_sequence([torch.tensor(d) for d in data], batch_first=True)
+    data = [torch.tensor(d) for d in data]
+    zero_padding = torch.zeros(len(data), max(len(d) for d in data), len(data[0][0]))
+    for i, d in enumerate(data):
+        zero_padding[i, :len(d)] = d
     labels = torch.tensor(labels, dtype=torch.float32)
-    return data, labels
+    return zero_padding, labels
 def train_model(dataset, model, epochs=25):
     dataloader = DataLoader(dataset, batch_size=32, shuffle=True, collate_fn=collate_fn)
     criterion = nn.BCELoss()
@@ -58,9 +60,9 @@ model = LSTM(13, 50, 1)
 icu_data = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
 train_model(icu_data, model)
 def predict_icu_mortality(patient_data):
+    patient_data = patient_data.select_dtypes(include=[np.number])
     patient_data = patient_data.drop(['Hours'], axis=1)
     patient_data = patient_data.fillna(0)
-    patient_data = patient_data.select_dtypes(include=[np.number])
     patient_data = torch.tensor(patient_data.values, dtype=torch.float32)
     patient_data = patient_data.unsqueeze(0) 
     prediction = model(patient_data)
