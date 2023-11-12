@@ -4,6 +4,7 @@ import numpy as np
 import torch
 from torch.utils.data import Dataset, DataLoader
 from torch import nn, optim
+from torch.nn.utils.rnn import pad_sequence
 # File paths
 TRAIN_DATA_PATH = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/"
 LABEL_FILE = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/listfile.csv"
@@ -24,6 +25,14 @@ class ICUData(Dataset):
         data = data.select_dtypes(include=[np.number]) 
         label = self.labels[idx]
         return torch.tensor(data.values, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
+# Custom collate_fn to address sequences of differing lengths
+def collate_fn(batch):
+    # separate the data points and labels
+    data, labels = zip(*batch)
+    # pad sequences with zeros
+    data = pad_sequence(data, batch_first=True, padding_value=0)
+    labels = torch.FloatTensor(labels)
+    return data, labels
 # Create the LSTM Model Class
 class LSTMModel(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers, num_classes):
@@ -51,7 +60,7 @@ criterion = nn.BCEWithLogitsLoss()
 optimizer = torch.optim.Adam(model.parameters())
 # Data loader
 dataset = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
-data_loader = torch.utils.data.DataLoader(dataset=dataset, batch_size=32)
+data_loader = torch.utils.data.DataLoader(dataset=dataset, batch_size=32, collate_fn=collate_fn)
 # Train the model
 num_epochs = 20
 for epoch in range(num_epochs):
