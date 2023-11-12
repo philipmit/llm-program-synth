@@ -4,6 +4,7 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 from torch import nn, optim
+from torch.nn.utils.rnn import pad_sequence
 TRAIN_DATA_PATH = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/"
 LABEL_FILE = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/listfile.csv"
 class ICUData(torch.utils.data.Dataset):
@@ -35,8 +36,13 @@ class LSTM(nn.Module):
         out = self.linear(final_time_step_out)
         out = self.sigmoid(out)
         return out.squeeze(-1)
+def collate_fn(batch):
+    inputs = [item[0] for item in batch]
+    labels = [item[1] for item in batch]
+    inputs_padded = pad_sequence(inputs, batch_first=True, padding_value=0)
+    return inputs_padded, torch.stack(labels)
 def train_model(dataset, model, epochs=25):
-    dataloader = DataLoader(dataset, batch_size=32, shuffle=True)
+    dataloader = DataLoader(dataset, batch_size=32, shuffle=True, collate_fn=collate_fn)
     criterion = nn.BCELoss()
     optimizer = optim.Adam(model.parameters(), lr=0.001)
     for epoch in range(epochs):
@@ -54,7 +60,6 @@ def predict_icu_mortality(patient_data):
     patient_data = patient_data.drop('Hours', axis=1)
     patient_data = patient_data.apply(pd.to_numeric, errors='coerce')
     patient_data = patient_data.fillna(0)
-    patient_data = torch.tensor(patient_data.values, dtype=torch.float32)
-    patient_data = patient_data.unsqueeze(0)
+    patient_data = torch.tensor(patient_data.values, dtype=torch.float32).unsqueeze(0)
     prediction = model(patient_data)
     return prediction.item()
