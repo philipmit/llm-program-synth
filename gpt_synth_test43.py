@@ -18,9 +18,8 @@ class ICUData(Dataset):
     def __getitem__(self, idx):
         file_path = os.path.join(self.data_path, self.file_names[idx])
         data = pd.read_csv(file_path)
-        # Drop the 'Hours' column before selecting numeric data types
-        data = data.drop(['Hours'], axis=1)
-        data = data.select_dtypes(include=[np.number]) 
+        data = data.drop(['Hours'], axis=1)  # Moved this line here
+        data = data.select_dtypes(include=[np.number])
         data = data.fillna(0)
         data = torch.tensor(data.values, dtype=torch.float32)
         label = self.labels[idx]
