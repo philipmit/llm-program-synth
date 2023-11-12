@@ -23,11 +23,13 @@ class ICUData(Dataset):
         file_path = os.path.join(self.data_path, self.file_names[idx])
         data = pd.read_csv(file_path)
         data = data.drop(columns=['Hours'])
+        for column in data.columns:
+            data[column] = pd.to_numeric(data[column], errors='coerce')
         data = data.fillna(0)
-        data = data.astype(np.float32)
-        data = (data - data.mean()) / data.std() # Adding Normalization
+        data = data.select_dtypes(include=[np.number]) 
+        data = (data - data.mean()) / data.std() 
         label = self.labels[idx]
-        return torch.tensor(data.values), torch.tensor(label)
+        return torch.tensor(data.values, dtype=torch.float32), torch.tensor(label)
 class LSTMModel(nn.Module):
     def __init__(self, input_dim, hidden_dim, output_dim, n_layers):
         super().__init__()
@@ -45,20 +47,20 @@ class LSTMModel(nn.Module):
         out = self.dropout(out)
         out = self.fc(out[:,-1,:])
         return torch.sigmoid(out)
-n_features = 14
-hidden_dim = 1024 
+n_features = 13
+hidden_dim = 64
 output_dim = 1
-n_layers = 2 
-dropout_proba = 0.5 
+n_layers = 2
+dropout_proba = 0.5
 model = LSTMModel(n_features, hidden_dim, output_dim, n_layers)
 icu_data_set = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
 train_loader = DataLoader(icu_data_set, batch_size=64, shuffle=True)
 criterion = nn.BCELoss()
 lr = 0.0001
 epochs = 100
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 scheduler = ReduceLROnPlateau(optimizer, mode='max', patience=10, factor=0.1)
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model.to(device)
 for epoch in range(epochs):
     model.train()
