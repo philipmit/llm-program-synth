@@ -5,6 +5,7 @@ import numpy as np
 from torch.optim import Adam
 from torch.utils.data import Dataset, DataLoader
 import os
+# LSTM Model
 class LSTM(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers, output_size):
         super(LSTM, self).__init__()
@@ -66,4 +67,4 @@ def predict_icu_mortality(patient_data):
         patient_data = patient_data.to(device)
         output = model(patient_data)
         prediction = torch.sigmoid(output)
-    return float(prediction[0])
+    return prediction.item()
