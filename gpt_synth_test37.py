@@ -5,10 +5,8 @@ from torch import nn
 from torch import optim
 import torch
 from torch.utils.data import Dataset, DataLoader
-# File paths
 TRAIN_DATA_PATH = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/"
 LABEL_FILE = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/listfile.csv"
-# Define the Dataset
 class ICUData(Dataset):
     def __init__(self, data_path, label_file):
         self.data_path = data_path
@@ -21,11 +19,11 @@ class ICUData(Dataset):
         file_path = os.path.join(self.data_path, self.file_names[idx])
         data = pd.read_csv(file_path)
         data = data.drop(['Hours'], axis=1)  
-        data = data.fillna(0)  
+        data = data.fillna(0) 
         data = data.select_dtypes(include=[np.number])
-        data = data.iloc[:,:13] # Ensuring the right number of features based on LSTM input size
+        data = data.iloc[:,:13]
         label = self.labels[idx]
-        return torch.tensor(data.values, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
+        return torch.tensor(data.values, dtype=torch.float32), label
 class LSTMModel(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers, num_classes):
         super(LSTMModel, self).__init__()
@@ -57,6 +55,7 @@ for epoch in range(num_epochs):
         data = data.to(device)
         labels = labels.to(device)
         outputs = model(data)
+        outputs = outputs.squeeze()  # Reshaping outputs to match the shape of labels.
         loss = criterion(outputs, labels)
         optimizer.zero_grad()
         loss.backward()
@@ -68,7 +67,7 @@ def predict_icu_mortality(raw_dataset):
     raw_dataset = raw_dataset.drop(['Hours'], axis=1)
     raw_dataset = raw_dataset.fillna(0)
     raw_dataset = raw_dataset.select_dtypes(include=[np.number])
-    raw_dataset = raw_dataset.iloc[:,:13] # Ensuring the right number of features based on LSTM input size
+    raw_dataset = raw_dataset.iloc[:,:13]
     sample = torch.tensor(raw_dataset.values[np.newaxis, ...], dtype=torch.float32).to(device)
     output = model(sample)
     pis = torch.sigmoid(output)
