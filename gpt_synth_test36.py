@@ -10,7 +10,6 @@ from sklearn.preprocessing import StandardScaler
 TRAIN_DATA_PATH = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/"
 LABEL_FILE = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/listfile.csv"
 PAD_TOKEN = 0
-# Define the Dataset
 class ICUData(Dataset):
     def __init__(self, data_path, label_file):
         self.data_path = data_path
@@ -22,21 +21,18 @@ class ICUData(Dataset):
     def __getitem__(self, idx):
         file_path = os.path.join(self.data_path, self.file_names[idx])
         data = pd.read_csv(file_path)
-        # preprocessing
         data = data.select_dtypes(include=[np.number])
         data = data.fillna(0)
         label = self.labels[idx]
         scaler = StandardScaler()
         data_norm = scaler.fit_transform(data)
-        return torch.tensor(data_norm, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
-# Padding function for dataloader
+        return torch.tensor(data_norm, dtype=torch.float32), torch.tensor(label, dtype=torch.float32), len(data_norm)
 def pad_collate(batch):
-    (xx, yy) = zip(*batch)
-    x_lens = [len(x) for x in xx]
+    (xx, yy, ll) = zip(*batch)
+    x_lens = list(ll)
     seq_tensor = pad_sequence(xx, batch_first=True, padding_value=PAD_TOKEN)
     y_tensor = torch.stack(yy)
     return seq_tensor, y_tensor, x_lens
-# LSTM model
 class LSTMNet(nn.Module):
     def __init__(self, input_dim, hidden_dim, output_dim, n_layers):
         super(LSTMNet, self).__init__()
@@ -53,18 +49,7 @@ class LSTMNet(nn.Module):
         out = self.fc(output[:, -1, :])
         out = torch.sigmoid(out)
         return out
-data = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
-train_size = int(0.8 * len(data))
-test_size = len(data) - train_size
-train_data, test_data = torch.utils.data.random_split(data, [train_size,test_size])
-# Instantiate the model
-model = LSTMNet(input_dim=15, hidden_dim=50, output_dim=1, n_layers=2)
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-model.to(device)
-# Loss and optimizer
-criterion = nn.BCELoss()
-optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
-# Training
+# Training and prediction codes
 def train_model(model, criterion, optimizer, train_data):
     model.train()
     train_loader = DataLoader(dataset=train_data, batch_size=16, shuffle=True, collate_fn=pad_collate)
@@ -77,15 +62,21 @@ def train_model(model, criterion, optimizer, train_data):
             loss = criterion(outputs, labels.unsqueeze(1))
             loss.backward()
             optimizer.step()
-# Prediction function
 def predict_icu_mortality(patient_data, lengths):
     model.eval()
     patient_data = patient_data.to(device)
     output = model(patient_data, lengths)
     return output.item()
-# Train the LSTM model
+data = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
+train_size = int(0.8 * len(data))
+test_size = len(data) - train_size
+train_data, test_data = torch.utils.data.random_split(data, [train_size, test_size])
+model = LSTMNet(input_dim=15, hidden_dim=50, output_dim=1, n_layers=2)
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+model.to(device)
+criterion = nn.BCELoss()
+optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 train_model(model, criterion, optimizer, train_data)
-# Predicting for a single test patient
-test_patient, length = test_data[0][0].unsqueeze(0), [len(test_data[0][0])]
-prediction = predict_icu_mortality(test_patient, length)
+test_patient, label, length = test_data[0]
+prediction = predict_icu_mortality(test_patient.unsqueeze(0), [length])
 print("Predicted Probability for ICU mortality: ", prediction)
