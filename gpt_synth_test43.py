@@ -5,8 +5,12 @@ import torch
 from torch.utils.data import DataLoader
 from torch import nn, optim
 from torch.nn.utils.rnn import pad_sequence
+# File paths
 TRAIN_DATA_PATH = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/"
 LABEL_FILE = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/listfile.csv"
+# Define columns of interest
+features = ['Capillary refill rate', 'Diastolic blood pressure', 'Fraction inspired oxygen', 'Glascow coma scale total',  'Glucose', 'Heart Rate', 'Height', 'Mean blood pressure', 'Oxygen saturation', 'Respiratory rate', 'Systolic blood pressure', 'Temperature', 'Weight', 'pH']
+# Define the Dataset
 class ICUData(torch.utils.data.Dataset):
     def __init__(self, data_path, label_file):
         self.data_path = data_path
@@ -17,11 +21,8 @@ class ICUData(torch.utils.data.Dataset):
         return len(self.file_names)
     def __getitem__(self, idx):
         file_path = os.path.join(self.data_path, self.file_names[idx])
-        data = pd.read_csv(file_path)
-        data = data.drop('Hours', axis=1)
-        data = data.fillna(0)
-        data = data.apply(pd.to_numeric, errors='coerce')
-        data = data.fillna(0)
+        data = pd.read_csv(file_path, usecols=features)
+        data.fillna(0, inplace=True)
         return torch.tensor(data.values, dtype=torch.float32), self.labels[idx]
 class LSTM(nn.Module):
     def __init__(self, input_size, hidden_size, output_size):
@@ -53,11 +54,11 @@ def train_model(dataset, model, epochs=25):
             loss = criterion(outputs, labels)
             loss.backward()
             optimizer.step()
-model = LSTM(13, 50, 1)  # Assuming there are 13 features
+model = LSTM(13, 50, 1)
 icu_data = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
 train_model(icu_data, model)
 def predict_icu_mortality(patient_data):
-    patient_data = patient_data.drop('Hours', axis=1)
+    patient_data = patient_data[features]
     patient_data = patient_data.apply(pd.to_numeric, errors='coerce')
     patient_data = patient_data.fillna(0)
     patient_data = torch.tensor(patient_data.values, dtype=torch.float32).unsqueeze(0)
