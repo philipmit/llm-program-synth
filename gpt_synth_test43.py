@@ -11,9 +11,9 @@ LABEL_FILE = '/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospita
 class ICUData(Dataset):
     def __init__(self, data_path, label_file):
         self.data_path = data_path
-        label_df = pd.read_csv(label_file)
-        self.file_names = label_df['stay'].values
-        self.labels = torch.tensor(label_df['y_true'].values, dtype=torch.float32)
+        self.label_df = pd.read_csv(label_file)
+        self.file_names = self.label_df['stay'].values
+        self.labels = torch.tensor(self.label_df['y_true'].values, dtype=torch.float32)
     def __len__(self):
         return len(self.file_names)
     def __getitem__(self, idx):
@@ -22,27 +22,31 @@ class ICUData(Dataset):
         # drop 'Hours' column as it is not used as a feature
         patient_data = patient_data.drop(['Hours'], axis=1)
         patient_data = patient_data.fillna(0)
-        patient_data = patient_data.apply(pd.to_numeric, errors='coerce')
-        return torch.tensor(patient_data.values, dtype=torch.float32), self.labels[idx]
+        # turn non-number data into NaN and then fill with 0
+        patient_data = patient_data.apply(pd.to_numeric, errors='coerce').fillna(0)
+        # LSTM expects data in format [sequence_length, features]
+        patient_data = torch.tensor(patient_data.values, dtype=torch.float32).unsqueeze(0)
+        label = self.labels[idx].unsqueeze(0)
+        return patient_data, label
 class ICUModel(torch.nn.Module):
     def __init__(self):
         super(ICUModel, self).__init__()
+        # LSTM layer expects input data in format [sequence_length, features]
         self.lstm = LSTM(input_size=14, hidden_size=50, num_layers=1, batch_first=True)
         self.linear = Linear(in_features=50, out_features=1)
         self.sigmoid = Sigmoid()
     def forward(self, x):
         x, _ = self.lstm(x)
         x = self.linear(x[:,-1,:])
-        x = self.sigmoid(x)
-        return x.squeeze(-1)
+        output = self.sigmoid(x)
+        return output.squeeze(-1)
 def train_model(train_data, model, epochs):
     criterion = BCELoss()
     optimizer = Adam(model.parameters(), lr=0.001)
     for epoch in range(epochs):
-        for i, data in enumerate(train_data):
-            features, target = data
+        for i, (features, target) in enumerate(train_data):
+            features = features.squeeze(0)
             target = target.unsqueeze(0)
-            features = features.unsqueeze(0)
             # Zero the parameter gradients
             optimizer.zero_grad()
             # Forward + backward + optimize
