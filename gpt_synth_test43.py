@@ -24,7 +24,7 @@ class ICUData(Dataset):
         patient_data = patient_data.fillna(0)  
         patient_data = patient_data.apply(pd.to_numeric, errors='coerce').fillna(0)
         label = self.labels[idx]
-        return torch.tensor(patient_data.values, dtype=torch.float32).unsqueeze(0), torch.tensor(label, dtype=torch.float32)
+        return torch.tensor(patient_data.values, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
 class ICUModel(torch.nn.Module):
     def __init__(self):
         super(ICUModel, self).__init__()
@@ -40,10 +40,10 @@ def train_model(train_data, model, epochs):
     criterion = BCELoss()
     optimizer = Adam(model.parameters(), lr=0.001)
     for epoch in range(epochs):
-        for i, (features, target) in enumerate(train_data):
+        for features, target in train_data:
             optimizer.zero_grad()
             output = model(features)
-            loss = criterion(output, target.unsqueeze(0))
+            loss = criterion(output, target)
             loss.backward()
             optimizer.step()
 model = ICUModel()
