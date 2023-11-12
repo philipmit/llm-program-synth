@@ -18,8 +18,8 @@ class ICUData(Dataset):
     def __getitem__(self, idx):
         file_path = os.path.join(self.data_path, self.file_names[idx])
         data = pd.read_csv(file_path)
-        data = data.drop(['Hours'], axis=1)  
-        data = data.fillna(0)  
+        data = data.drop(['Hours'], axis=1)
+        data = data.fillna(0)
         data = data.select_dtypes(include=[np.number])
         label = self.labels[idx]
         return torch.tensor(data.values, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
@@ -43,12 +43,12 @@ def collate_fn(batch):
     targets = torch.stack(targets)
     return inputs, targets
 def train_model():
-    input_size = 13  # Number of features
-    hidden_size = 64  # Number of hidden units in the LSTM
-    num_layers = 2  # Number of LSTM layers
-    output_size = 1  # Number of output units 
-    num_epochs = 100  # Number of epochs for training
-    learning_rate = 0.001  # Learning rate
+    input_size = 13 
+    hidden_size = 64 
+    num_layers = 2 
+    output_size = 1 
+    num_epochs = 100 
+    learning_rate = 0.001 
     dataset = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
     dataloader = DataLoader(dataset, batch_size=4, shuffle=True, collate_fn=collate_fn)
     model = LSTMModel(input_size, hidden_size, num_layers, output_size)
@@ -63,19 +63,18 @@ def train_model():
             loss.backward()
             optimizer.step()
     return model
+trained_model = train_model()  # Moved out from predict_icu_mortality function
 def predict_icu_mortality(patient_data):
-    model = train_model()
-    patient_data = patient_data.squeeze(0).to('cpu').numpy()
-    # convert it back to DataFrame to apply preprocessing
-    patient_df = pd.DataFrame(patient_data, columns=['Capillary refill rate', 'Diastolic blood pressure', 
-                                                     'Fraction inspired oxygen',  'Glascow coma scale total',  
-                                                     'Glucose', 'Heart Rate', 'Height', 'Mean blood pressure', 
-                                                     'Oxygen saturation', 'Respiratory rate', 'Systolic blood pressure', 
-                                                     'Temperature', 'Weight', 'pH'])
+    patient_data_numpy = patient_data.squeeze(0).to('cpu').numpy()
+    patient_df = pd.DataFrame(patient_data_numpy, columns=['Capillary refill rate', 'Diastolic blood pressure', 
+                                                           'Fraction inspired oxygen',  'Glascow coma scale total', 
+                                                           'Glucose', 'Heart Rate', 'Height', 'Mean blood pressure', 
+                                                           'Oxygen saturation', 'Respiratory rate', 'Systolic blood pressure', 
+                                                           'Temperature', 'Weight', 'pH'])
     patient_df = patient_df.fillna(0)
     patient_data_tensor = torch.tensor(patient_df.values[np.newaxis, ...], dtype=torch.float32)
-    model.eval()
+    trained_model.eval()
     with torch.no_grad():
-        prediction = model(patient_data_tensor)
+        prediction = trained_model(patient_data_tensor)
         predicted_probability = torch.sigmoid(prediction).item()
     return predicted_probability
