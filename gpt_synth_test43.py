@@ -2,9 +2,10 @@ import os
 import pandas as pd
 import numpy as np
 import torch
+from torch.utils.data import Dataset, DataLoader
 import torch.nn as nn
 import torch.optim as optim
-from torch.utils.data import Dataset, DataLoader
+# Path to the Training Dataset
 TRAIN_DATA_PATH = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/"
 LABEL_FILE = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/listfile.csv"
 class ICUData(Dataset):
@@ -19,17 +20,17 @@ class ICUData(Dataset):
         file_path = os.path.join(self.data_path, self.file_names[idx])
         data = pd.read_csv(file_path)
         data = data.drop(['Hours'], axis=1)
-        data = data.fillna(0) 
+        data = data.fillna(0)
         data = data.select_dtypes(include=[np.number])
         data = torch.tensor(data.values, dtype=torch.float32)
-        data = data.view(1, -1, data.shape[1]) # reshaping the dimensions
+        data = data.unsqueeze(0) # reshaping the dimensions
         label = self.labels[idx]
         return data, label
 class LSTM(nn.Module):
     def __init__(self, input_size, hidden_size, output_size):
         super(LSTM, self).__init__()
         self.hidden_size = hidden_size
-        self.lstm = nn.LSTM(input_size, hidden_size, batch_first=True)
+        self.lstm = nn.LSTM(input_size, hidden_size)
         self.linear = nn.Linear(hidden_size, output_size)
         self.sigmoid = nn.Sigmoid()
     def forward(self, x):
@@ -38,7 +39,7 @@ class LSTM(nn.Module):
         out = self.sigmoid(out)
         return out.squeeze(-1)
 def train_model(dataset, model, epochs=25):
-    dataloader = DataLoader(dataset, batch_size=1, shuffle=True)
+    dataloader = DataLoader(dataset, shuffle=True)
     criterion = nn.BCELoss()
     optimizer = optim.Adam(model.parameters(), lr=0.001)
     for epoch in range(epochs):
@@ -46,17 +47,20 @@ def train_model(dataset, model, epochs=25):
             inputs, labels = data
             optimizer.zero_grad()
             outputs = model(inputs)
-            loss = criterion(outputs, labels)
+            loss = criterion(outputs, labels.unsqueeze(0))
             loss.backward()
             optimizer.step()
-model = LSTM(13, 50, 1)
+# Instanciate Model
+model = LSTM(13, 50, 1) # 13 features
+# Instantiate Dataset
 icu_data = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
+# Train the Model
 train_model(icu_data, model)
 def predict_icu_mortality(patient_data):
     patient_data = patient_data.drop(['Hours'], axis=1)
     patient_data = patient_data.fillna(0)
     patient_data = patient_data.select_dtypes(include=[np.number])
     patient_data = torch.tensor(patient_data.values, dtype=torch.float32)
-    patient_data = patient_data.view(1, -1, patient_data.shape[1]) # reshaping the dimensions
+    patient_data = patient_data.unsqueeze(0) # reshaping the dimensions
     prediction = model(patient_data)
     return prediction.item()
