@@ -5,8 +5,6 @@ import torch
 from torch.nn.utils.rnn import pad_sequence
 from torch.utils.data import Dataset, DataLoader
 import torch.nn as nn
-from torch.nn.functional import leaky_relu
-from torch.optim.lr_scheduler import ReduceLROnPlateau
 TRAIN_DATA_PATH = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/"
 LABEL_FILE = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/listfile.csv"
 class ICUData(Dataset):
@@ -20,8 +18,7 @@ class ICUData(Dataset):
     def __getitem__(self, idx):
         file_path = os.path.join(self.data_path, self.file_names[idx])
         data = pd.read_csv(file_path)
-        if "Hours" in data.columns:
-            data = data.drop(["Hours"], axis=1)
+        data = data.drop(['Hours'], axis=1)
         data = data.fillna(0)
         data = data.select_dtypes(include=[np.number])
         label = self.labels[idx]
@@ -42,39 +39,55 @@ class LSTMModel(nn.Module):
         out = self.dropout(out)
         out = self.fc(out)
         return torch.sigmoid(out)
-def train_model(model, epochs, train_loader, criterion, optimizer, lr_scheduler=None):
-    model.train()
+# Custom collate_fn function to handle pad sequences
+def collate_fn(batch):
+    seq_list = []
+    target_list = []
+    for seq, target in batch:
+        seq_list.append(seq)
+        target_list.append(target)
+    return pad_sequence(seq_list, batch_first=True), torch.Tensor(target_list)
+# Training function.
+def train_model(model, epochs, train_loader, criterion, optimizer):
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model.to(device)
     for epoch in range(epochs):
         for i, (data, labels) in enumerate(train_loader):
             data = data.to(device)
-            labels = labels.to(device).view(-1, 1)
+            labels = labels.to(device)
             optimizer.zero_grad()
             outputs = model(data)
-            loss = criterion(outputs, labels)
+            loss = criterion(outputs.squeeze(), labels)
             loss.backward()
             optimizer.step()
-        if lr_scheduler:
-            lr_scheduler.step()
+# Prediction function.
 def predict_icu_mortality(patient_data):
-    if isinstance(patient_data, torch.Tensor):
-        data_torch = patient_data
-    else:
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model.to(device)
+    if isinstance(patient_data, pd.DataFrame):
         if "Hours" in patient_data.columns:
             patient_data = patient_data.drop(['Hours'], axis=1)
         patient_data = patient_data.fillna(0)
-        patient_data = patient_data.select_dtypes(include=[np.number])
-        data_torch = torch.tensor(patient_data.values, dtype=torch.float32).unsqueeze(0).to(device)
+        data = patient_data.to_numpy()
+        data = torch.tensor(data, dtype=torch.float32).unsqueeze(0).to(device)
+    else:
+        data = patient_data.to(device)
     with torch.no_grad():
         model.eval()
-        output = model(data_torch).item()
-    return output
-n_features = 14  
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-model = LSTMModel(n_features, 256, 1, 2, 0.3).to(device)
+        output = model(data)
+    return output.item()
+n_features = 14
+hidden_dim = 256
+output_dim = 1
+n_layers = 2
+dropout_proba = 0.3
+# Create an instance of the model
+model = LSTMModel(n_features, hidden_dim, output_dim, n_layers, dropout_proba)
+# Create an instance of the ICUData
 icu_data_set = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
-train_loader = DataLoader(dataset=icu_data_set, batch_size=32, shuffle=True, collate_fn=pad_sequence)
+# Get the dataloader
+train_loader = DataLoader(dataset=icu_data_set, batch_size=32, shuffle=True, collate_fn=collate_fn)
 criterion = nn.BCELoss()
+epochs = 20
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
-lr_scheduler = ReduceLROnPlateau(optimizer, 'min', patience=3, factor=0.1)
-epochs = 50
-train_model(model, epochs, train_loader, criterion, optimizer, lr_scheduler)
+train_model(model, epochs, train_loader, criterion, optimizer)
