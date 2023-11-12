@@ -62,8 +62,8 @@ def train(dataset, model, epochs):
         print('Epoch: {}, Loss: {}'.format(epoch, loss.item()))
     print('Training completed.')
 # Predicting ICU mortality
-def predict_icu_mortality(model, patient_data):
-    model.eval()
+def predict_icu_mortality(patient_data):
+    model.eval() 
     with torch.no_grad():
         prediction = model(patient_data)
     return prediction.item()
