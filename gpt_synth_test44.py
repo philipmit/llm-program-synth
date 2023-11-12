@@ -43,34 +43,28 @@ def collate_fn(batch):
     targets = torch.stack(targets)
     return inputs, targets
 def train_model():
-    # Define the hyperparameters
     input_size = 13  # Number of features
     hidden_size = 64  # Number of hidden units in the LSTM
     num_layers = 2  # Number of LSTM layers
     output_size = 1  # Number of output units 
     num_epochs = 100  # Number of epochs for training
     learning_rate = 0.001  # Learning rate
-    # Load the Dataset
     dataset = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
     dataloader = DataLoader(dataset, batch_size=4, shuffle=True, collate_fn=collate_fn)
-    # Initialize the LSTM Model
     model = LSTMModel(input_size, hidden_size, num_layers, output_size)
-    # Specify Loss Function and Optimizer
     criterion = nn.BCEWithLogitsLoss()
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
-    # Training Loop
     model.train()
     for epoch in range(num_epochs):
         for i, (inputs, labels) in enumerate(dataloader):
             outputs = model(inputs)
             loss = criterion(outputs, labels.unsqueeze(1))
-            # Backward and optimize
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
     return model
 def predict_icu_mortality(patient_data):
-    model = train_model()  # Load the trained model
+    model = train_model()
     patient_data = patient_data.drop(['Hours'], axis=1)
     patient_data = patient_data.fillna(0)
     patient_data = patient_data.select_dtypes(include=[np.number])
