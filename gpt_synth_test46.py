@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 import torch
 import torch.nn as nn
+from torch.nn.utils.rnn import pad_sequence
 from torch.utils.data import DataLoader, Dataset
 from torch.optim import Adam
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
@@ -29,6 +30,11 @@ class ICUData(Dataset):
         data = scaler.fit_transform(data.values) # scale data
         label = self.labels[idx]
         return torch.tensor(data, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
+# Function for padding
+def collate_fn(batch):
+    sequences, labels = zip(*batch)
+    sequences_padded = pad_sequence(sequences, batch_first=True, padding_value=0)
+    return sequences_padded, torch.Tensor(labels)
 # LSTM architecture
 class LSTM(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers, output_size):
@@ -55,6 +61,7 @@ dataset = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
 train_loader = DataLoader(dataset=dataset, 
                           batch_size=batch_size, 
                           shuffle=False,
+                          collate_fn=collate_fn,
                           num_workers=4)
 # Define network, loss function and optimizer
 input_dim = len(dataset[0][0][0])
