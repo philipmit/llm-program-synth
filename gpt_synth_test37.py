@@ -36,7 +36,7 @@ class LSTMModel(nn.Module):
         c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(device)
         out, _ = self.lstm(x, (h0, c0))  
         out = self.fc(out[:, -1, :])
-        return out.squeeze()
+        return out.squeeze(1)
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 num_epochs = 100
 learning_rate = 0.001
