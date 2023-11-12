@@ -18,8 +18,10 @@ class ICUData(Dataset):
         return len(self.file_names)
     def __getitem__(self, idx):
         file_path = os.path.join(self.data_path, self.file_names[idx])
+        if not os.path.isfile(file_path):
+            raise FileNotFoundError(f'The file {file_path} does not exist.')
         data = pd.read_csv(file_path)
-        data = data.drop(['Hours'], axis=1)  
+        data = data.drop('Hours', axis=1)  
         data = data.fillna(0)  
         data = data.select_dtypes(include=[np.number]) 
         label = self.labels[idx]
