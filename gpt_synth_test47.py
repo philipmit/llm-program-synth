@@ -21,7 +21,6 @@ class ICUData(Dataset):
     def __getitem__(self, idx):
         file_path = os.path.join(self.data_path, self.file_names[idx])
         data = pd.read_csv(file_path)
-        # Making sure 'Hours' is removed
         if "Hours" in data.columns:
             data = data.drop(["Hours"], axis=1)
         data = data.fillna(0)
@@ -53,7 +52,6 @@ def train_model(model, epochs, train_loader, criterion, optimizer):
             loss.backward()
             optimizer.step()
 def predict_icu_mortality(patient_data):
-    # Making sure 'Hours' is removed
     if "Hours" in patient_data.columns:
         patient_data = patient_data.drop(['Hours'], axis=1)
     patient_data = patient_data.fillna(0)
@@ -70,7 +68,7 @@ def collate_fn(data):
     labels = torch.tensor(labels, dtype=torch.float32)
     return sequences_padded, labels
 torch.manual_seed(0)
-n_features = 13  # First 13 features are used as input, you can adjust it according to your data
+n_features = 14  # Adjust the number of features to match your data
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model = LSTMModel(n_features, 64, 1, 2).to(device)
 icu_data_set = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
