@@ -22,7 +22,7 @@ class ICUData(Dataset):
         data = data.fillna(0) 
         data = data.select_dtypes(include=[np.number])
         data = torch.tensor(data.values, dtype=torch.float32)
-        data = data.unsqueeze(0) # adding a dimension for batch
+        data = data.view(1, -1, data.shape[1]) # reshaping the dimensions
         label = self.labels[idx]
         return data, label
 class LSTM(nn.Module):
@@ -57,6 +57,6 @@ def predict_icu_mortality(patient_data):
     patient_data = patient_data.fillna(0)
     patient_data = patient_data.select_dtypes(include=[np.number])
     patient_data = torch.tensor(patient_data.values, dtype=torch.float32)
-    patient_data = patient_data.unsqueeze(0) # adding a dimension for batch
+    patient_data = patient_data.view(1, -1, patient_data.shape[1]) # reshaping the dimensions
     prediction = model(patient_data)
     return prediction.item()
