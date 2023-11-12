@@ -5,6 +5,7 @@ import torch
 from torch.utils.data import Dataset, DataLoader
 import torch.nn as nn
 import torch.optim as optim
+from torch.nn.utils.rnn import pad_sequence
 TRAIN_DATA_PATH = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/"
 LABEL_FILE = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/listfile.csv"
 class ICUData(Dataset):
@@ -36,8 +37,13 @@ class LSTM(nn.Module):
         out = self.linear(lstm_out[:, -1, :])
         out = self.sigmoid(out)
         return out.squeeze(-1)
+def collate_fn(batch):
+    data, labels = zip(*batch)
+    data = pad_sequence([torch.tensor(d) for d in data], batch_first=True)
+    labels = torch.tensor(labels, dtype=torch.float32)
+    return data, labels
 def train_model(dataset, model, epochs=25):
-    dataloader = DataLoader(dataset, batch_size=32, shuffle=True)
+    dataloader = DataLoader(dataset, batch_size=32, shuffle=True, collate_fn=collate_fn)
     criterion = nn.BCELoss()
     optimizer = optim.Adam(model.parameters(), lr=0.001)
     for epoch in range(epochs):
@@ -48,7 +54,7 @@ def train_model(dataset, model, epochs=25):
             loss = criterion(outputs, labels)
             loss.backward()
             optimizer.step()
-model = LSTM(13, 50, 1) 
+model = LSTM(13, 50, 1)
 icu_data = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
 train_model(icu_data, model)
 def predict_icu_mortality(patient_data):
