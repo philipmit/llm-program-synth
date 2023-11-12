@@ -21,17 +21,16 @@ class ICUData(Dataset):
         data = pd.read_csv(file_path)
         data = data.drop(['Hours'], axis=1)
         data = data.fillna(0)
-        data = data.select_dtypes(include=[np.number])
-        data = torch.tensor(data.values, dtype=torch.float32)
+        data = pd.get_dummies(data)
         label = self.labels[idx]
-        return data, label
+        return torch.tensor(data.values, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
 # Define LSTM model
 class LSTM(nn.Module):
-    def __init__(self, hidden_dim, n_layers):
+    def __init__(self, input_dim, hidden_dim, n_layers):
         super(LSTM, self).__init__()
         self.hidden_dim = hidden_dim
         self.n_layers = n_layers
-        self.lstm = nn.LSTM(13, hidden_dim, n_layers, batch_first=True)
+        self.lstm = nn.LSTM(input_dim, hidden_dim, n_layers, batch_first=True)
         self.fc = nn.Linear(hidden_dim, 1)
     def forward(self, x):
         h0 = torch.zeros(self.n_layers, x.size(0), self.hidden_dim).to(x.device)
@@ -68,5 +67,6 @@ def predict_icu_mortality(model, patient_data):
     return prediction.item()
 # Call the methods
 icu_dataset = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
-model = LSTM(hidden_dim=256, n_layers=2)
+input_dim = icu_dataset[0][0].shape[1]
+model = LSTM(input_dim=input_dim, hidden_dim=256, n_layers=2)
 train(icu_dataset, model, epochs=10)
