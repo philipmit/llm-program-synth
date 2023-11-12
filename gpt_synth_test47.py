@@ -20,14 +20,14 @@ class ICUData(Dataset):
     def __getitem__(self, idx):
         file_path = os.path.join(self.data_path, self.file_names[idx])
         data = pd.read_csv(file_path)
-        data = data.drop(['Hours'], axis=1)  
-        data = data.fillna(0)  
-        data = data.select_dtypes(include=[np.number])
+        data = data.drop(['Hours'], axis=1)
+        data = data.fillna(0)
+        data = data.select_dtypes(include=[np.number]) 
         data = (data - data.mean()) / data.std() 
-        # Create a zero-filled matrix of shape (time_steps, features=13)
-        patient_data = torch.zeros(data.shape[0], 13)
+        # Updated to create a tensor using shape of the DataFrame 
+        patient_data = torch.zeros(*data.shape)
+        patient_data = torch.tensor(data.values, dtype=torch.float32)
         label = self.labels[idx]
-        patient_data[:, :data.shape[1]] = torch.tensor(data.values, dtype=torch.float32)
         return patient_data.unsqueeze(0), label
 class LSTM(nn.Module):
     def __init__(self, hidden_dim, n_layers):
