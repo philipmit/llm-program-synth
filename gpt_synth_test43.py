@@ -18,8 +18,9 @@ class ICUData(Dataset):
     def __getitem__(self, idx):
         file_path = os.path.join(self.data_path, self.file_names[idx])
         data = pd.read_csv(file_path)
-        data = data.select_dtypes(include=[np.number])
+        # Drop the 'Hours' column before selecting numeric data types
         data = data.drop(['Hours'], axis=1)
+        data = data.select_dtypes(include=[np.number]) 
         data = data.fillna(0)
         data = torch.tensor(data.values, dtype=torch.float32)
         label = self.labels[idx]
@@ -60,8 +61,8 @@ model = LSTM(13, 50, 1)
 icu_data = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
 train_model(icu_data, model)
 def predict_icu_mortality(patient_data):
-    patient_data = patient_data.select_dtypes(include=[np.number])
     patient_data = patient_data.drop(['Hours'], axis=1)
+    patient_data = patient_data.select_dtypes(include=[np.number])
     patient_data = patient_data.fillna(0)
     patient_data = torch.tensor(patient_data.values, dtype=torch.float32)
     patient_data = patient_data.unsqueeze(0) 
