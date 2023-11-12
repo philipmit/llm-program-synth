@@ -43,7 +43,7 @@ def collate_fn(batch):
     targets = torch.stack(targets)
     return inputs, targets
 def train_model():
-    input_size = 13 
+    input_size = 14  # This has been changed from 13 to 14
     hidden_size = 64 
     num_layers = 2 
     output_size = 1 
@@ -63,7 +63,7 @@ def train_model():
             loss.backward()
             optimizer.step()
     return model
-trained_model = train_model()  # Moved out from predict_icu_mortality function
+trained_model = train_model() 
 def predict_icu_mortality(patient_data):
     patient_data_numpy = patient_data.squeeze(0).to('cpu').numpy()
     patient_df = pd.DataFrame(patient_data_numpy, columns=['Capillary refill rate', 'Diastolic blood pressure', 
