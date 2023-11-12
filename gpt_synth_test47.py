@@ -20,15 +20,19 @@ class ICUData(Dataset):
     def __getitem__(self, idx):
         file_path = os.path.join(self.data_path, self.file_names[idx])
         data = pd.read_csv(file_path)
-        data = data.drop(['Hours'], axis=1)
-        data = data.fillna(0)
+        data = data.drop(['Hours'], axis=1)  
+        data = data.fillna(0)  
         data = data.select_dtypes(include=[np.number]) 
-        data = (data - data.mean()) / data.std() 
-        # Updated to create a tensor using shape of the DataFrame 
+        data = (data - data.mean()) / data.std()
         patient_data = torch.zeros(*data.shape)
         patient_data = torch.tensor(data.values, dtype=torch.float32)
         label = self.labels[idx]
-        return patient_data.unsqueeze(0), label
+        return patient_data, label
+def my_collate(batch):
+    data = [item[0] for item in batch]
+    data = pad_sequence(data)
+    target = torch.Tensor([item[1] for item in batch])
+    return [data, target]
 class LSTM(nn.Module):
     def __init__(self, hidden_dim, n_layers):
         super(LSTM, self).__init__()
@@ -42,11 +46,12 @@ class LSTM(nn.Module):
 def train(dataset, model):
     criterion = nn.BCELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
-    dataloader = DataLoader(dataset, batch_size=16, shuffle=True)
+    dataloader = DataLoader(dataset, batch_size=16, shuffle=True, collate_fn=my_collate)
     model.train()
-    for _ in range(10):  # 10 epochs
+    for epoch in range(10):  # 10 epochs
         for patient_data, label in dataloader:
             # Forward pass
+            patient_data = patient_data.permute(1, 0, 2)
             output = model(patient_data)
             # Compute Loss
             loss = criterion(output, label)
