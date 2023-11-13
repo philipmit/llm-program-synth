@@ -15,7 +15,8 @@ X_train = scaler.fit_transform(X_train)
 mlp = MLPClassifier(hidden_layer_sizes=(10, 10, 10), max_iter=1000)
 mlp.fit(X_train, y_train)
 def predict_label(single_sample):
-    # Preprocess the single sample in the same way as the training data
+    # Preprocess the single sample in the same way as the
+    # training data
     single_sample = scaler.transform([single_sample])  # Note the use of [single_sample] to keep 2D shape
-    # Return the predicted probabilities
-    return mlp.predict_proba(single_sample)
+    # Return the predicted probabilities for the first (and only) sample
+    return mlp.predict_proba(single_sample)[0]  # Here's the fix!
