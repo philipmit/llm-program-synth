@@ -11,7 +11,7 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_
 # Create a logistic regression model and fit it to our training data
 model = LogisticRegression(max_iter=1000)
 model.fit(X_train, y_train)
-def predict_label(x):
+def predict_label(x):    
     x = np.array(x).reshape(1, -1)  # Reshape the data
     proba = model.predict_proba(x)   # Get the predicted probabilities for classes
-    return np.argmax(proba)            # Return the class with the highest probability
+    return proba        # Return the predicted probabilities for each class
