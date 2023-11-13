@@ -15,5 +15,5 @@ def predict_label(data):
     # As logistic regression predicts for multiple samples simultaneously, 
     # We put our single instance into an array in order to feed it to predict_proba
     data_reshaped = np.array(data).reshape(1, -1)
-    prob_predictions = lr.predict_proba(data_reshaped)
-    return prob_predictions
+    class_prediction = lr.predict(data_reshaped)
+    return class_prediction
