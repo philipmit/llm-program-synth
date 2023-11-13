@@ -18,4 +18,5 @@ model.fit(X_train, y_train)
 def predict_label(raw_data):
     processed_data = scaler.transform(raw_data.reshape(1, -1))
     probabilities = model.predict_proba(processed_data)
-    return probabilities
+    # Return the probabilities as a single list
+    return probabilities[0]
