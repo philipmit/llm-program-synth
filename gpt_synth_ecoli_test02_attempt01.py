@@ -9,10 +9,10 @@ ecoli.columns = ['Sequence Name', 'mcg', 'gvh', 'lip', 'chg', 'aac', 'alm1', 'al
 # Get features X and label y
 X = ecoli.iloc[:, 1:-1]  # All rows, all columns except the last one
 y = ecoli.iloc[:, -1]   # All rows, only the last column
-# replace strings with numbers in y
+# Replace strings with numbers in y
 y = y.replace(list(np.unique(y)), [0,1,2,3,4,5,6,7])
-X=X.to_numpy()
-y=y.to_numpy()
+X = X.to_numpy()
+y = y.to_numpy()
 # Split the dataset into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
 # Standardize the features
@@ -24,6 +24,7 @@ lrModel.fit(X_train, y_train)
 # Define the function predict_label
 def predict_label(raw_data):
     raw_data = np.array(raw_data)
-    raw_data_scaled = scaler.transform(raw_data.reshape(1,-1))
+    raw_data_scaled = scaler.transform(raw_data.reshape(1, -1))
     prediction = lrModel.predict_proba(raw_data_scaled)
-    return prediction
+    # Fixed: return the first (and only) element of the prediction.
+    return prediction[0]
