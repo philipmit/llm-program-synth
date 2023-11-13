@@ -22,4 +22,4 @@ def predict_label(raw_data):
     # Get the predicted probabilities for the sample
     y_pred_proba = mlp.predict_proba(raw_data)
     # Return the predicted probabilities
-    return y_pred_proba
+    return y_pred_proba[0]  # Adjust the return to be a 1D list.
