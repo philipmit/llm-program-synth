@@ -18,4 +18,4 @@ mlp.fit(X_train, y_train)
 # Define the predict_label function
 def predict_label(raw_data):
     processed_data = scaler.transform(np.array(raw_data).reshape(1, -1))
-    return mlp.predict_proba(processed_data)
+    return mlp.predict_proba(processed_data)[0]
