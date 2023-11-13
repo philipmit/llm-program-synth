@@ -21,5 +21,4 @@ def predict_label(x_raw):
     x_std = scaler.transform(x_raw)
     # Use the model to predict probabilities
     proba = model.predict_proba(x_std)
-    # Return the index of the max probability
-    return np.argmax(proba, axis=1)
+    return proba[0]
