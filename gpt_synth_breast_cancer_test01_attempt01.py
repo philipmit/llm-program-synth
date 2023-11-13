@@ -17,7 +17,7 @@ model.fit(X_train, y_train)
 def predict_label(X):
     # Scaling the input
     X = scaler.transform([X])
-    # Predicting probabilities for both classes
-    predictions = model.predict_proba(X)
-    # Return probabilities for both classes
-    return predictions[0]
+    # Predicting probabilities for each classes
+    probabilities = model.predict_proba(X)
+    # Return the probability of positive class
+    return probabilities[0][1]
