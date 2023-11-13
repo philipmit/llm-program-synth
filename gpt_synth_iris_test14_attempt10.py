@@ -20,4 +20,4 @@ mlp.fit(X_train, y_train)
 def predict_label(raw_data):
     raw_data = sc.transform([raw_data])
     pred_proba = mlp.predict_proba(raw_data)
-    return pred_proba
+    return pred_proba[0]  # Select the first and only element of the list to keep it 2D
