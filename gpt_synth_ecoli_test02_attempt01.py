@@ -12,13 +12,8 @@ y = ecoli.iloc[:, -1]   # All rows, only the last column
 # Replace strings with integer labels in y
 label_encoder = LabelEncoder()
 y = label_encoder.fit_transform(y)
-# Add one instance of each label in the training data
-classes = np.unique(y)
-sample_X = np.zeros((classes.size, X.shape[1]))
-X = np.vstack([X.to_numpy(), sample_X])
-y = np.concatenate([y.ravel(), classes], axis=0)  # Ensuring y is a 1D array as expected by the model
-# Split the dataset into training and testing sets
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
+# Split the dataset into training and testing sets using stratify to balance the classes
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42, stratify=y)
 # Standardizing the features
 scaler = StandardScaler()
 X_train = scaler.fit_transform(X_train)
