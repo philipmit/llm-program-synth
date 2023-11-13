@@ -20,4 +20,4 @@ def predict_label(single_sample):
     # We have to reshape it to a 2D array and apply the feature scaling
     single_sample = scaler.transform(single_sample.reshape(1, -1))
     # Return the model's prediction
-    return log_reg.predict_proba(single_sample)
+    return log_reg.predict_proba(single_sample)[0]
