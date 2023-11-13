@@ -19,6 +19,6 @@ lr.fit(X_train, y_train)
 def predict_label(raw_data):
     # Scale the raw data using the same scaler used for training
     raw_data_scaled = scaler.transform(raw_data.reshape(1, -1))
-    # Make prediction
-    prediction = lr.predict_proba(raw_data_scaled)
+    # Make prediction. Here we add an index [0] to return a 1D array instead of a 2D array.
+    prediction = lr.predict_proba(raw_data_scaled)[0]
     return prediction
