@@ -2,10 +2,12 @@ from sklearn.neural_network import MLPClassifier
 from sklearn.datasets import load_iris
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
+# Define a function to predict labels
 def predict_label(single_sample):
     single_sample = scaler.transform([single_sample])
     probabilities = model.predict_proba(single_sample)
-    return probabilities
+    # Return the 0th element of the probabilities list to avoid returning a list of lists
+    return probabilities[0]
 # Load the Iris dataset
 iris = load_iris()
 X = iris.data
