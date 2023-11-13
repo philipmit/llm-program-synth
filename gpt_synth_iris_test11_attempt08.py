@@ -1,4 +1,3 @@
-# Required Libraries
 from sklearn.datasets import load_iris
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
@@ -21,4 +20,4 @@ def predict_label(sample):
     sample = sc.transform([sample])
     # Use trained model to predict label
     prediction = mlp.predict_proba(sample)
-    return prediction
+    return prediction[0]
