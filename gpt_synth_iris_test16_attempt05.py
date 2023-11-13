@@ -17,4 +17,4 @@ def predict_label(raw_data):
     """
     # The model predicts the probabilities of the input sample being in each class
     probabilities = log_reg.predict_proba([raw_data])
-    return probabilities
+    return probabilities[0]
