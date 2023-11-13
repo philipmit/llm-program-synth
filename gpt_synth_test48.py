@@ -24,7 +24,7 @@ class ICUData(Dataset):
         data = data.fillna(0)  
         data = data.select_dtypes(include=[np.number]) 
         label = self.labels[idx]
-        return torch.tensor(data.values, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
+        return torch.tensor(data.values, dtype=torch.float32), label
 class LSTMmodel(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers, output_size):
         super(LSTMmodel, self).__init__()
@@ -40,12 +40,12 @@ class LSTMmodel(nn.Module):
         out = torch.sigmoid(out)
         return out.squeeze()
 # Hyper-parameters
-input_size = 14  # number of features is updated to 14
-hidden_size = 64  # number of features in hidden state
-num_layers = 2  # number of stacked LSTM layers
-num_classes = 1  # number of output classes 
-num_epochs = 100  # number of epochs to train for
-learning_rate = 0.001  # learning rate
+input_size = 14  
+hidden_size = 64  
+num_layers = 2  
+num_classes = 1
+num_epochs = 100  
+learning_rate = 0.001  
 def train_model():
     # Load Dataset
     dataset = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
@@ -64,6 +64,7 @@ def train_model():
             labels = labels.to(device)
             # Forward pass
             outputs = model(data)
+            outputs = outputs.unsqueeze(0)  # Reshape outputs to match dimensions
             loss = criterion(outputs, labels)
             # Backward and optimize
             optimizer.zero_grad()
