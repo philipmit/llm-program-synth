@@ -8,7 +8,7 @@ X = iris.data
 y = iris.target
 # Split the dataset into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
-# Normalization of data
+# Scaling the features
 scaler = StandardScaler()
 X_train = scaler.fit_transform(X_train)
 # Train the Multi-layer Perceptron
@@ -17,5 +17,7 @@ clf.fit(X_train, y_train)
 def predict_label(raw_data):
     # Transform raw_data using the previously declared scaler
     raw_data = scaler.transform(raw_data.reshape(1, -1))
-    # return probabilities using the trained MLP classifier
-    return clf.predict_proba(raw_data)
+    # Return the predicted probabilities for each class
+    prediction = clf.predict_proba(raw_data)
+    # Getting the 1st element of prediction to flatten it
+    return prediction[0]
