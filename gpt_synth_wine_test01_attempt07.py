@@ -22,4 +22,4 @@ def predict_label(raw_sample):
     preprocess_sample = scaler.transform(np.array(raw_sample).reshape(1, -1))
     # Use the trained model to predict probabilities
     probabilities = log_reg.predict_proba(preprocess_sample)
-    return probabilities
+    return probabilities.flatten() # Ensure that the output is a 1D array
