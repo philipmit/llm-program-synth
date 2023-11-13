@@ -21,4 +21,6 @@ def predict_label(raw_data):
     scaled_data = scaler.transform([raw_data])
     # Predict label
     proba = mlp.predict_proba(scaled_data)
+    # Remove unwanted extra dimension
+    proba = proba[0]
     return proba
