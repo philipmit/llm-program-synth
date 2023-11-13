@@ -19,4 +19,5 @@ def predict_label(new_data):
     new_data = scaler.transform(new_data.reshape(1, -1))
     # Get the model's probabilities for each class for the new data
     probabilities = mlp.predict_proba(new_data)
-    return probabilities
+    # Flatten the probabilities array to match the expected dimensionality
+    return probabilities.flatten()
