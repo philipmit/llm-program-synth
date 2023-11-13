@@ -11,5 +11,7 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_
 model = LogisticRegression(max_iter=200)
 model.fit(X_train, y_train)
 def predict_label(X):
-    """ Predict the label probabilities for a single instance """
-    return model.predict_proba([X])
+    """
+    Predict the label probabilities for a single instance.
+    """
+    return model.predict_proba(X)[0]
