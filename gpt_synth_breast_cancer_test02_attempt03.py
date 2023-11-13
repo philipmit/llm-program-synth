@@ -20,4 +20,4 @@ def predict_label(raw_sample):
     # remember to scale the new data as the model was trained with scaled data
     scaled_sample = scaler.transform(raw_sample.reshape(1, -1))
     prob = model.predict_proba(scaled_sample)
-    return f"The probability of the sample being classified as 1 : {prob[0][1]}"
+    return prob[0][1] # returning only the predicted probability as a float
