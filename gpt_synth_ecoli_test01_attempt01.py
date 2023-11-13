@@ -11,8 +11,9 @@ y = ecoli.iloc[:, -1]   # All rows, only the last column
 # replace strings with numbers in y
 label_encoder = LabelEncoder()
 y = label_encoder.fit_transform(y)  # This will assign a unique number to each class label
-X = X.to_numpy()
-y = y.to_numpy()
+# Convert DataFrames to numpy arrays
+X = X.values
+y = y.astype('int')
 # Split data into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
 # Create and train logistic regression model
