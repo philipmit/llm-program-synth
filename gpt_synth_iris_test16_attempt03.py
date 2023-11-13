@@ -18,4 +18,5 @@ def predict_label(data):
     The input should be a 1D array-like object representing the features of a single sample.
     """
     data = np.array(data).reshape(1, -1)
-    return log_reg.predict_proba(data)
+    prediction = log_reg.predict_proba(data)
+    return prediction[0]
