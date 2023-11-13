@@ -17,4 +17,4 @@ def predict_label(sample):
     and returns the predicted probabilities for the 10 possible classes for that sample.
     """
     sample = np.array(sample).reshape(1, -1)
-    return model.predict(sample)
+    return model.predict_proba(sample)
