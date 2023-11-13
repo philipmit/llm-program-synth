@@ -1,6 +1,7 @@
 from sklearn.datasets import load_iris
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
+import numpy as np
 # Load the Iris dataset
 iris = load_iris()
 X = iris.data
@@ -14,4 +15,4 @@ def predict_label(X):
     """
     Predict the label probabilities for a single instance.
     """
-    return model.predict_proba(X)[0]
+    return model.predict_proba(X.reshape(1, -1))[0]
