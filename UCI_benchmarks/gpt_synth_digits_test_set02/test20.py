@@ -19,5 +19,5 @@ logisticRegr.fit(X_train, y_train)
 def predict_label(raw_data):
     # Preprocess raw data
     data = scaler.transform(raw_data.reshape(1, -1))
-    # Return predicted probabilities
-    return logisticRegr.predict_proba(data)
+    # Return predicted probabilities. Squeeze is used to reduce the dimension of the output array to 2D
+    return logisticRegr.predict_proba(data).squeeze()
