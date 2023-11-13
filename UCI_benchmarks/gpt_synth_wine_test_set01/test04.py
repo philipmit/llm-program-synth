@@ -1,4 +1,3 @@
-
 import numpy as np
 from sklearn.datasets import load_wine
 from sklearn.model_selection import train_test_split
@@ -22,4 +21,4 @@ def predict_label(raw_data):
     scaled_data = scaler.transform(raw_data_reshaped)
     # Predict the probabilities using the logistic regression model
     probabilities = lr_model.predict_proba(scaled_data)
-    return probabilities
+    return probabilities.flatten()
