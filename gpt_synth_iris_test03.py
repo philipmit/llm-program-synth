@@ -18,5 +18,5 @@ mlp = MLPClassifier(hidden_layer_sizes=(10, 10, 10), max_iter=1000)
 mlp.fit(X_train, y_train)
 def predict_label(input_data):
     input_data = scaler.transform([input_data])  # apply the same transformation to the input data
-    probabilities = mlp.predict_proba(input_data)  # get the predicted probabilities
+    probabilities = mlp.predict_proba(input_data)[0]  # get the first (and only) row of the predicted probabilities
     return probabilities
