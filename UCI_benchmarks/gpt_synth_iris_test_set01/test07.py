@@ -10,13 +10,15 @@ y = iris.target
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
 # Standardize the dataset
 scaler = StandardScaler()
-X_train = scaler.fit_transform(X_train)
+scaler.fit(X_train)
+# Transform the training data
+X_train_transformed = scaler.transform(X_train)
 # Train the MLPClassifier
 mlp = MLPClassifier(hidden_layer_sizes=(10, 10, 10), max_iter=1000)
-mlp.fit(X_train, y_train)
+mlp.fit(X_train_transformed, y_train)
 def predict_label(sample):
     # Preprocess the sample
-    sample = scaler.transform([sample])
+    sample_transformed = scaler.transform([sample])
     # Generate prediction
-    probabilities = mlp.predict_proba(sample)
-    return probabilities
+    probabilities = mlp.predict_proba(sample_transformed)
+    return probabilities.flatten()
