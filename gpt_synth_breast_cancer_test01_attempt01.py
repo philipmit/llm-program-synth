@@ -19,5 +19,5 @@ def predict_label(X):
     X = scaler.transform([X])
     # Predicting probabilities for each classes
     probabilities = model.predict_proba(X)
-    # Return probabilities for both classes
-    return probabilities[0]
+    # Return probability for one class (e.g., malignant)
+    return probabilities[0][1]
