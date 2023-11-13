@@ -17,4 +17,4 @@ mlp.fit(X_train_scaled, y_train)
 def predict_label(raw_data):
     """Predict probabilities for a single sample."""
     processed_data = scaler.transform([raw_data])  # Note that input data must be 2D for transform
-    return mlp.predict_proba(processed_data)
+    return mlp.predict_proba(processed_data)[0]   # The [0] at the end ensures output is 2D
