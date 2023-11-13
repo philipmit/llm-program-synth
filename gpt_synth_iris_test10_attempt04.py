@@ -15,7 +15,9 @@ X_train = scaler.fit_transform(X_train)
 mlp = MLPClassifier(hidden_layer_sizes=(10, 10, 10), max_iter=1000)
 mlp.fit(X_train, y_train)
 def predict_label(raw_data):
-    # Normailze the raw_data and reshape it to match the input format
+    # Normalize the raw_data and reshape it to match the input format
     normalized_data = scaler.transform(raw_data.reshape(1, -1))
     probabilities = mlp.predict_proba(normalized_data)
-    return probabilities
+    # Flattening the probabilities into a 2d array
+    probabilities = probabilities.flatten().reshape(1, -1)
+    return probabilities[0]
