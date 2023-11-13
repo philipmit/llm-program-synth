@@ -18,4 +18,5 @@ def predict_label(raw_data):
     """
     # Ensure the input data is reshaped into a 2D array for the predict_proba function
     probabilities = log_reg_model.predict_proba(raw_data.reshape(1, -1))
-    return probabilities
+    # Here is the fix: return only the list of probabilities and not the entire numpy array.
+    return probabilities[0]
