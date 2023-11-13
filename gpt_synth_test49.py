@@ -20,7 +20,7 @@ class ICUData(Dataset):
     def __getitem__(self, idx):
         file_path = os.path.join(self.data_path, self.file_names[idx])
         data = pd.read_csv(file_path)
-        data = data.drop(['Hours'], axis=1)
+        data = data.drop(['Hours'], axis=1) 
         data = data.fillna(0)
         data = data.select_dtypes(include=[np.number])
         label = self.labels[idx]
@@ -38,13 +38,15 @@ class LSTM(nn.Module):
         super(LSTM, self).__init__()
         self.hidden_dim = hidden_dim
         self.num_layers = num_layers
-        self.lstm = nn.LSTM(input_dim, hidden_dim, num_layers, batch_first=True)
-        self.fc = nn.Linear(hidden_dim, output_dim)
+        self.lstm = nn.LSTM(input_dim, hidden_dim, num_layers, batch_first=True, dropout=0.2) # added dropout to prevent overfitting
+        self.fc1 = nn.Linear(hidden_dim, 64) # added another fully connected layer
+        self.fc2 = nn.Linear(64, output_dim)
     def forward(self, x):
         h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_dim).requires_grad_()
         c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_dim).requires_grad_()
         out, (hn, cn) = self.lstm(x, (h0.detach(), c0.detach()))
-        out = self.fc(out[:, -1, :]) 
+        out = self.fc1(out[:, -1, :]) 
+        out = self.fc2(out) # pass the output through the second fully connected layer
         return out
 # Training the Model
 def train_model(model, data_loader, criterion, optimizer, num_epochs):
@@ -59,14 +61,14 @@ def train_model(model, data_loader, criterion, optimizer, num_epochs):
 # Initialize dataset
 dataset = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
 # Initialize DataLoader
-data_loader = DataLoader(dataset=dataset, batch_size=32, shuffle=True, collate_fn=my_collate)
+data_loader = DataLoader(dataset=dataset, batch_size=64, shuffle=True, collate_fn=my_collate) # Increased batch size
 # Initialize Model
-model = LSTM(input_dim=14, hidden_dim=32, num_layers=2, output_dim=1)
+model = LSTM(input_dim=14, hidden_dim=32, num_layers=2, output_dim=1) # Kept the model definition the same
 # Define Loss Function and Optimizer
 criterion = nn.BCEWithLogitsLoss()
-optimizer = torch.optim.SGD(model.parameters(), lr=0.01)
+optimizer = torch.optim.Adam(model.parameters(), lr=0.001) # Changed to Adam optimizer with smaller learning rate
 # Train the Model
-train_model(model, data_loader, criterion, optimizer, num_epochs=10)
+train_model(model, data_loader, criterion, optimizer, num_epochs=20) # Increased number of epochs for training
 # Define Prediction Function
 def predict_icu_mortality(patient_data):
     with torch.no_grad():
