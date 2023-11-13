@@ -17,4 +17,5 @@ def predict_label(raw_data):
     raw_data = np.array(raw_data).reshape(1, -1)
     # Predict probabilities
     probabilities = model.predict_proba(raw_data)
-    return probabilities
+    # Call tolist() on probabilities to convert from 2D array to a 1D list
+    return probabilities.tolist()[0]
