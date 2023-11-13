@@ -17,5 +17,5 @@ lr.fit(X_train, y_train)
 def predict_label(raw_data):
     # Note that we only use transform here, not fit_transform as we want to use the normalization factors from the train set
     processed_data = sc.transform(raw_data.reshape(1, -1))
-    pred = lr.predict_proba(processed_data)
+    pred = lr.predict_proba(processed_data)[0]
     return pred
