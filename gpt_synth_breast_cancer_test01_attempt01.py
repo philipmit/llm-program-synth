@@ -19,5 +19,5 @@ def predict_label(X):
     X = scaler.transform([X])
     # Predicting probabilities for both classes
     probabilities = model.predict_proba(X)
-    # Return probabilities for both classes
-    return probabilities[0]
+    # Return probability of positive class
+    return probabilities[0][1]
