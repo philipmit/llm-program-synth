@@ -8,15 +8,16 @@ X = breast_cancer.data
 y = breast_cancer.target
 # Split the dataset into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
-# Preprocess the inputs
+# Preprocess the inputs with Standard Scaler
 scaler = StandardScaler()
 X_train = scaler.fit_transform(X_train)
-# Train the model
-model = LogisticRegression()
+# Train the Logistic Regression model
+model = LogisticRegression(random_state=42)
 model.fit(X_train, y_train)
-# Define a function that takes a raw sample and predicts the class using the trained model
 def predict_label(X):
+    # Scaling the input
     X = scaler.transform([X])
+    # Predicting probabilities for both classes
     predictions = model.predict_proba(X)
-    # Return the prediction probability for the positive class
-    return predictions[0][1]
+    # Return probabilities for both classes
+    return predictions[0]
