@@ -20,4 +20,6 @@ def predict_label(raw_data):
     # Preprocessing the raw_data using the same scaler used on training data
     raw_scaled = scaler.transform([raw_data])
     predicted_probs = mlp.predict_proba(raw_scaled)
-    return predicted_probs
+    # Return only the first array of predictions probabilities as we are only predicting for one instance here.
+    # Removes an extra dimension from the output.
+    return predicted_probs[0]
