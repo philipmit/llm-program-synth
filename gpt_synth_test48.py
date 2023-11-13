@@ -40,7 +40,7 @@ class LSTMmodel(nn.Module):
         out = torch.sigmoid(out)
         return out.squeeze()
 # Hyper-parameters
-input_size = 13  # number of features
+input_size = 14  # number of features is updated to 14
 hidden_size = 64  # number of features in hidden state
 num_layers = 2  # number of stacked LSTM layers
 num_classes = 1  # number of output classes 
