@@ -18,6 +18,6 @@ model.fit(X_train, y_train)
 def predict_label(raw_data):
     # Data normalization
     processed_data = scaler.transform([raw_data])
-    # prediction
-    predicted_probs = model.predict_proba(processed_data)
+    # Perform prediction
+    predicted_probs = model.predict_proba(processed_data)[0]
     return predicted_probs
