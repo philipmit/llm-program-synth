@@ -16,5 +16,5 @@ model = LogisticRegression(random_state=42, max_iter=1000)
 model.fit(X_train, y_train)
 def predict_label(raw_data):
     raw_data = scaler.transform(raw_data.reshape(1, -1))  # Rescale data
-    prediction = model.predict_proba(raw_data)
+    prediction = model.predict_proba(raw_data)[0]  # Replaced nested list with simple list
     return prediction
