@@ -17,4 +17,4 @@ def predict_label(sample):
     # The model expects input as a 2D array so we need to reshape the single sample
     sample = np.array(sample).reshape(1, -1)
     # Return the predicted class probabilities for the sample
-    return model.predict_proba(sample)
+    return model.predict_proba(sample)[0]
