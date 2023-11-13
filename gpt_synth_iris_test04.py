@@ -19,5 +19,5 @@ mlp.fit(X_train, y_train)
 # Function to predict the label of the given raw unprocessed data
 def predict_label(raw_data):
     processed_data = scaler.transform(raw_data.reshape(1, -1))  # Standarize and reshape raw_data
-    probabilities = mlp.predict_proba(processed_data)
+    probabilities = mlp.predict_proba(processed_data)[0]
     return probabilities
