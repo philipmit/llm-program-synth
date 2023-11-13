@@ -19,7 +19,7 @@ class ICUData(Dataset):
     def __getitem__(self, idx):
         file_path = os.path.join(self.data_path, self.file_names[idx])
         data = pd.read_csv(file_path)
-        data = data.select_dtypes(include=[np.float])
+        data = data.select_dtypes(include=[np.number]) # Change here np.float to np.number
         data = data.drop(['Hours'], axis=1)
         data = (data - data.mean()) / data.std() 
         data = data.fillna(0)
