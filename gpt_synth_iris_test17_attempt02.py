@@ -11,13 +11,12 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_
 # Standardize features
 sc = StandardScaler()
 X_train = sc.fit_transform(X_train)
-X_test = sc.transform(X_test)
 # Train a Logistic regression model
-clf = LogisticRegression(random_state=42)
+clf = LogisticRegression(random_state=42, multi_class='multinomial')
 clf.fit(X_train,y_train)
 def predict_label(raw_data_sample):
     # Standardize the raw data sample
     raw_data_sample_scaled = sc.transform(raw_data_sample.reshape(1, -1))
     # Predict the probabilities
-    probabilities = clf.predict_proba(raw_data_sample_scaled)
+    probabilities = clf.predict_proba(raw_data_sample_scaled)[0]
     return probabilities
