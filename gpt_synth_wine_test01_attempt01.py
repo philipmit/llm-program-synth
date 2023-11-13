@@ -1,3 +1,4 @@
+import numpy as np
 from sklearn.datasets import load_wine
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
@@ -19,6 +20,6 @@ def predict_label(raw_data):
     raw_data = np.array(raw_data).reshape(1, -1)
     # Apply the same scaling to the raw_data as was applied to X_train
     raw_data = sc.transform(raw_data)
-    # Use the logistic regression model to predict the probabilities
-    pred = model.predict_proba(raw_data)
+    # Use the logistic regression model to predict the probabilities. Squeeze is used to ensure output is a single list not nested
+    pred = model.predict_proba(raw_data).squeeze()
     return pred
