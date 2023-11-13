@@ -23,5 +23,6 @@ def predict_label(raw_data):
     raw_data_scaled = scaler.transform(raw_data)
     # Predict the probabilities
     predicted_probabilities = mlp.predict_proba(raw_data_scaled)
-    # Return the predicted probabilities instead of the predicted class
-    return predicted_probabilities
+    # Return the first element of the predicted probabilities, which is a list, 
+    # instead of the predicted class
+    return predicted_probabilities[0]
