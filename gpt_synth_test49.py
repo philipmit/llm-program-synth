@@ -19,9 +19,9 @@ class ICUData(Dataset):
     def __getitem__(self, idx):
         file_path = os.path.join(self.data_path, self.file_names[idx])
         data = pd.read_csv(file_path)
-        data = data.select_dtypes(include=[np.number])
+        data = data.select_dtypes(include=[np.float])
         data = data.drop(['Hours'], axis=1)
-        data = (data - data.min()) / (data.max() - data.min()) 
+        data = (data - data.mean()) / data.std() 
         data = data.fillna(0)
         label = self.labels[idx]
         return torch.tensor(data.values, dtype=torch.float32), label
@@ -30,47 +30,46 @@ class LSTM(nn.Module):
         super(LSTM, self).__init__()
         self.hidden_dim = hidden_dim
         self.num_layers = num_layers
-        self.lstm = nn.LSTM(input_dim, hidden_dim, num_layers, batch_first=True, dropout=0.5)
-        self.fc1 = nn.Linear(hidden_dim, 128)  
-        self.fc2 = nn.Linear(128, output_dim) 
-        self.dropout = nn.Dropout(0.5)
+        self.lstm = nn.LSTM(input_dim, hidden_dim, num_layers, batch_first=True)
+        self.fc = nn.Linear(hidden_dim, output_dim)
+        self.dropout = nn.Dropout(0.2)
+        self.batchnorm = nn.BatchNorm1d(hidden_dim)
     def forward(self, x):
-        h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_dim).requires_grad_()
-        c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_dim).requires_grad_()
-        out, (hn, cn) = self.lstm(x, (h0.detach(), c0.detach()))
-        out = self.fc1(self.dropout(out[:, -1, :])) 
-        out = self.fc2(self.dropout(out))  
+        h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_dim)
+        c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_dim)
+        out, _ = self.lstm(x, (h0, c0))
+        out = self.dropout(out)
+        out = self.batchnorm(out[:, -1, :])
+        out = torch.sigmoid(self.fc(out))
         return out 
 def collate_fn(batch):
-    batch.sort(key=lambda x: x[0].shape[0], reverse=True)
-    seqs, labels = zip(*batch)
-    lengths = [len(seq) for seq in seqs]
-    seqs_padded = pad_sequence(seqs, batch_first=True)
-    return seqs_padded, torch.tensor(labels), lengths
+    data, labels = zip(*batch)
+    data = pad_sequence(data, batch_first=True, padding_value=0)
+    labels = torch.tensor(labels).view(-1, 1)
+    return data, labels
 dataset = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
-data_loader = DataLoader(dataset=dataset, batch_size=64, shuffle=True, collate_fn=collate_fn)
-model = LSTM(input_dim=dataset[0][0].shape[1], hidden_dim=128, num_layers=2, output_dim=1)
-criterion = nn.BCEWithLogitsLoss()
-optimizer = torch.optim.Adam(model.parameters(), lr=0.005)
-scheduler = StepLR(optimizer, step_size=10, gamma=0.1)
-for epoch in range(100):
+data_loader = DataLoader(dataset=dataset, batch_size=32, shuffle=True, collate_fn=collate_fn)
+model = LSTM(input_dim=dataset[0][0].shape[1], hidden_dim=256, num_layers=2, output_dim=1)
+criterion = nn.BCELoss()
+optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+scheduler = StepLR(optimizer, step_size=20, gamma=0.1)
+num_epochs = 150
+for epoch in range(num_epochs):
     model.train()
     total_loss = 0
-    for i, (data, labels, lengths) in enumerate(data_loader):
+    for i, (data, labels) in enumerate(data_loader):
         model.zero_grad()
         outputs = model(data)
-        labels = labels.unsqueeze(1)
-        loss = criterion(outputs, labels)
+        loss = criterion(outputs, labels.float())
         loss.backward()
         optimizer.step()
         total_loss += loss.item()
     scheduler.step()
-    print(f'Epoch:{epoch+1}, Loss:{total_loss/i+1}')
+    if epoch % 10 == 0:
+        print(f'Epoch:{epoch+1}, Loss:{total_loss/i+1}')
 def predict_icu_mortality(patient_sequence):
     model.eval()
-    batch_size, seq_len, dim = patient_sequence.shape
-    patient_sequence = patient_sequence.reshape(batch_size, seq_len, dim)
     with torch.no_grad():
         outputs = model(patient_sequence)
-        probability = torch.sigmoid(outputs).item()
+        probability = outputs.item()
     return probability
