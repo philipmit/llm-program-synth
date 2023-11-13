@@ -16,4 +16,4 @@ logisticRegr.fit(X_train, y_train)
 def predict_label(raw_data):
     prob_values = logisticRegr.predict_proba(raw_data.reshape(1, -1))
     # Flatten and return the maximum predicted probability value array
-    return prob_values.max(axis=1).reshape(-1, 1)
+    return prob_values
