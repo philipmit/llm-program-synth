@@ -17,5 +17,6 @@ clf.fit(X_train, y_train)
 def predict_label(raw_sample):
     # Apply scaling to the raw_sample
     raw_sample_scaled = scaler.transform([raw_sample])
-    #return prediction for the raw_sample_scaled
-    return clf.predict_proba(raw_sample_scaled)
+    # Remove the list wrapping from the return statement. 
+    # Change from 'return clf.predict_proba(raw_sample_scaled)' to
+    return clf.predict_proba(raw_sample_scaled)[0]
