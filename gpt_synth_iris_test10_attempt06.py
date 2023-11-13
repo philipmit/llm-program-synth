@@ -21,4 +21,5 @@ def predict_label(raw_data):
     processed_data = scaler.transform([raw_data])
     # Model's prediction probabilities
     predicted_proba = mlp.predict_proba(processed_data)
-    return predicted_proba
+    # Return only the first item of the prediction probabilities
+    return predicted_proba[0]
