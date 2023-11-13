@@ -23,6 +23,6 @@ def predict_label(sample_data):
     global scaler
     # Preprocess the sample
     processed_sample = scaler.transform(sample_data.reshape(1, -1))
-    # Use the model to predict probabilities
-    predicted_probs = model.predict_proba(processed_sample)
+    # Use the model to predict the most likely class probabilities only
+    predicted_probs = model.predict_proba(processed_sample)[0]
     return predicted_probs
