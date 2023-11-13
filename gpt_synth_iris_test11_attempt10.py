@@ -25,11 +25,9 @@ param_grid = {
 }
 clf = GridSearchCV(mlp, param_grid, cv=5, scoring='roc_auc', verbose=2)
 clf.fit(X_train_scaled, y_train)
-# Update the scaler and MLPClassifier parameters
-scaler = clf.best_estimator_.steps[0][1]
-mlp = clf.best_estimator_.steps[1][1]
+mlp_best = clf.best_estimator_
 # Define the predict_label function
 def predict_label(sample):
     standardized_sample = scaler.transform([sample])
-    probabilities = mlp.predict_proba(standardized_sample)
+    probabilities = mlp_best.predict_proba(standardized_sample)
     return probabilities.flatten()
