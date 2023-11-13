@@ -12,8 +12,7 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_
 model = LogisticRegression(max_iter=5000)
 model.fit(X_train, y_train)
 def predict_label(x_raw):
-    if isinstance(x_raw, list):
-        x_raw = np.array([np.array(xi) for xi in x_raw])
-    elif isinstance(x_raw, tuple):
-        x_raw = np.array([np.array(x_raw)]).reshape(-1, len(x_raw))
+    # Ensure that the input data is 2D
+    if len(x_raw.shape) == 1:
+        x_raw = x_raw.reshape(1, -1)
     return model.predict_proba(x_raw)
