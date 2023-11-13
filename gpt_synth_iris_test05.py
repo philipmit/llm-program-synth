@@ -21,4 +21,4 @@ def predict_label(samples):
     # Scale the samples and predict their probabilities
     samples_scaled = scaler.transform(samples)
     probabilities = mlp.predict_proba(samples_scaled)
-    return probabilities
+    return probabilities.flatten()  # returns a one dimensional list
