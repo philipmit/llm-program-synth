@@ -13,4 +13,5 @@ model.fit(X_train, y_train)
 # Define a function to make predictions on a single sample
 def predict_label(sample_input):
     sample_input_reshaped = sample_input.reshape(1, -1)  # reshape single sample for prediction
-    return model.predict_proba(sample_input_reshaped)
+    prediction=model.predict_proba(sample_input_reshaped)
+    return prediction[0] #return as a 1-D array
