@@ -1,3 +1,4 @@
+ python
 from sklearn.datasets import load_iris
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
@@ -24,4 +25,4 @@ def predict_label(raw_data_sample):
     # standardize the raw data sample using the same mean and standard deviation as before
     raw_data_sample_std = sc.transform(raw_data_sample)
     # Making the prediction
-    return mlp.predict_proba(raw_data_sample_std)
+    return mlp.predict_proba(raw_data_sample_std)[0]
