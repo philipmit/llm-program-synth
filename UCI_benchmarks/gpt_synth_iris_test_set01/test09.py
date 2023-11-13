@@ -30,4 +30,4 @@ def predict_label(raw_sample):
     # Preprocess the raw unprocessed input data
     raw_sample_scaled = scaler.transform(raw_sample)
     # Predict and return the probabilities for the input data
-    return mlp.predict_proba(raw_sample_scaled)
+    return mlp.predict_proba(raw_sample_scaled)[0]
