@@ -6,10 +6,8 @@ from torch import nn
 from torch.nn.utils.rnn import pad_sequence
 from torch.utils.data import DataLoader, Dataset
 from torch.optim.lr_scheduler import StepLR
-# File paths
 TRAIN_DATA_PATH = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/"
 LABEL_FILE = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/listfile.csv"
-# Define the Dataset
 class ICUData(Dataset):
     def __init__(self, data_path, label_file):
         self.data_path = data_path
@@ -44,7 +42,6 @@ class LSTM(nn.Module):
         out = self.fc2(self.dropout(out))  
         return out 
 def collate_fn(batch):
-    # Sort batch by sequence length
     batch.sort(key=lambda x: x[0].shape[0], reverse=True)
     seqs, labels = zip(*batch)
     lengths = [len(seq) for seq in seqs]
@@ -71,7 +68,9 @@ for epoch in range(50):
     print(f'Epoch:{epoch+1}, Loss:{total_loss/i+1}')
 def predict_icu_mortality(patient_sequence):
     model.eval()
+    seq_len, dim = patient_sequence.shape
+    patient_sequence = patient_sequence.reshape(1, seq_len, dim)
     with torch.no_grad():
-        outputs = model(patient_sequence.unsqueeze(0))
-        probability = torch.sigmoid(outputs).numpy()
+        outputs = model(patient_sequence)
+        probability = torch.sigmoid(outputs).item()
     return probability
