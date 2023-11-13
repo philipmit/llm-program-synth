@@ -19,9 +19,4 @@ def predict_label(raw_data):
     scaled_data = scaler.transform([raw_data])
     # Predict the probabilities
     probabilities = model.predict_proba(scaled_data)
-    return probabilities
-# Example usage:
-# note: insert raw data in the form of [sepal length, sepal width, petal length, petal width]
-# raw_data = [5.1, 3.5, 1.4, 0.2]
-# probabilities = predict_label(raw_data)
-# print(probabilities)
+    return probabilities[0]  # returning 1D array for each prediction
