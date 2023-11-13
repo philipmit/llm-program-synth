@@ -12,6 +12,6 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_
 model = LogisticRegression(max_iter=5000)
 model.fit(X_train, y_train)
 def predict_label(sample):
-    # Use the trained model to predict the label for the raw unprocessed sample
-    sample_processed = np.array([sample])
+    # Reshape the sample into 2D array, then predict
+    sample_processed = sample.reshape(1, -1)
     return model.predict_proba(sample_processed)
