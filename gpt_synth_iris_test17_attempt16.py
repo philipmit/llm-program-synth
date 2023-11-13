@@ -16,5 +16,5 @@ def predict_label(sample):
     sample = np.array(sample).reshape(1, -1)
     # Predict probabilities
     probas = lr.predict_proba(sample)
-    # Return probabilities
-    return probas
+    # Return probabilities as a 1d list
+    return probas.ravel()
