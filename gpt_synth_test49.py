@@ -24,7 +24,7 @@ class ICUData(Dataset):
         data = (data - data.min()) / (data.max() - data.min()) 
         data = data.fillna(0)
         label = self.labels[idx]
-        return torch.tensor(data.values, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
+        return torch.tensor(data.values, dtype=torch.float32), label
 class LSTM(nn.Module):
     def __init__(self, input_dim, hidden_dim, num_layers, output_dim):
         super(LSTM, self).__init__()
@@ -68,8 +68,8 @@ for epoch in range(50):
     print(f'Epoch:{epoch+1}, Loss:{total_loss/i+1}')
 def predict_icu_mortality(patient_sequence):
     model.eval()
-    seq_len, dim = patient_sequence.shape
-    patient_sequence = patient_sequence.reshape(1, seq_len, dim)
+    batch_size, seq_len, dim = patient_sequence.shape
+    patient_sequence = patient_sequence.reshape(batch_size, seq_len, dim)
     with torch.no_grad():
         outputs = model(patient_sequence)
         probability = torch.sigmoid(outputs).item()
