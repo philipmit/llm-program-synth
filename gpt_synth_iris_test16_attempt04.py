@@ -19,4 +19,4 @@ def predict_label(new_data):
     # preprocess the new_data like the training data
     new_data = scaler.transform(new_data.reshape(1, -1))
     # predict and return the probabilities
-    return model.predict_proba(new_data)
+    return model.predict_proba(new_data)[0]
