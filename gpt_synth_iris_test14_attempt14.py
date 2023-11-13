@@ -21,5 +21,5 @@ def predict_label(sample):
     # Standardizing the sample
     sample = scaler.transform(sample)
     # Predicting probabilities
-    predicted = model.predict_proba(sample)
+    predicted = model.predict_proba(sample)[0]  # Take the first element of predicted probabilities as it's a 2D array
     return predicted
