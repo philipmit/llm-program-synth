@@ -2,6 +2,7 @@ from sklearn.datasets import load_iris
 from sklearn.model_selection import train_test_split
 from sklearn.neural_network import MLPClassifier
 from sklearn.preprocessing import StandardScaler
+import numpy as np
 # Load the Iris dataset
 iris = load_iris()
 X = iris.data
@@ -20,4 +21,4 @@ mlp.fit(X_train, y_train)
 def predict_label(raw_data):
     processed_data = scaler.transform(raw_data.reshape(1, -1))
     predicted_probabilities = mlp.predict_proba(processed_data)
-    return(predicted_probabilities)
+    return predicted_probabilities[0]
