@@ -18,4 +18,5 @@ mlp.fit(X_train_prep, y_train)
 # Defining the prediction function
 def predict_label(X_raw):
     X_prep = sc.transform([X_raw])
-    return mlp.predict_proba(X_prep)
+    preds = mlp.predict_proba(X_prep)
+    return preds[0]
