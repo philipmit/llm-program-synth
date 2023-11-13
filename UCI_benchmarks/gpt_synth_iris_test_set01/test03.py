@@ -22,4 +22,5 @@ def predict_label(x):
     x = scaler.transform(x)
     # Run prediction
     probabilities = mlp.predict_proba(x)
-    return probabilities
+    # Squeeze the array into 1D array
+    return probabilities.squeeze()
