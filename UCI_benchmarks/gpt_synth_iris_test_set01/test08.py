@@ -23,7 +23,5 @@ mlp.fit(X_train, y_train)
 def predict_label(raw_data):
     # Apply the same scaler to the raw data
     scaled_data = scaler.transform(raw_data.reshape(1, -1))
-    # Predict probabilities
-    probs = mlp.predict_proba(scaled_data)
-    # Return the index of the class with the highest probability
-    return np.argmax(probs, axis=1)
+    # Predict and return probabilities
+    return mlp.predict_proba(scaled_data)
