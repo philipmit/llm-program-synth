@@ -20,4 +20,5 @@ def predict_label(raw_data):
     raw_data_reshaped = np.array(raw_data).reshape(1, -1)
     # Get predictions from the logistic regression model
     prediction_proba = model.predict_proba(raw_data_reshaped)
-    return prediction_proba
+    # Return the class with the highest probability for the given data
+    return np.argmax(prediction_proba, axis=1)
