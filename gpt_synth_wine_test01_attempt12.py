@@ -1,3 +1,4 @@
+import numpy as np
 from sklearn.datasets import load_wine
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
@@ -15,10 +16,10 @@ X_train = scaler.fit_transform(X_train)
 model = LogisticRegression(multi_class='ovr', solver='liblinear')
 model.fit(X_train, y_train)
 def predict_label(x_raw):
-    # Your original x_raw was expected to be a 1-D array because we will predict only one instance at a time.
     x_raw = np.array(x_raw).reshape(1,-1)
     # Standardize the data
     x_std = scaler.transform(x_raw)
     # Use the model to predict probabilities
     proba = model.predict_proba(x_std)
-    return proba
+    # Return the index of the max probability
+    return np.argmax(proba, axis=1)
