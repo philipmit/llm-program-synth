@@ -25,4 +25,5 @@ def predict_label(raw_data):
     scaled_data = scaler.transform(raw_data.reshape(1, -1))
     # Predict probabilities
     probs = mlp.predict_proba(scaled_data)
-    return probs
+    # Return the index of the class with the highest probability
+    return np.argmax(probs, axis=1)
