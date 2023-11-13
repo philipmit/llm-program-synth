@@ -18,6 +18,6 @@ mlp.fit(X_train, y_train)
 def predict_label(unprocessed_data):
     # Preprocess data using the same scaler fit on the training data
     processed_data = scaler.transform(unprocessed_data.reshape(1, -1))
-    # Predict the label
-    proba = mlp.predict_proba(processed_data)
+    # Predict the probabilities for each class
+    proba = mlp.predict_proba(processed_data)[0]
     return proba
