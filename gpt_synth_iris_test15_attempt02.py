@@ -1,7 +1,6 @@
 from sklearn.datasets import load_iris
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
-import numpy as np
 # Load the Iris dataset
 iris = load_iris()
 X = iris.data
@@ -12,10 +11,11 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_
 model = LogisticRegression(max_iter=200)
 model.fit(X_train, y_train)
 def predict_label(input_data):
-    # Reshape the input to match the format the model requires
-    reshaped_data = input_data.reshape(1, -1)
-    probabilities = model.predict_proba(reshaped_data)
-    # Get the index of the maximum probability
-    max_prob_index = np.argmax(probabilities)
-    # Return the maximum probability value
-    return probabilities[0][max_prob_index]
+    # Expect input data to be a NumPy array. 
+    # Reshape the input data to be a 2D array with 1 row if it's a 1D array
+    if len(input_data.shape) == 1:
+        input_data = input_data.reshape(1, -1)
+    # The model will output the predicted_probabilities which will be a 2D array
+    predicted_probabilities = model.predict_proba(input_data)
+    # Return the predicted probabilities as a list
+    return list(predicted_probabilities[0])
