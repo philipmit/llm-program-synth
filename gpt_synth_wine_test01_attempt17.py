@@ -20,5 +20,5 @@ def predict_label(raw_data):
     # Apply the same standardization
     raw_data_std = scaler.transform([raw_data])
     # Predict probabilities
-    prediction = model.predict_proba(raw_data_std)
+    prediction = model.predict_proba(raw_data_std)[0]
     return prediction
