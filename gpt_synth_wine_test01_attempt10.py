@@ -18,5 +18,5 @@ model.fit(X_train, y_train)
 def predict_label(raw_data):
     raw_data = raw_data.reshape(1, -1) # reshape to 1 sample 
     processed_data = scaler.transform(raw_data) # apply the same transformations used on the training data
-    probabilities = model.predict_proba(processed_data) # get probabilities
+    probabilities = model.predict_proba(processed_data)[0] # get probabilities and extract the list (not nested)
     return probabilities
