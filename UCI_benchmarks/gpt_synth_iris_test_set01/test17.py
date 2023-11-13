@@ -22,4 +22,4 @@ def predict_label(raw_data):
     raw_data_scaled = scaler.transform(raw_data.reshape(1, -1))
     # Get the predicted probabilities
     probabilities = mlp.predict_proba(raw_data_scaled)
-    return probabilities
+    return probabilities[0]
