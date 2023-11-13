@@ -10,23 +10,24 @@ X = ecoli.iloc[:, 1:-1]  # All rows, all columns except the last one
 y = ecoli.iloc[:, -1]   # All rows, only the last column
 # replace class labels with numbers
 y = y.replace(list(np.unique(y)), [0,1,2,3,4,5,6,7])
-# Convert to numpy arrays
-X = X.to_numpy()
-y = y.to_numpy()
-# Scale the dataset 
+# convert to numpy arrays
+X=X.to_numpy()
+y=y.to_numpy()
+# scale the dataset 
 sc = StandardScaler()
 X = sc.fit_transform(X)
-# Split the dataset into training and testing sets
+# split the dataset into training and testing sets
 from sklearn.model_selection import train_test_split
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
-# Create and train the logistic regression model
+# create and train the logistic regression model
 model = LogisticRegression()
 model.fit(X_train, y_train)
 def predict_label(raw_data):
-    # Preprocess the raw_data
+    # preprocess the raw data
     raw_data = np.array(raw_data).reshape(1, -1)
-    # Since the data was trained on scaled data, we need to scale the new data
+    # since the data was trained on scaled data, we need to scale the new data
     raw_data = sc.transform(raw_data)
-    # Get the predictions
+    # get the predictions
     predicted_probabilities = model.predict_proba(raw_data)
-    return predicted_probabilities
+    # return only the first row from the predicted probabilities, making it a 1D array
+    return predicted_probabilities[0]
