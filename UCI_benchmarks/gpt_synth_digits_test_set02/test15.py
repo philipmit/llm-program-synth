@@ -18,4 +18,4 @@ def predict_label(data):
     data = np.array(data).reshape(1, -1)
     # Prediction probabilities for the data point
     probabilities = model.predict_proba(data)
-    return probabilities
+    return probabilities[0]
