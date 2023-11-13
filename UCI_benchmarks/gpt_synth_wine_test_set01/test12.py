@@ -12,10 +12,14 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_
 scaler = StandardScaler()
 X_train = scaler.fit_transform(X_train)
 # Train the logistic regression model
-model = LogisticRegression(max_iter=1000)
+model = LogisticRegression(random_state=42, max_iter=1000)
 model.fit(X_train, y_train)
 def predict_label(data):
     # Preprocess the example
     data = scaler.transform(data.reshape(1, -1))
     # Predict and return probabilities
-    return model.predict_proba(data)
+    prediction = model.predict_proba(data)
+    # Ensure that the output is a 1D array for single observation
+    if prediction.shape[0] == 1:
+        return prediction[0]
+    return prediction
