@@ -20,5 +20,5 @@ model.fit(X_train, y_train)
 def predict_label(raw_sample):
     # Preprocess the raw unprocessed data
     raw_sample = scaler.transform([raw_sample])  # Note: input is expected as 2D array
-    # Predict and return the output
-    return model.predict_proba(raw_sample)
+    # Predict and return the output, stripping the outer array to avoid dimension inconsistency
+    return model.predict_proba(raw_sample)[0]
