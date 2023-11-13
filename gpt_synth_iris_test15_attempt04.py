@@ -16,5 +16,7 @@ def predict_label(raw_data):
     processed_data = np.array(raw_data).reshape(1,-1)
     # Make a prediction using the model
     prediction = model.predict_proba(processed_data)
+    # Flatten the prediction array 
+    flattened_prediction = prediction.flatten()
     # Return the predicted probabilities 
-    return prediction
+    return flattened_prediction
