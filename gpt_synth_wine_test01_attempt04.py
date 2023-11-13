@@ -19,6 +19,6 @@ logreg.fit(X_train, y_train)
 def predict_label(raw_data):
     # Preprocess the raw data
     processed_data = scaler.transform(raw_data.reshape(1, -1))
-    # Predict the label
-    label = logreg.predict(processed_data)
-    return label
+    # Predict the probabilities for each class
+    probabilities = logreg.predict_proba(processed_data)
+    return probabilities[0]
