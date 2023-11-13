@@ -22,4 +22,4 @@ def predict_label(single_sample):
     single_sample_scaled = sc.transform(single_sample.reshape(1, -1))
     # Use the trained model to predict the probabilities for each class
     predicted_probabilities = mlp.predict_proba(single_sample_scaled)
-    return predicted_probabilities
+    return predicted_probabilities.ravel()  # Use .ravel() to convert from 2D to 1D array
