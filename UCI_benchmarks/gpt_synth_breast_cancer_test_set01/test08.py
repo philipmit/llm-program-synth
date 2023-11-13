@@ -1,4 +1,4 @@
-rom sklearn.datasets import load_breast_cancer
+from sklearn.datasets import load_breast_cancer
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
@@ -16,6 +16,8 @@ log_reg = LogisticRegression()
 log_reg.fit(X_train, y_train)
 # Define the predict function
 def predict_label(input_data):
+    # Make sure the input data is a 2D array
+    input_data = input_data.reshape(1, -1)
     # Standardize the input data
     input_data = sc.transform(input_data)
     # Predict the probability of the label being 1
