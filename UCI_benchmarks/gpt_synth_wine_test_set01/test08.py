@@ -22,6 +22,5 @@ def predict_label(raw_data):
     raw_data = np.array(raw_data).reshape(1, -1)  # Reshape data if it's a single sample
     raw_data_std = scaler.transform(raw_data)
     # Predict the probabilities
-    # Fetching the index (class) with the maximum probability
-    predicted_class = np.argmax(model.predict_proba(raw_data_std))
-    return predicted_class
+    predicted_probabilities = model.predict_proba(raw_data_std)
+    return predicted_probabilities[0]
