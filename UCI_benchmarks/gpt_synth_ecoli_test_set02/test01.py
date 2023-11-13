@@ -1,17 +1,15 @@
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import roc_auc_score
 from sklearn.neural_network import MLPClassifier
+from sklearn.metrics import accuracy_score
 # Load the ecoli dataset
 ecoli = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', delim_whitespace=True, header=None)
 ecoli.columns = ['Sequence Name', 'mcg', 'gvh', 'lip', 'chg', 'aac', 'alm1', 'alm2', 'class']
 # Define predictor and target variables
 X = ecoli.iloc[:, 1:-1]  
 y = ecoli.iloc[:, -1]   
-# Replace class labels with numbers
 class_mapping = {label: index for index, label in enumerate(np.unique(y))}
 y = y.replace(class_mapping)
 # Convert to numpy arrays
@@ -22,9 +20,9 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, stratif
 # Scale the data
 scaler = StandardScaler()
 X_train = scaler.fit_transform(X_train)
-X_test = scaler.transform(X_test) # We scale X_test to apply same transformation as training data
-# Create and train the MultiLayer Perceptron model
-model = MLPClassifier(hidden_layer_sizes=(50,100,50), max_iter=100,learning_rate_init=0.01)
+X_test = scaler.transform(X_test)
+# Create and train the MLP model
+model = MLPClassifier(hidden_layer_sizes=(50, 100, 50), max_iter=100,learning_rate_init=0.01)
 model.fit(X_train, y_train)
 def predict_label(raw_data):
     # Reshape the input data
@@ -35,4 +33,6 @@ def predict_label(raw_data):
     return model.predict_proba(raw_data)[0]
 # The model performance on validation set
 y_pred = model.predict(X_test)
-roc_auc_score(y_test, y_pred)
+# Use accuracy_score for checking the model's performance
+accur_score = accuracy_score(y_test, y_pred)
+print('Accuracy Score:', accur_score)
