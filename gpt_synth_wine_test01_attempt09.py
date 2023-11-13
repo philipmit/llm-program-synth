@@ -13,4 +13,5 @@ lr = LogisticRegression(max_iter=1000)
 lr.fit(X_train, y_train)
 # Define the function predict_label
 def predict_label(raw_data):
-    return lr.predict_proba(np.array(raw_data).reshape(1,-1))
+    # reshaping raw_data and returning first item of list to avoid nested lists
+    return lr.predict_proba(np.array(raw_data).reshape(1,-1))[0]
