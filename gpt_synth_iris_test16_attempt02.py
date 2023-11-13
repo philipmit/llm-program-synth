@@ -13,5 +13,4 @@ model = LogisticRegression(max_iter=1000)
 model.fit(X_train, y_train)
 def predict_label(x):    
     x = np.array(x).reshape(1, -1)  # Reshape the data
-    proba = model.predict_proba(x)   # Get the predicted probabilities for classes
-    return proba        # Return the predicted probabilities for each class
+    return model.predict_proba(x)[0]   # Return the predicted probabilities directly
