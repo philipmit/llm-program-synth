@@ -69,10 +69,8 @@ optimizer = torch.optim.SGD(model.parameters(), lr=0.01)
 train_model(model, data_loader, criterion, optimizer, num_epochs=10)
 # Define Prediction Function
 def predict_icu_mortality(patient_data):
-    patient_data = patient_data.drop(['Hours'], axis=1)
-    patient_data = patient_data.fillna(0)
-    patient_data = patient_data.select_dtypes(include=[np.number])
-    patient_data = torch.tensor(patient_data.values, dtype=torch.float32).unsqueeze(0)
-    output = model(patient_data)
-    prob = torch.sigmoid(output).item()
-    return prob
+    with torch.no_grad():
+        patient_data = patient_data.unsqueeze(0) if len(patient_data.shape) == 2 else patient_data
+        output = model(patient_data)
+        prob = torch.sigmoid(output).item()
+        return prob
