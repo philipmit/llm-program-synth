@@ -18,5 +18,5 @@ def predict_label(raw_data):
     # Normalize the raw_data using the same scaler used in the training process
     raw_data_scaled = scaler.transform(raw_data.reshape(1, -1))
     # Get the predicted probabilities
-    probs = model.predict_proba(raw_data_scaled)
+    probs = model.predict_proba(raw_data_scaled)[0]  # Updated line here
     return probs
