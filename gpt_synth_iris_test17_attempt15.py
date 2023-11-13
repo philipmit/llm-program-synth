@@ -17,4 +17,4 @@ def predict_label(raw_data):
     data = np.array(raw_data).reshape(1, -1)
     # Use our trained model to predict the probabilities
     predictions = model.predict_proba(data)
-    return predictions
+    return predictions[0]
