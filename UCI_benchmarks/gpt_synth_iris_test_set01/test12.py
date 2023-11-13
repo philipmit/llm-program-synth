@@ -16,7 +16,7 @@ model = MLPClassifier(hidden_layer_sizes=(10,), max_iter=1000, random_state=42)
 model.fit(X_train, y_train)
 def predict_label(X):
     # The input should be preprocessed in the same way as the training data
-    X = scaler.transform([X])
+    X_transformed = scaler.transform([X])
     # Predict the probabilities for each class
-    probabilities = model.predict_proba(X)
-    return probabilities
+    probabilities = model.predict_proba(X_transformed)
+    return probabilities[0]
