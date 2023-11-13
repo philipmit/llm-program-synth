@@ -14,10 +14,10 @@ X_train = scaler.fit_transform(X_train)
 # Train the logistic regression model
 model = LogisticRegression(max_iter=1000)
 model.fit(X_train, y_train)
+# Correcting the predict_label function to return probabilities
 def predict_label(sample):
     # Preprocess the sample as per model requirements
     sample = sample.reshape(1, -1)
     sample = scaler.transform(sample)
-    proba = model.predict_proba(sample)
-    # Return the class with the highest probability
-    return proba.argmax(axis=1)
+    # Return the predicted probabilities
+    return model.predict_proba(sample)[0]
