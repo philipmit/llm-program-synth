@@ -17,11 +17,11 @@ X_test = scaler.transform(X_test)
 mlp = MLPClassifier(hidden_layer_sizes=(10, 10, 10), max_iter=1000)
 mlp.fit(X_train, y_train)
 def predict_label(raw_data):
-    # Ensure raw_data is 2D
-    if len(raw_data.shape) == 1:
-        raw_data = np.expand_dims(raw_data, axis=0)
+    # Ensure raw_data is 1D
+    if len(raw_data.shape) > 1:
+        raw_data = np.squeeze(raw_data)
     # Scale the raw_data
-    processed_data = scaler.transform(raw_data)
+    processed_data = scaler.transform([raw_data]) # Note the change here, considering the raw_data as single sample
     # Predict the probabilities
     probabilities = mlp.predict_proba(processed_data)
-    return probabilities
+    return probabilities[0] # Returning the first element of the output, which is a 1D list
