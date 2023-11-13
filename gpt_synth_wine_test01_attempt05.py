@@ -1,3 +1,4 @@
+import numpy as np
 from sklearn.datasets import load_wine
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
@@ -16,7 +17,9 @@ model = LogisticRegression(max_iter=10000)
 model.fit(X_train, y_train)
 # Define the prediction function
 def predict_label(x_raw):
+    # Transform the raw input to 2D array if it's not
+    x = np.array(x_raw).reshape(1, -1) if len(x_raw.shape) == 1 else x_raw
     # Standardize the raw input
-    x = scaler.transform(x_raw)
+    x = scaler.transform(x)
     # Predict the probabilities and return the result
     return model.predict_proba(x)
