@@ -6,7 +6,7 @@ import numpy as np
 digits = load_digits()
 X = digits.data
 y = digits.target
-# Split the dataset into training and testing sets
+# Split the dataset into a training set and a test set
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
 # Create a logistic regression model
 model = LogisticRegression(multi_class='ovr', solver='liblinear')
@@ -15,8 +15,5 @@ model.fit(X_train, y_train)
 def predict_label(x):
     # Reshape the input to be 2D as the model expects
     x = np.array(x).reshape(1, -1)
-    # Return predicted probabilities
-    return model.predict_proba(x)
-# Example usage:
-# prob = predict_label(X_train[0])
-# print(prob)
+    # Return predicted probabilities and flatten 2D array to 1D
+    return model.predict_proba(x).flatten()
