@@ -22,5 +22,5 @@ def predict_label(raw_sample):
     # Preprocessing raw sample
     raw_sample_transformed = scaler.transform([raw_sample])
     # Predict
-    prediction = np.argmax(model.predict_proba(raw_sample_transformed))
-    return prediction
+    predicted_probabilities = model.predict_proba(raw_sample_transformed)[0]
+    return predicted_probabilities
