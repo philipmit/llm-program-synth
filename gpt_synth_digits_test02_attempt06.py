@@ -19,4 +19,4 @@ clf.fit(X_train, y_train)
 def predict_label(raw_data):
     processed_data = scaler.transform(raw_data.reshape(1, -1)) # reshape the data to 2D
     proba = clf.predict_proba(processed_data)
-    return proba
+    return proba[0]  #Return the first (and only) element of the proba list
