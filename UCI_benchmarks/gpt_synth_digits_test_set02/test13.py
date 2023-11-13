@@ -17,4 +17,6 @@ def predict_label(raw_data):
     raw_data = np.array(raw_data).reshape(1, -1)
     # Predict the probabilities of each class
     predicted_probabilities = logreg.predict_proba(raw_data)
-    return predicted_probabilities
+    # Get the index with the maximum probability
+    predicted_label = np.argmax(predicted_probabilities)
+    return predicted_label
