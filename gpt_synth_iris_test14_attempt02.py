@@ -12,5 +12,5 @@ mlp = MLPClassifier(hidden_layer_sizes=(10,), max_iter=1000, random_state=42)
 # Fit (train) the model
 mlp.fit(X_train, y_train)
 def predict_label(raw_data):
-    processed_data = mlp.predict_proba([raw_data])
+    processed_data = mlp.predict_proba([raw_data])[0]
     return processed_data
