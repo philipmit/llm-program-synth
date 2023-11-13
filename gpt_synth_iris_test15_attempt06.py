@@ -12,5 +12,5 @@ def predict_label(raw_data):
     if len(raw_data.shape) == 1:
         raw_data = np.reshape(raw_data, (1, -1))
     probabilities = model.predict_proba(raw_data)
-    #Return the index of the maximum predicted probability:
-    return np.argmax(probabilities, axis=1)
+    #Return the predicted probabilities for each class:
+    return probabilities
