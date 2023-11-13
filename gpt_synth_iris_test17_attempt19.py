@@ -18,4 +18,5 @@ def predict_label(single_sample):
     single_sample = np.array(single_sample).reshape(1, -1)
     # Calculate the probabilities for each class
     predicted_proba = model.predict_proba(single_sample)
-    return predicted_proba
+    # Return a 1D list as roc_auc_score expects input of dimension <=2
+    return predicted_proba[0]
