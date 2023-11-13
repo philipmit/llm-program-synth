@@ -1,7 +1,7 @@
+import numpy as np
 from sklearn.datasets import load_digits
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
-import numpy as np
 # Load the digits dataset
 digits = load_digits()
 X = digits.data
@@ -16,3 +16,9 @@ def predict_label(x_raw):
     if len(x_raw.shape) == 1:
         x_raw = x_raw.reshape(1, -1)
     return model.predict_proba(x_raw)
+def predict_labels_for_set(X):
+    predictions = np.empty((len(X),model.classes_.shape[0]))
+    for i, x_raw in enumerate(X):
+        prediction = predict_label(x_raw)
+        predictions[i] = prediction
+    return predictions
