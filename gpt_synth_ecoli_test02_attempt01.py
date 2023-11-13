@@ -27,5 +27,4 @@ def predict_label(raw_data):
     raw_data = np.array(raw_data)
     raw_data_scaled = scaler.transform(raw_data.reshape(1, -1))
     prediction_proba = lrModel.predict_proba(raw_data_scaled)[0]
-    prediction_class = label_encoder.classes_[np.argmax(prediction_proba)]  # Get the class label from the predicted probabilities
-    return prediction_proba, prediction_class
+    return prediction_proba.tolist()
