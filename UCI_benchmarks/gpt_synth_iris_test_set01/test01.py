@@ -11,10 +11,9 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_
 # Standardize the data
 scaler = StandardScaler()
 X_train_scaled = scaler.fit_transform(X_train)
-X_test_scaled = scaler.transform(X_test)
 # Define the multi-layer perceptron model
 mlp = MLPClassifier(random_state=42, max_iter=300).fit(X_train_scaled, y_train)
 def predict_label(raw_data):
-    processed_data = scaler.transform(raw_data.reshape(1, -1)) # reshape the data and standardize it
-    probabilities = mlp.predict_proba(processed_data) # get predicted probabilities for the sample
+    processed_data = scaler.transform(raw_data.reshape(1, -1))  # reshape the data and standardize it
+    probabilities = mlp.predict_proba(processed_data).flatten()  # flatten the output to ensure it is 1D
     return probabilities
