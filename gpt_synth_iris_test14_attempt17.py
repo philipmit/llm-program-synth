@@ -22,4 +22,6 @@ def predict_label(X):
     # Normalize the input features using the precomputed mean and variance
     X = scaler.transform([X])
     probabilities = mlp.predict_proba(X)
+    # Flatten the nested list thus removing the dimension causing the error
+    probabilities = [prob for sublist in probabilities for prob in sublist]
     return probabilities
