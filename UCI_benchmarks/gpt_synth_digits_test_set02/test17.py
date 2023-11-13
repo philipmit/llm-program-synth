@@ -15,5 +15,5 @@ logisticRegr.fit(X_train, y_train)
 def predict_label(raw_unprocessed_data):
     # Reshaping raw_unprocessed_data to a 2D array for prediction
     raw_unprocessed_data = np.array(raw_unprocessed_data).reshape(1, -1)
-    # Return predicted probabilities
-    return logisticRegr.predict_proba(raw_unprocessed_data)
+    # Return predicted probabilities flattened to a 1-dimensional array
+    return logisticRegr.predict_proba(raw_unprocessed_data)[0]
