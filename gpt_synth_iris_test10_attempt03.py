@@ -20,7 +20,7 @@ def predict_label(single_sample):
     This function receives a single sample (a numpy array of shape (4,)), scales it according to the scaler trained on the training set,
     predicts the class probabilities using the trained MLP classifier, and returns these probabilities.
     """
-    single_sample = single_sample.reshape(1, -1)    # Reshape the single sample
+    single_sample = single_sample.reshape(1, -1)  # Reshape the single sample
     scaled_sample = scaler.transform(single_sample)  # Scale using the previously fitted scaler
     predicted_probabilities = mlp.predict_proba(scaled_sample)  # Predict the class probabilities
-    return predicted_probabilities
+    return predicted_probabilities[0]
