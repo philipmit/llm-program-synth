@@ -12,8 +12,8 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_
 lr = LogisticRegression(max_iter=5000)
 lr.fit(X_train, y_train)
 def predict_label(raw_data):
-    # Reshape and normalize raw_data to fit the trained model
+    # Reshape and normalize raw_data
     normalized_data = np.array(raw_data).reshape(1, -1) / 16.0
-    # Make prediction using trained model and return predicted probabilities
+    # Make prediction using the trained model
     pred_probs = lr.predict_proba(normalized_data)
-    return pred_probs
+    return pred_probs[0]
