@@ -2,6 +2,7 @@ from sklearn.datasets import load_iris
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LogisticRegression
+import numpy as np
 # Load the Iris dataset
 iris = load_iris()
 X = iris.data
@@ -22,8 +23,8 @@ def predict_label(raw_data):
     """
     # Rescaling raw_data with the predefined StandardScaler
     scaled_data = sc.transform([raw_data])
-    # Return the predicted probabilities
-    probabilities = log_reg.predict_proba(scaled_data)
-    # Return the probabilities of the
-    # class with the highest predicted probability
-    return probabilities.max(axis=1)
+    # Get the array of predicted probabilities per class
+    probabilities = log_reg.predict_proba(scaled_data)[0]
+    # Normalize the predicted probabilities so that they sum up to 1 across all classes
+    normalized_probabilities = probabilities / np.sum(probabilities)
+    return normalized_probabilities
