@@ -2,6 +2,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
 from sklearn.datasets import load_digits
 from sklearn.model_selection import train_test_split
+import numpy as np
 # Load the digits dataset
 digits = load_digits()
 X = digits.data
@@ -18,6 +19,8 @@ logisticRegr.fit(X_train, y_train)
 def predict_label(raw_data):
     # Preprocess raw data
     raw_data = sc.transform(raw_data.reshape(1, -1))
-    # Perform prediction
-    predicted_probabilities = logisticRegr.predict_proba(raw_data)
-    return predicted_probabilities
+    # Perform prediction to get class label
+    predicted_class = logisticRegr.predict(raw_data)
+    # Convert the class label into one-hot encoded format
+    predicted_label = np.eye(len(digits.target_names))[predicted_class]
+    return predicted_label
