@@ -17,5 +17,5 @@ model.fit(X_train, y_train)
 def predict_label(raw_sample):
     # Standardize the raw_sample to match the data model was trained on
     raw_sample = sc.transform(raw_sample.reshape(1, -1))
-    # Return the class probabilities
-    return model.predict_proba(raw_sample)
+    # Return the class probabilities as a 1D array
+    return model.predict_proba(raw_sample)[0]  
