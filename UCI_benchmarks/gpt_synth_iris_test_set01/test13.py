@@ -14,15 +14,12 @@ X_train_scaled = scaler.fit_transform(X_train)
 # Define the Multi-Layer Perceptron classifier and train
 mlp = MLPClassifier(hidden_layer_sizes=(10, 10, 10), max_iter=1000)
 mlp.fit(X_train_scaled, y_train)
-# Save the scaler and the model to be used by the prediction function
-scaler_model = scaler
-mlp_model = mlp
 # Define the predict_label function
 def predict_label(raw_unprocessed_data):
-    # Reshape the data
+    # Rescale the data and reshape to be compatible with the model
     raw_unprocessed_data = raw_unprocessed_data.reshape(1, -1)
-    # Scale the input data
-    scaled_data = scaler_model.transform(raw_unprocessed_data)
-    # Perform prediction
-    probabilities = mlp_model.predict_proba(scaled_data)
-    return probabilities
+    scaled_data = scaler.transform(raw_unprocessed_data)
+    # Predict the label probabilities
+    probabilities = mlp.predict_proba(scaled_data)
+    # Since the result is a list of lists with a single element, we return the first element
+    return probabilities[0]
