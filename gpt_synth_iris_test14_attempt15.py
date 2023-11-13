@@ -2,7 +2,6 @@ from sklearn.datasets import load_iris
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.neural_network import MLPClassifier
-import numpy as np
 # Load the Iris dataset
 iris = load_iris()
 X = iris.data
@@ -16,9 +15,8 @@ X_train = sc.fit_transform(X_train)
 clf = MLPClassifier(max_iter=1000, random_state=42)
 clf.fit(X_train, y_train)
 def predict_label(input_sample):
-    # Reshape the sample and then scale it
-    input_sample = np.array(input_sample).reshape(1, -1)
-    input_sample = sc.transform(input_sample)
+    # Transform the sample data
+    input_sample = sc.transform(input_sample.reshape(1, -1))
     # Predict probabilities and return them
     probabilities = clf.predict_proba(input_sample)
-    return probabilities
+    return probabilities[0]
