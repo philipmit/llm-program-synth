@@ -13,12 +13,12 @@ model = LogisticRegression(max_iter=200)
 model.fit(X_train, y_train)
 def predict_label(raw_data):
     """
-    This function receives raw input data for a single sample and returns the predicted probabilities 
-    for that sample as computed by the already trained logistic regression model.
+    This function receives raw input data for a single sample and 
+    returns the predicted probabilities for that sample as computed by the already trained logistic regression model.
     """
     # Reshape raw_data to a 2D array as model.predict_proba needs a 2D array as input
     raw_data_reshaped = np.array(raw_data).reshape(1, -1)
-    # Get predictions from the logistic regression model
+    # Get probabilities from the logistic regression model
     prediction_proba = model.predict_proba(raw_data_reshaped)
-    # Return the class with the highest probability for the given data
-    return np.argmax(prediction_proba, axis=1)
+    # Return the probabilities for all classes
+    return prediction_proba
