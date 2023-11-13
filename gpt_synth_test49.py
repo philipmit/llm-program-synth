@@ -21,7 +21,7 @@ class ICUData(Dataset):
         data = pd.read_csv(file_path)
         data = data.select_dtypes(include=[np.number]) 
         data = data.drop(['Hours'], axis=1)
-        data = (data - data.mean()) / (data.std()+1e-6)  
+        data = (data - data.mean()) / (data.std()+1e-6)
         data = data.fillna(0)
         label = self.labels[idx]
         return torch.tensor(data.values, dtype=torch.float32), label
@@ -35,13 +35,13 @@ class LSTM(nn.Module):
         self.dropout = nn.Dropout(0.5)
         self.batchnorm = nn.BatchNorm1d(hidden_dim)
     def forward(self, x):
-        h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_dim).to(x.device)
-        c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_dim).to(x.device)
+        h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_dim)
+        c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_dim)
         out, _ = self.lstm(x, (h0.detach(), c0.detach()))
         out = self.dropout(out)
         out = self.batchnorm(out[:, -1, :])
         out = torch.sigmoid(self.fc(out))
-        return out 
+        return out  
 def collate_fn(batch):
     data, labels = zip(*batch)
     data = pad_sequence(data, batch_first=True, padding_value=0)
@@ -49,7 +49,7 @@ def collate_fn(batch):
     return data, labels
 dataset = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
 data_loader = DataLoader(dataset=dataset, batch_size=64, shuffle=True, collate_fn=collate_fn)
-model = LSTM(input_dim=dataset[0][0].shape[1], hidden_dim=512, num_layers=2, output_dim=1).cuda()
+model = LSTM(input_dim=dataset[0][0].shape[1], hidden_dim=512, num_layers=2, output_dim=1)
 criterion = nn.BCEWithLogitsLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=0.005)
 scheduler = StepLR(optimizer, step_size=30, gamma=0.2)
@@ -58,7 +58,6 @@ for epoch in range(num_epochs):
     model.train()
     total_loss = 0
     for i, (data, labels) in enumerate(data_loader):
-        data, labels = data.cuda(), labels.cuda()
         model.zero_grad()
         outputs = model(data)
         loss = criterion(outputs, labels.float())
@@ -70,7 +69,7 @@ for epoch in range(num_epochs):
 def predict_icu_mortality(patient_sequence):
     model.eval()
     with torch.no_grad():
-        patient_sequence = patient_sequence.unsqueeze(0).cuda()  
+        patient_sequence = patient_sequence.unsqueeze(0)
         outputs = model(patient_sequence)
         probability = torch.sigmoid(outputs).item()
     return probability
