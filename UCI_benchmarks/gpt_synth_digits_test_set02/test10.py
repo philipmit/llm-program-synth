@@ -1,7 +1,6 @@
 from sklearn.datasets import load_digits
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
-import numpy as np
 # Load the digits dataset
 digits = load_digits()
 X = digits.data
@@ -15,5 +14,4 @@ log_reg.fit(X_train, y_train)
 def predict_label(sample):
     if len(sample) != X_train.shape[1]:
         raise ValueError("Input data does not have the right shape. It should be ({},), but is {}.".format(X_train.shape[1], sample.shape))
-    sample = np.reshape(sample, (1, -1))
-    return log_reg.predict_proba(sample)
+    return log_reg.predict_proba(sample.reshape(1, -1))[0]
