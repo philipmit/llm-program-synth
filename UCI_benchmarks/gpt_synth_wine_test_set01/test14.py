@@ -14,4 +14,4 @@ model.fit(X_train, y_train)
 def predict_label(X_raw):
     X_raw = np.array(X_raw).reshape(1, -1)
     probabilities = model.predict_proba(X_raw)
-    return probabilities
+    return probabilities[0]  # Changed here
