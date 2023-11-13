@@ -22,4 +22,5 @@ def predict_label(single_sample):
     # Scale the single sample's features like the training set
     single_sample = scaler.transform(single_sample)
     # Return the predicted probabilities of the classes
-    return mlp.predict_proba(single_sample)
+    # [[0.1, 0.2, 0.7]] => [0.1, 0.2, 0.7]
+    return mlp.predict_proba(single_sample)[0]
