@@ -12,7 +12,7 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_
 scaler = StandardScaler()
 X_train = scaler.fit_transform(X_train)
 # Train the Logistic Regression model 
-log_reg = LogisticRegression(max_iter=10000)  # Increased max_iter to ensure convergence for this dataset
+log_reg = LogisticRegression(max_iter=10000)  
 log_reg.fit(X_train, y_train)
 # Define the predict_label function
 def predict_label(raw_data):
@@ -20,4 +20,6 @@ def predict_label(raw_data):
     raw_data = scaler.transform(raw_data.reshape(1, -1))
     # Predict the probabilities
     predicted_probabilities = log_reg.predict_proba(raw_data)
-    return predicted_probabilities
+    # The output from predict_proba is a 2D array, but we only need 1D array for each test case.
+    # Therefore the output is reduced to 1D array by selecting the first element of the 2D array.
+    return predicted_probabilities[0]
