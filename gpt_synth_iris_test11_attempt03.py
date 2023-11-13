@@ -18,8 +18,9 @@ classifier = MLPClassifier(max_iter=1000)
 # Train the model
 classifier.fit(X_train_scaled, y_train)
 def predict_label(sample):
-    #apply same scaling to the sample
+    # apply same scaling to the sample
     sample_scaled = scaler.transform([sample])
-    #predict using the trained model
+    # predict using the trained model
     predicted_probabilities = classifier.predict_proba(sample_scaled)
-    return predicted_probabilities
+    # Return a 1D list of probabilities
+    return predicted_probabilities[0]  # was: return predicted_probabilities
