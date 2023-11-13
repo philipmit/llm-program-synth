@@ -13,4 +13,6 @@ model = LogisticRegression(max_iter=10000)
 model.fit(X_train, y_train)
 def predict_label(single_sample_data):
     single_sample_data = np.array(single_sample_data).reshape(1, -1)
-    return model.predict_proba(single_sample_data)
+    # Get the predicted probabilities and flatten the array to 1 dimension
+    pred_probs = model.predict_proba(single_sample_data).flatten()
+    return pred_probs
