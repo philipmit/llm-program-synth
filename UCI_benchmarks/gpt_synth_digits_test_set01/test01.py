@@ -1,7 +1,6 @@
 from sklearn.datasets import load_digits
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
-import numpy as np
 # Load the digits dataset
 digits = load_digits()
 X = digits.data
@@ -13,6 +12,6 @@ model = LogisticRegression(max_iter=10000)
 # Fit the model to the training data
 model.fit(X_train, y_train)
 def predict_label(raw_data):
-    raw_data = np.array(raw_data).reshape(1, -1)
+    raw_data = data.reshape(1, -1) 
     proba = model.predict_proba(raw_data)
-    return proba
+    return proba[0]
