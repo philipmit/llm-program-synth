@@ -21,4 +21,4 @@ def predict_label(raw_data):
     # standardize the raw_data
     raw_data = scaler.transform(np.array(raw_data).reshape(1,-1))
     # return predicted probabilities
-    return mlp.predict_proba(raw_data)
+    return mlp.predict_proba(raw_data)[0]
