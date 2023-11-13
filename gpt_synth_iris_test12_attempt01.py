@@ -18,5 +18,5 @@ clf.fit(X_train, y_train)
 def predict_label(raw_data):
     # Normalizing the raw data
     processed_data = scaler.transform([raw_data])
-    # Predict probabilities and return
-    return clf.predict_proba(processed_data)
+    # Predict probabilities and return first element of the returned list
+    return clf.predict_proba(processed_data)[0]
