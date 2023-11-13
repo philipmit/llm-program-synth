@@ -23,7 +23,5 @@ def predict_label(raw_data):
     raw_data_scaled = scaler.transform(raw_data)
     # Predict the probabilities
     predicted_probabilities = mlp.predict_proba(raw_data_scaled)
-    # Since we are interested in the class with the highest probability, take argmax across columns
-    predicted_class = np.argmax(predicted_probabilities, axis=1)
-    # Return the result
-    return predicted_class
+    # Return the predicted probabilities instead of the predicted class
+    return predicted_probabilities
