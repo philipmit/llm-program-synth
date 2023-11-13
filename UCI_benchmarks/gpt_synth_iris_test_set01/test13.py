@@ -19,6 +19,8 @@ scaler_model = scaler
 mlp_model = mlp
 # Define the predict_label function
 def predict_label(raw_unprocessed_data):
+    # Reshape the data
+    raw_unprocessed_data = raw_unprocessed_data.reshape(1, -1)
     # Scale the input data
     scaled_data = scaler_model.transform(raw_unprocessed_data)
     # Perform prediction
