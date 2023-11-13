@@ -2,6 +2,7 @@ from sklearn.datasets import load_iris
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.neural_network import MLPClassifier
+import numpy as np
 # Load the Iris dataset
 iris = load_iris()
 X = iris.data
@@ -18,4 +19,7 @@ def predict_label(single_sample_data):
     # The sample needs to be scaled using the scaler fitted on the training set
     single_sample_data_scaled = sc.transform([single_sample_data])
     # returns array of predicted probabilities
-    return mlp.predict_proba(single_sample_data_scaled)
+    proba = mlp.predict_proba(single_sample_data_scaled)
+    # using argmax to get the class with the highest probability
+    predicted_class = np.argmax(proba, axis=1)
+    return predicted_class
