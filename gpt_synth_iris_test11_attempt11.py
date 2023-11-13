@@ -17,4 +17,4 @@ def predict_label(input_data):
     if input_data.ndim == 1:
         input_data = np.array([input_data])
     # Return predicted probabilities for a single sample
-    return mlp.predict_proba(input_data)
+    return mlp.predict_proba(input_data)[0]
