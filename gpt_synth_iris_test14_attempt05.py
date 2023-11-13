@@ -15,9 +15,10 @@ X_test = scaler.transform(X_test)
 # Training the multi-layer perceptron model
 mlp = MLPClassifier(hidden_layer_sizes=(10,), max_iter=1000, random_state=42)
 mlp.fit(X_train, y_train)
+# Define predict_label function
 def predict_label(sample):
     # assume that sample is a numpy array with shape (4,)
     # standardize the sample
     sample = scaler.transform(sample.reshape(1, -1))
-    # predict and return probabilities
-    return mlp.predict_proba(sample)
+    # predict and return probabilities as 1D array
+    return mlp.predict_proba(sample).flatten()
