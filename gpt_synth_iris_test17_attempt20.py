@@ -17,8 +17,10 @@ log_reg = LogisticRegression(random_state=42)
 log_reg.fit(X_train_scaled, y_train)
 # Define a function to predict label for a single sample
 def predict_label(input_data):
-        # Scale the input data using the same scaler as before
-        input_data_scaled = sc.transform([input_data])
-        # Use the logistic regression model to predict probabilities
-        probabilities = log_reg.predict_proba(input_data_scaled)
-        return probabilities
+    # Scale the input data using the same scaler as before
+    input_data_scaled = sc.transform([input_data])
+    # Use the logistic regression model to predict probabilities
+    probabilities = log_reg.predict_proba(input_data_scaled)
+    # As per the error message 'Found array with dim 3. None expected <= 2.'
+    # We will return only the first element, to have a 2D array, which meets the 'roc_auc_score' function requirement.
+    return probabilities[0]
