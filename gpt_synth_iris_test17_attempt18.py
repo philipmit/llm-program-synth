@@ -10,4 +10,4 @@ model.fit(X_train, y_train)
 def predict_label(sample):
     sample = sample.reshape(1, -1)
     probabilities = model.predict_proba(sample)
-    return probabilities
+    return probabilities[0]
