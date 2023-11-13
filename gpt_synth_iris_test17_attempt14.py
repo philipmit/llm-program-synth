@@ -1,7 +1,6 @@
 from sklearn.datasets import load_iris
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
-import numpy as np 
 # Load the Iris dataset
 iris = load_iris()
 X = iris.data
@@ -18,4 +17,4 @@ def predict_label(raw_data):
         raw_data = raw_data.reshape(1, -1)
     # Use the logistic regression model to predict the probability of each class
     predicted_probability = model.predict_proba(raw_data)
-    return predicted_probability
+    return predicted_probability[0]
