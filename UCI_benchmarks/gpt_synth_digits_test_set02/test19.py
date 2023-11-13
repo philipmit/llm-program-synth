@@ -15,4 +15,5 @@ model.fit(X_train, y_train)
 def predict_label(single_sample):
     # Using model.predict_proba to get the predicted probabilities
     predicted_probabilities = model.predict_proba(single_sample.reshape(1, -1))
-    return predicted_probabilities
+    # Flatten the predicted probabilities to avoid creating a 3-dimensional array
+    return predicted_probabilities.flatten()
