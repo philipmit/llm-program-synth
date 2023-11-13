@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.model_selection import train_test_split
 # Load the Ecoli dataset
@@ -17,12 +17,12 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_
 # Standardizing the features
 scaler = StandardScaler()
 X_train = scaler.fit_transform(X_train)
-# Train the RandomForestClassifier model
-rfModel = RandomForestClassifier(random_state=42, n_estimators=1000)
-rfModel.fit(X_train, y_train)
+# Train the GradientBoostingClassifier model with optimal parameters
+gbModel = GradientBoostingClassifier(random_state=42, n_estimators=1000, learning_rate=0.02, max_depth=3, subsample=0.7)
+gbModel.fit(X_train, y_train)
 # Define the function predict_label to return probabilities for all classes
 def predict_label(raw_data):
     raw_data = np.array(raw_data)
     raw_data_scaled = scaler.transform(raw_data.reshape(1, -1))
-    prediction_proba = rfModel.predict_proba(raw_data_scaled)[0]
+    prediction_proba = gbModel.predict_proba(raw_data_scaled)[0]
     return prediction_proba.tolist()
