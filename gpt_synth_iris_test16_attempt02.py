@@ -13,5 +13,5 @@ model = LogisticRegression(max_iter=1000)
 model.fit(X_train, y_train)
 def predict_label(x):
     x = np.array(x).reshape(1, -1)  # Reshape the data
-    proba = model.predict_proba(x)  # Get the predicted probabilities
-    return proba
+    proba = model.predict_proba(x)   # Get the predicted probabilities for classes
+    return np.argmax(proba)            # Return the class with the highest probability
