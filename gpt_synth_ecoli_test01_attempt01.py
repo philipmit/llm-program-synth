@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
-from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import LabelEncoder, LabelBinarizer
 # Load dataset
 ecoli = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', delim_whitespace=True, header=None)
 ecoli.columns = ['Sequence Name', 'mcg', 'gvh', 'lip', 'chg', 'aac', 'alm1', 'alm2', 'class']
@@ -10,6 +10,7 @@ X = ecoli.iloc[:, 1:-1]  # All rows, all columns except the last one
 y = ecoli.iloc[:, -1]   # All rows, only the last column
 # replace strings with numbers in y
 label_encoder = LabelEncoder()
+label_binarizer = LabelBinarizer()
 y = label_encoder.fit_transform(y)  # This will assign a unique number to each class label
 # Convert DataFrames to numpy arrays
 X = X.values
@@ -22,5 +23,6 @@ lr = LogisticRegression(max_iter=10000, multi_class='ovr')
 lr.fit(X_train, y_train)
 def predict_label(raw_sample):
     processed_sample = np.array([raw_sample])  # Process the raw unprocessed sample to match the format of X
-    probabilities = lr.predict_proba(processed_sample)[0]
-    return probabilities
+    probabilities = lr.predict_proba(processed_sample)
+    probabilities = label_binarizer.fit_transform(probabilities)  # Ensure the number of classes in y_true equals to the number of columns in "y_score"
+    return probabilities[0]
