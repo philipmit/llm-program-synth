@@ -2,6 +2,7 @@ from sklearn.datasets import load_iris
 from sklearn.model_selection import train_test_split
 from sklearn.neural_network import MLPClassifier
 from sklearn.preprocessing import StandardScaler
+import numpy as np
 # Load the Iris dataset
 iris = load_iris()
 X = iris.data
@@ -22,6 +23,10 @@ mlp = MLPClassifier(hidden_layer_sizes=(10, 10, 10),
 # Train the Model
 mlp.fit(X_train_scaled, y_train)
 def predict_label(raw_sample):
+    # Check if data is 1-dimensional
+    if len(raw_sample.shape) == 1:
+        # Reshape the raw unprocessed input data to be 2-dimensional.
+        raw_sample = np.reshape(raw_sample, (1, -1))
     # Preprocess the raw unprocessed input data
     raw_sample_scaled = scaler.transform(raw_sample)
     # Predict and return the probabilities for the input data
