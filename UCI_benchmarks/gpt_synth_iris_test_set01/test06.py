@@ -19,5 +19,6 @@ def predict_label(raw_data):
     # Preprocess the raw data using the StandardScaler instance
     raw_data_scaled = scaler.transform(raw_data.reshape(1, -1))
     # Use the trained MLPClassifier model to predict the sample's label
-    predicted_proabilities = mlp.predict_proba(raw_data_scaled)
-    return predicted_proabilities
+    predicted_probabilities = mlp.predict_proba(raw_data_scaled)
+    # Return the first (and only) element of the result
+    return predicted_probabilities[0]
