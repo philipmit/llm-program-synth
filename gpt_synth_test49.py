@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import torch
 from torch import nn
+from torch.nn.utils.rnn import pad_sequence
 from torch.utils.data import DataLoader, Dataset
 # File paths
 TRAIN_DATA_PATH = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/"
@@ -24,6 +25,13 @@ class ICUData(Dataset):
         data = data.select_dtypes(include=[np.number])
         label = self.labels[idx]
         return torch.tensor(data.values, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
+# Custom collate function to handle variable sequence lengths
+def my_collate(batch):
+    data = [item[0] for item in batch]
+    data = pad_sequence(data, batch_first=True)
+    labels = [item[1] for item in batch]
+    labels = torch.FloatTensor(labels)
+    return [data, labels]
 # Define LSTM for ICU mortality prediction
 class LSTM(nn.Module):
     def __init__(self, input_dim, hidden_dim, num_layers, output_dim):
@@ -44,13 +52,14 @@ def train_model(model, data_loader, criterion, optimizer, num_epochs):
         for i, (data, labels) in enumerate(data_loader):
             model.zero_grad()
             outputs = model(data)
+            labels = labels.unsqueeze(1)
             loss = criterion(outputs, labels)
             loss.backward()
             optimizer.step()
 # Initialize dataset
 dataset = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
 # Initialize DataLoader
-data_loader = DataLoader(dataset=dataset, batch_size=32, shuffle=True)
+data_loader = DataLoader(dataset=dataset, batch_size=32, shuffle=True, collate_fn=my_collate)
 # Initialize Model
 model = LSTM(input_dim=14, hidden_dim=32, num_layers=2, output_dim=1)
 # Define Loss Function and Optimizer
