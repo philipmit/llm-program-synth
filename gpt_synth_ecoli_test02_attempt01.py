@@ -22,7 +22,7 @@ X_train = scaler.fit_transform(X_train)
 # Train the Logistic Regression model with multinomial setting for multi-class
 lrModel = LogisticRegression(random_state=42, max_iter=5000, multi_class='multinomial')
 lrModel.fit(X_train, y_train)
-# Define the function predict_label
+# Define the function predict_label to return probabilities for all classes
 def predict_label(raw_data):
     raw_data = np.array(raw_data)
     raw_data_scaled = scaler.transform(raw_data.reshape(1, -1))
