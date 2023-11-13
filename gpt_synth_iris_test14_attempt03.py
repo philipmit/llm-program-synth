@@ -10,11 +10,11 @@ y = iris.target
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
 # Scale the data to mean=0 and variance=1
 scaler = StandardScaler()
-X_train = scaler.fit_transform(X_train)
+X_train_scaled = scaler.fit_transform(X_train)
 # Define the MLP model and train it
 model = MLPClassifier(hidden_layer_sizes=(10,10,10), max_iter=1000)
-model.fit(X_train, y_train)
+model.fit(X_train_scaled, y_train)
 # Function to predict labels
 def predict_label(X):
-    X = scaler.transform([X])
-    return model.predict_proba(X)
+    X_scaled = scaler.transform([X])
+    return model.predict_proba(X_scaled)[0]
