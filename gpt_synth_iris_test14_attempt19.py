@@ -21,4 +21,6 @@ def predict_label(raw_sample):
     sample = scaler.transform(sample)
     # Use the trained MLP model to predict the probabilities
     predicted_probabilities = mlp.predict_proba(sample)
+    # Flatten the predicted probabilities to be 1-D array
+    predicted_probabilities = predicted_probabilities.flatten()
     return predicted_probabilities
