@@ -16,11 +16,6 @@ X_train_scaled = scaler.fit_transform(X_train)
 mlp = MLPClassifier(hidden_layer_sizes=(10, 10), max_iter=1000)
 mlp.fit(X_train_scaled, y_train)
 def predict_label(raw_data):
-    """
-    Function to predict the label for a given sample.  
-    The function first applies the same scaling transformation that was applied to the training data,  
-    and then uses the trained MLP to predict the label.
-    """
     # Ensure raw_data is 2D array. If it's 1D, convert it to 2D.
     if len(np.shape(raw_data)) == 1:
         raw_data = raw_data[np.newaxis, :]
@@ -28,5 +23,7 @@ def predict_label(raw_data):
     raw_data_scaled = scaler.transform(raw_data)
     # Predict the probabilities
     predicted_probabilities = mlp.predict_proba(raw_data_scaled)
+    # Since we are interested in the class with the highest probability, take argmax across columns
+    predicted_class = np.argmax(predicted_probabilities, axis=1)
     # Return the result
-    return predicted_probabilities
+    return predicted_class
