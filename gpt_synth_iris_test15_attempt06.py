@@ -16,5 +16,5 @@ def predict_label(raw_data):
     raw_data = np.atleast_2d(raw_data)
     # Obtain the probabilities from the built Logistic Regression model
     probabilities = model.predict_proba(raw_data)
-    # Return the predicted probabilities for each class
-    return probabilities
+    # Return the predicted probabilities for a single class
+    return probabilities[0]
