@@ -7,7 +7,8 @@ wine = load_wine()
 X = wine.data
 y = wine.target
 # Split the dataset into training and testing sets
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.5, random_state=42)
 # Train a Logistic Regression model
 lr = LogisticRegression(max_iter=1000)
 lr.fit(X_train, y_train)
@@ -16,4 +17,6 @@ def predict_label(data):
     # We put our single instance into an array in order to feed it to predict_proba
     data_reshaped = np.array(data).reshape(1, -1)
     class_probability = lr.predict_proba(data_reshaped)
+    # Converting 2D array into 1D for the compatibility with validation code
+    class_probability = class_probability.squeeze()
     return class_probability
