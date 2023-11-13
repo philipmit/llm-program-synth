@@ -16,4 +16,4 @@ model.fit(X_train, y_train)
 def predict_label(raw_data):
     raw_data = np.array(raw_data).reshape(1, -1)
     probabilities = model.predict_proba(raw_data)
-    return np.argmax(probabilities)
+    return probabilities[0]
