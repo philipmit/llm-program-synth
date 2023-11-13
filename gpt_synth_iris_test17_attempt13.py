@@ -24,4 +24,4 @@ def predict_label(raw_data):
     standardized_data = scaler.transform(raw_data)
     # Predict the probabilities
     predicted_probabilities = model.predict_proba(standardized_data)
-    return predicted_probabilities
+    return predicted_probabilities[0]
