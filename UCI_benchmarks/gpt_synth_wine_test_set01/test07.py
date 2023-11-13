@@ -20,4 +20,5 @@ def predict_label(sample):
     sample = scaler.transform([sample])
     # Use the model to predict the labels
     predictions = model.predict_proba(sample)
-    return predictions
+    # Flatten the prediction into a 1D list before returning
+    return predictions[0]  
