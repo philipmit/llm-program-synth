@@ -10,13 +10,12 @@ y = iris.target
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
 # Standardize the features for more accurate results
 scaler = StandardScaler()
-X_train = scaler.fit_transform(X_train)
-X_test = scaler.transform(X_test)
+X_train_scaled = scaler.fit_transform(X_train)
 # Train the logistic regression model
 model = LogisticRegression(multi_class='ovr', solver='liblinear')
-model.fit(X_train, y_train)
+model.fit(X_train_scaled, y_train)
 # Function to predict the label of a single sample
 def predict_label(sample):
-    sample = scaler.transform(sample.reshape(1, -1))  # Standardize and reshape the sample
-    probabilities = model.predict_proba(sample)  # Predict the probabilities
-    return probabilities
+    sample_scaled = scaler.transform(sample.reshape(1, -1))  # Standardize and reshape the sample
+    probabilities = model.predict_proba(sample_scaled)  # Predict the probabilities
+    return probabilities[0] # Return the only item
