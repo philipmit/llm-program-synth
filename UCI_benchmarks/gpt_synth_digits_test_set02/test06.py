@@ -14,4 +14,4 @@ model.fit(X_train, y_train)
 def predict_label(sample):
     # Reshape the sample into 2D array, then predict
     sample_processed = sample.reshape(1, -1)
-    return model.predict_proba(sample_processed)
+    return model.predict_proba(sample_processed)[0]
