@@ -15,6 +15,9 @@ X_train_scaled = scaler.fit_transform(X_train)
 mlp = MLPClassifier(hidden_layer_sizes=(10, 10,), max_iter=1000)
 mlp.fit(X_train_scaled, y_train)
 def predict_label(samples):
+   # Check if it's a single sample and needs reshaping
+    if samples.ndim == 1:
+        samples = samples.reshape(1, -1)
     # Scale the samples and predict their probabilities
     samples_scaled = scaler.transform(samples)
     probabilities = mlp.predict_proba(samples_scaled)
