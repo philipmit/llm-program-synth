@@ -19,5 +19,5 @@ model.fit(X_train, y_train)
 def predict_label(sample):
     # Normalize the sample
     sample = scaler.transform([sample])
-    # Predict label probabilities
-    return model.predict_proba(sample)
+    # Prevent second dimension array by using index 0
+    return model.predict_proba(sample)[0]
