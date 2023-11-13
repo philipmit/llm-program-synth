@@ -17,9 +17,10 @@ model = LogisticRegression(max_iter=10000)
 model.fit(X_train, y_train)
 # Define the prediction function
 def predict_label(x_raw):
-    # Transform the raw input to 2D array if it's not
-    x = np.array(x_raw).reshape(1, -1) if len(x_raw.shape) == 1 else x_raw
+    # Transform the raw input to 2D array
+    x_raw = np.array(x_raw).reshape(1, -1)
     # Standardize the raw input
-    x = scaler.transform(x)
+    x_std = scaler.transform(x_raw)
     # Predict the probabilities and return the result
-    return model.predict_proba(x)
+    probas = model.predict_proba(x_std)
+    return probas[0] # Return the first element of prediction as a 1D array instead of a 2D array
