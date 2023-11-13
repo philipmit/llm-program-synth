@@ -13,8 +13,9 @@ model = LogisticRegression(max_iter=10000)
 model.fit(X_train, y_train)
 def predict_label(sample):
     'Takes data for a single sample and predicts probabilities for each class'
-    # Reshape sample to 2D array as model expects that shape
+     # Reshape sample to 2D array as model expects that shape
     sample_reshaped = np.array(sample).reshape(1, -1)
     # Predict probabilities
     probas = model.predict_proba(sample_reshaped)
-    return probas
+    # Return the class label corresponding to the highest predicted probability
+    return probas[0]
