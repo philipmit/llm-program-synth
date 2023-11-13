@@ -18,5 +18,6 @@ def predict_label(sample):
     # Preprocess the sample as per model requirements
     sample = sample.reshape(1, -1)
     sample = scaler.transform(sample)
-    prob = model.predict_proba(sample)
-    return prob
+    proba = model.predict_proba(sample)
+    # Return the class with the highest probability
+    return proba.argmax(axis=1)
