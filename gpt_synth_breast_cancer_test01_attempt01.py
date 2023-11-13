@@ -14,8 +14,9 @@ X_train = scaler.fit_transform(X_train)
 # Train the model
 model = LogisticRegression()
 model.fit(X_train, y_train)
+# Define a function that takes a raw sample and predicts the class using the trained model
 def predict_label(X):
-    # The raw input sample should be preprocessed before being fed into the model
     X = scaler.transform([X])
-    probabilities = model.predict_proba(X)
-    return probabilities[0]
+    predictions = model.predict_proba(X)
+    # Return the prediction probability for the positive class
+    return predictions[0][1]
