@@ -16,4 +16,5 @@ clf = LogisticRegression(random_state=42)
 clf.fit(X_train, y_train)
 def predict_label(raw_data):
     processed_data = sc.transform(raw_data.reshape(1, -1))
-    return clf.predict_proba(processed_data)
+    probabilities = clf.predict_proba(processed_data)
+    return probabilities[0]  # return only the first element (1D) instead of 2D array
