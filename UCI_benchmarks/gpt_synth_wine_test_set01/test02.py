@@ -22,5 +22,5 @@ def predict_label(sample):
     # Preprocess (scale) the sample and reshape it for prediction
     sample = scaler.transform(sample.reshape(1, -1))
     # Compute and return probabilities
-    probabilities = model.predict_proba(sample)
+    probabilities = model.predict_proba(sample)[0]
     return probabilities
