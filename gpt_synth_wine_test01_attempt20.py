@@ -12,7 +12,7 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_
 scaler = StandardScaler()
 X_train = scaler.fit_transform(X_train)
 # Define and train the logistic regression model
-model = LogisticRegression()
+model = LogisticRegression(max_iter=5000)
 model.fit(X_train, y_train)
 # Define the prediction function
 def predict_label(raw_data):
@@ -20,4 +20,4 @@ def predict_label(raw_data):
     processed_data = scaler.transform([raw_data])
     # Predict probabilities
     predicted_probs = model.predict_proba(processed_data)
-    return predicted_probs
+    return predicted_probs[0]
