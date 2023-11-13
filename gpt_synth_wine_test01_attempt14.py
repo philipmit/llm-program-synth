@@ -18,5 +18,5 @@ def predict_label(raw_sample):
     # Standardize the raw data sample
     processed_sample = scaler.transform([raw_sample])[0]
     # Use the model to predict the probabilities
-    predicted_probabilities = model.predict_proba([processed_sample])
+    predicted_probabilities = model.predict_proba([processed_sample])[0]
     return predicted_probabilities
