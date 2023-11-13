@@ -20,5 +20,5 @@ def predict_label(raw_data):
     raw_data_reshaped = np.array(raw_data).reshape(1, -1)
     # Get probabilities from the logistic regression model
     prediction_proba = model.predict_proba(raw_data_reshaped)
-    # Return the probabilities for all classes
-    return prediction_proba
+    # Return the probabilities for all classes flattened to 1D
+    return prediction_proba.flatten()
