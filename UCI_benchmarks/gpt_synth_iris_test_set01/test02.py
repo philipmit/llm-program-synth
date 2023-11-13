@@ -19,6 +19,8 @@ mlp = MLPClassifier(hidden_layer_sizes=(10, 10, 10), max_iter=1000)
 # fitting the data to the MLP classifier
 mlp.fit(X_train_std, y_train)
 def predict_label(raw_data_sample):
+    # Reshape raw_data_sample to 2D array
+    raw_data_sample = np.reshape(raw_data_sample, (1, -1))
     # standardize the raw data sample using the same mean and standard deviation as before
     raw_data_sample_std = sc.transform(raw_data_sample)
     # Making the prediction
