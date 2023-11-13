@@ -17,4 +17,6 @@ lr.fit(X_train_std, y_train)
 def predict_label(raw_sample):
     """ Function to predict the label probabilities for a raw sample """
     sample_std = sc.transform(raw_sample.reshape(1, -1))
-    return lr.predict_proba(sample_std)
+    probability_distribution = lr.predict_proba(sample_std)
+    most_probable_class_index = probability_distribution.argmax(axis=1)
+    return probability_distribution[0, most_probable_class_index]
