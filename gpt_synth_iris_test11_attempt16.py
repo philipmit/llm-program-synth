@@ -12,9 +12,8 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_
 # We typically need to scale our data for neural networks
 scaler = StandardScaler()
 X_train_scaled = scaler.fit_transform(X_train)
-X_test_scaled = scaler.transform(X_test)
 # Define the model
-mlp = MLPClassifier(hidden_layer_sizes=(10,10), max_iter=1000)
+mlp = MLPClassifier(hidden_layer_sizes=(10, 10), max_iter=1000)
 # Train the model
 mlp.fit(X_train_scaled, y_train)
 def predict_label(raw_sample):
@@ -23,4 +22,5 @@ def predict_label(raw_sample):
     sample_scaled = scaler.transform(raw_sample)
     # Get the model to predict the probabilities of the classes
     sample_probs = mlp.predict_proba(sample_scaled)
-    return sample_probs
+    # Return the first (and only) element of the predicted probabilities
+    return sample_probs[0]
