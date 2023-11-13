@@ -14,4 +14,4 @@ model.fit(X_train, y_train)
 def predict_label(raw_unprocessed_data):
     processed_data = np.array(raw_unprocessed_data).reshape(1, -1)
     probabilities = model.predict_proba(processed_data)
-    return probabilities
+    return probabilities.flatten()
