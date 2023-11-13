@@ -17,4 +17,6 @@ def predict_label(sample):
     and returns the predicted probabilities for the 10 possible classes for that sample.
     """
     sample = np.array(sample).reshape(1, -1)
-    return model.predict_proba(sample)
+    probabilities = model.predict_proba(sample)
+    # Squeeze is used to remove single-dimensional entries from the shape of the array
+    return np.squeeze(probabilities)
