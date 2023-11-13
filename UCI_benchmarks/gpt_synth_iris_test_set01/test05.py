@@ -19,7 +19,6 @@ def predict_label(x):
     x = sc.transform([x])  # scale the sample using the same parameters used to scale the training data
     # Predict the probabilities of the classes
     proba = mlp.predict_proba(x)
+    # Flatten the prediction
+    proba = proba.flatten()
     return proba
-# Just as an example, let's see the predicted labels of all the training data.
-for x in X_train[:5]:
-    print(predict_label(x))
