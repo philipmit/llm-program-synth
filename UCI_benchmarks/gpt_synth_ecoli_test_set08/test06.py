@@ -24,5 +24,6 @@ def predict_label(X_sample):
     # reshaping the input to match the input shape for sklearn ML models
     X_sample = np.array(X_sample).reshape(1, -1)
     # getting the model's predicted probabilities with predict_proba
-    pred_proba = model.predict_proba(X_sample)
+    pred_proba = np.zeros((1,len(model.classes_)))
+    pred_proba[0][model.predict(X_sample)[0]] = 1
     return pred_proba[0]
