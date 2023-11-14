@@ -9,22 +9,24 @@ warnings.filterwarnings("ignore")
 TRAIN_DATA_PATH = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/"
 LABEL_FILE = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/listfile.csv"
 class ICUData(Dataset):
-    def __init__(self, data_path, label_file):
+    def __init__(self, data_path, label_file, max_len=100):
         self.data_path = data_path
         label_data = pd.read_csv(label_file)
         self.file_names = label_data['stay']
         self.labels = torch.tensor(label_data['y_true'].values, dtype=torch.float32)
-    def __len__(self):
-        return len(self.file_names)
+        self.max_len = max_len
     def __getitem__(self, idx):
         file_path = os.path.join(self.data_path, self.file_names[idx])
         data = pd.read_csv(file_path)
         data = data.drop(['Hours'], axis=1)
-        data = data.fillna(0)
-        data = data.apply(pd.to_numeric, errors='coerce')  # Coerce non-numeric values to NaN and then fill with 0
-        data = data.fillna(0)
+        data = data.apply(pd.to_numeric, errors='coerce').fillna(0)  # Coerce non-numeric values to NaN and then fill with 0
+        data = torch.tensor(data.values, dtype=torch.float32)
+        if data.shape[0] < self.max_len:
+            data = torch.cat([data, torch.zeros(self.max_len - data.shape[0], data.shape[1])])
+        else:
+            data = data[:self.max_len, :]
         label = self.labels[idx]
-        return torch.tensor(data.values, dtype=torch.float32), label
+        return data, label
 class LSTM(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers, output_size):
         super(LSTM, self).__init__()
@@ -38,7 +40,7 @@ class LSTM(nn.Module):
         out, _ = self.lstm(x, (h0, c0))
         out = self.fc(out[:, -1, :])
         return out
-def train_model(dataloader, model, criterion, optimizer, num_epochs):
+def train_model(dataloader, model, criterion, optimizer, num_epochs=50):
     model.train()
     for epoch in range(num_epochs):
         for inputs, labels in dataloader:
@@ -49,12 +51,16 @@ def train_model(dataloader, model, criterion, optimizer, num_epochs):
             loss = criterion(outputs, labels)
             loss.backward()
             optimizer.step()
-def predict_icu_mortality(raw_patient_data):
+def predict_icu_mortality(raw_patient_data, model, max_len=100):
     model.eval()
     raw_patient_data = raw_patient_data.drop(['Hours'], axis=1)
-    raw_patient_data = raw_patient_data.apply(pd.to_numeric, errors='coerce')  # Coerce non-numeric values to NaN and then fill with 0
-    raw_patient_data = raw_patient_data.fillna(0)
-    inputs = torch.tensor(raw_patient_data.values, dtype=torch.float32).unsqueeze(0)
+    raw_patient_data = raw_patient_data.apply(pd.to_numeric, errors='coerce').fillna(0)  # Coerce non-numeric values to NaN and then fill with 0
+    raw_patient_data = torch.tensor(raw_patient_data.values, dtype=torch.float32)
+    if raw_patient_data.shape[0] < max_len:
+        raw_patient_data = torch.cat([raw_patient_data, torch.zeros(max_len - raw_patient_data.shape[0], raw_patient_data.shape[1])])
+    else:
+        raw_patient_data = raw_patient_data[:max_len, :]
+    inputs = raw_patient_data.unsqueeze(0)
     prediction = model(inputs)
     return torch.sigmoid(prediction).item()
 icudata = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
