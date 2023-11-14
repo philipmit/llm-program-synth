@@ -5,6 +5,8 @@ import torch
 import torch.nn as nn
 from torch.nn.utils.rnn import pad_sequence
 from torch.utils.data import Dataset, DataLoader
+import warnings
+warnings.filterwarnings("ignore")
 # File paths
 TRAIN_DATA_PATH = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/"
 LABEL_FILE = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/listfile.csv"
@@ -20,9 +22,8 @@ class ICUData(Dataset):
     def __getitem__(self, idx):
         file_path = os.path.join(self.data_path, self.file_names[idx])
         data = pd.read_csv(file_path)
-        data = data.drop(['Hours'], axis=1) 
-        data = data.fillna(0)  
-        data = data.select_dtypes(include=[np.number]) 
+        data = data[['Capillary refill rate', 'Diastolic blood pressure', 'Fraction inspired oxygen', 'Glascow coma scale total', 'Glucose', 'Heart Rate', 'Height', 'Mean blood pressure', 'Oxygen saturation', 'Respiratory rate', 'Systolic blood pressure', 'Temperature', 'Weight', 'pH']]
+        data = data.fillna(0)   
         label = self.labels[idx]
         return torch.tensor(data.values, dtype=torch.float32), label
 # Define LSTM model
@@ -62,9 +63,8 @@ def my_collate(batch):
 # Define the function to make predictions
 def predict_icu_mortality(raw_patient_data):
     model.eval()
-    raw_patient_data = raw_patient_data.drop(['Hours'], axis=1)
+    raw_patient_data = raw_patient_data[['Capillary refill rate', 'Diastolic blood pressure', 'Fraction inspired oxygen', 'Glascow coma scale total', 'Glucose', 'Heart Rate', 'Height', 'Mean blood pressure', 'Oxygen saturation', 'Respiratory rate', 'Systolic blood pressure', 'Temperature', 'Weight', 'pH']]
     raw_patient_data = raw_patient_data.fillna(0)
-    raw_patient_data = raw_patient_data.select_dtypes(include=[np.number])
     inputs = torch.tensor(raw_patient_data.values, dtype=torch.float32).unsqueeze(0)
     prediction = model(inputs)
     return torch.sigmoid(prediction).item()
