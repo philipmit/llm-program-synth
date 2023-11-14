@@ -8,14 +8,12 @@ ecoli = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli
 ecoli.columns = ['Sequence Name', 'mcg', 'gvh', 'lip', 'chg', 'aac', 'alm1', 'alm2', 'class']
 # Prepare the data 
 X = ecoli.iloc[:, 1:-1].values  
-y = ecoli.iloc[:, -1]
-# Encode the string labels to binary format
-le = preprocessing.LabelBinarizer()
-y_binary = le.fit_transform(y)
-# Combine back the labels to get an integer for each class
-y = np.array([np.argmax(item) for item in y_binary])
+y = ecoli.iloc[:, -1].values 
+# Transform y from categorical to numerical values
+le = preprocessing.LabelEncoder()
+y = le.fit_transform(y)
 # Split the data into training and testing sets
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(X,y, test_size=0.5, random_state=42)
 # Train a Logistic Regression Model
 log_reg = LogisticRegression(max_iter=1000, multi_class='ovr')
 log_reg.fit(X_train, y_train)
