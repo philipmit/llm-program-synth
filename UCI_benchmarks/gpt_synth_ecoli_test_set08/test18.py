@@ -6,13 +6,10 @@ from sklearn.model_selection import train_test_split
 # Load the Ecoli dataset
 ecoli = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', delim_whitespace=True, header=None)
 ecoli.columns = ['Sequence Name', 'mcg', 'gvh', 'lip', 'chg', 'aac', 'alm1', 'alm2', 'class']
-X = ecoli.iloc[:, 1:-1]  # All rows, all columns excluding 'Sequence Name' and 'class'; Features
-y = ecoli.iloc[:, -1]   # All rows, only last column, 'class'; Target labels
+X = ecoli.iloc[:, 1:-1].values  # All rows, all columns excluding 'Sequence Name' and 'class'; Features
+y = ecoli.iloc[:, -1].values    # All rows, only last column, 'class'; Target labels
 # Replace string labels with unique integers
 unique_classes, y = np.unique(y, return_inverse=True)
-# Ensure numpy arrays for compatibility
-X = X.to_numpy()
-y = y.to_numpy()
 # Split the dataset into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
 # Scale the data; Fit the scaler only on the training set for unbiased transformation
