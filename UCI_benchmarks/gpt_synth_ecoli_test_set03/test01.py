@@ -12,10 +12,10 @@ y = y.replace(list(np.unique(y)), [0,1,2,3,4,5,6,7])
 # Cast to numpy arrays
 X = X.to_numpy()
 y = y.to_numpy()
-# Split the dataset into training and testing sets
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
-# Train the Logistic Regression model
-lr = LogisticRegression(max_iter=1000, multi_class='ovr')
+# Stratified Split the dataset into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42, stratify=y)
+# Train the Logistic Regression model with multinomial setting
+lr = LogisticRegression(max_iter=1000, multi_class='multinomial')
 lr.fit(X_train, y_train)
 def predict_label(data):
     data = np.array(data).reshape(1, -1)
