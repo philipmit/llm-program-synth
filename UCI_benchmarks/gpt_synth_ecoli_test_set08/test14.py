@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
-# Load the ecoli dataset
+# Load the dataset
 ecoli = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', delim_whitespace=True, header=None)
 ecoli.columns = ['Sequence Name', 'mcg', 'gvh', 'lip', 'chg', 'aac', 'alm1', 'alm2', 'class']
 X = ecoli.iloc[:, 1:-1]  # All rows, all columns except the last one
@@ -22,4 +22,4 @@ logreg.fit(X_train, y_train)
 def predict_label(raw_data):
     # Predict probabilities
     probabilities = logreg.predict_proba(raw_data.reshape(1, -1))
-    return probabilities
+    return np.argmax(probabilities)
