@@ -4,6 +4,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import make_pipeline
+from sklearn.model_selection import GridSearchCV
 # Load the Ecoli dataset
 ecoli = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', delim_whitespace=True, header=None)
 ecoli.columns = ['Sequence Name', 'mcg', 'gvh', 'lip', 'chg', 'aac', 'alm1', 'alm2', 'class']
@@ -14,16 +16,21 @@ label_encoder = LabelEncoder()
 y = label_encoder.fit_transform(y.astype(str))
 # Split data into train and test sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
-# Initialize logistic regression model
-model = LogisticRegression(multi_class='ovr', solver='liblinear', max_iter=1000)
-# Training the model
-model.fit(X_train, y_train)
-# Initialize standard scaler
-scaler = StandardScaler().fit(X_train)
+# Create a pipeline that scales the data and then trains a logistic regression model
+pipeline = make_pipeline(
+    StandardScaler(),
+    LogisticRegression(multi_class='ovr', solver='liblinear', max_iter=1000)
+)
+# Use GridSearchCV to find the best hyperparameters
+param_grid = {'logisticregression__C': [0.001, 0.01, 0.1, 1, 10, 100],
+              'logisticregression__penalty': ['l1', 'l2']}
+grid_search = GridSearchCV(pipeline, param_grid, cv=5)
+grid_search.fit(X_train, y_train)
+# Get the best model
+model = grid_search.best_estimator_
 def predict_label(raw_sample):
     # Preprocess the input
     sample = np.array(raw_sample).reshape(1, -1)
-    sample = scaler.transform(sample)
     # Use the trained logistic regression model to predict the probabilities
     predicted_probabilities = model.predict_proba(sample)
     # Adding probabilities for missing classes
