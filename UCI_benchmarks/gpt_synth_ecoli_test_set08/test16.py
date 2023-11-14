@@ -9,22 +9,23 @@ class LogisticModel:
         self.le = LabelEncoder()
         self.fitted = False
     def load_data(self):
-        ecoli = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data',
-                            delim_whitespace=True, header=None)
+        ecoli = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', 
+                            delim_whitespace=True, 
+                            header=None)
         ecoli.columns = ['Sequence Name', 'mcg', 'gvh', 'lip', 'chg', 'aac', 'alm1', 'alm2', 'class']
         y = ecoli.iloc[:, -1]
         self.le.fit(y)
         y = self.le.transform(y)
         X = ecoli.iloc[:, 1:-1].to_numpy()
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
+        X_train, _, y_train, _ = train_test_split(X, y, test_size=0.5, random_state=42)
         return X_train, y_train
     def train_model(self, X_train, y_train):
         self.model.fit(X_train, y_train)
         self.fitted = True
     def predict_label(self, raw_input):
         assert self.fitted, "Model not yet fitted"
-        prediction = self.model.predict_proba(raw_input.reshape(1, -1))
-        return prediction
+        prediction = self.model.predict(raw_input.reshape(1, -1))
+        return prediction[0] 
 # create an instance of the model and train it
 my_model = LogisticModel()
 X_train, y_train = my_model.load_data()
