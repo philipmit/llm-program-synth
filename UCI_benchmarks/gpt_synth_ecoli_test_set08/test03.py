@@ -22,6 +22,8 @@ def predict_label(raw_data_sample):
     # Ensure the input data is 2D
     if len(raw_data_sample.shape) == 1:
         raw_data_sample = np.expand_dims(raw_data_sample, 0)
-    # Predict the class probabilities and return
-    proba = log_reg.predict_proba(raw_data_sample)
+        # Predict the class probabilities taking the first (and only) prediction when one sample is given
+        proba = log_reg.predict_proba(raw_data_sample)[0]
+    else:
+        proba = log_reg.predict_proba(raw_data_sample)
     return proba
