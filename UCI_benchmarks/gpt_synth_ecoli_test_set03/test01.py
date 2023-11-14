@@ -18,10 +18,10 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_
 # Pre-processing: Standard Scaler
 sc = StandardScaler()
 X_train = sc.fit_transform(X_train)
+X_test = sc.transform(X_test)  # apply standard scaler on test data
 # Train Logistic Regression model
 lr = LogisticRegression(random_state=42, max_iter=10000)
 lr.fit(X_train, y_train)
-def predict_label(data):
-    data = sc.transform(np.array(data).reshape(1, -1))    # Apply the standard scaler on new data
-    probabilities = lr.predict_proba(data)[0]            # Predict probabilities
+def predict_label(idx):
+    probabilities = lr.predict_proba(X_test[idx].reshape(1, -1))[0]  # Predict probabilities for the given index
     return probabilities
