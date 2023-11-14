@@ -12,9 +12,7 @@ y = ecoli.iloc[:, -1]   # All rows, only the last column
 # Apply label encoding to class labels
 label_encoder = LabelEncoder()
 y = label_encoder.fit_transform(y.astype(str))
-# Convert DataFrame to numpy array
-X = X.to_numpy()
-y = y.to_numpy()
+# No need to convert DataFrame to numpy array. It will automatically be converted in the train_test_split function.
 # Split the dataset into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
 # Initialize logistic regression model
