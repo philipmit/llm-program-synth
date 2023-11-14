@@ -38,6 +38,13 @@ def collate_fn(batch):
 # DataLoader
 train_dataset = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
 trainloader = DataLoader(train_dataset, batch_size=32, shuffle=True, collate_fn=collate_fn)
+# Check the input size using one of the files
+file_path = os.path.join(TRAIN_DATA_PATH, train_dataset.file_names[0])
+data_check = pd.read_csv(file_path)
+data_check = data_check.drop(['Hours'], axis=1)
+data_check = data_check.fillna(0)  
+data_check = data_check.select_dtypes(include=[np.number])
+input_size = data_check.shape[1]
 # Define the LSTM model
 class LSTM(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers, output_size):
@@ -55,7 +62,6 @@ class LSTM(nn.Module):
         out = self.fc(out[:, -1, :])
         return out
 # LSTM parameters
-input_size = 13  
 hidden_size = 50 
 num_layers = 2  
 num_classes = 1  
@@ -76,6 +82,7 @@ for epoch in range(num_epochs):
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
+# Prediction function
 def predict_icu_mortality(patient_data):
     patient_data = pd.read_csv(patient_data)
     patient_data = patient_data.drop(['Hours'], axis=1)
