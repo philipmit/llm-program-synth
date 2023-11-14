@@ -8,15 +8,14 @@ ecoli.columns = ['Sequence Name', 'mcg', 'gvh', 'lip', 'chg', 'aac', 'alm1', 'al
 X = ecoli.iloc[:, 1:-1]  # All rows, all columns except the last one
 y = ecoli.iloc[:, -1]   # All rows, only the last column
 # Replace strings with numbers in y
-np.unique( y)
-len(list(np.unique( y)))
-y = y.replace(list(np.unique(y)), [0,1,2,3,4,5,6,7])
+unique_labels = np.unique(y)
+y = y.replace(unique_labels, range(len(unique_labels)))
 X=X.to_numpy()
 y=y.to_numpy()
-# Split the dataset into training and testing sets
+ #Split the dataset into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
 # Create logistic regression object
-logreg = LogisticRegression(max_iter=10000)
+logreg = LogisticRegression(multi_class='ovr', max_iter=10000)
 # Train the model using the training sets
 logreg.fit(X_train, y_train)
 def predict_label(raw_data):
