@@ -19,10 +19,10 @@ class ICUData(Dataset):
         file_path = os.path.join(self.data_path, self.file_names[idx])
         data = pd.read_csv(file_path)
         data = data.drop(['Hours'], axis=1)
-        data = data.apply(pd.to_numeric, errors='coerce')
         data = data.fillna(0)
+        data = data.select_dtypes(include=[np.number])
         label = self.labels[idx]
-        return torch.tensor(data.values, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
+        return torch.tensor(data.values, dtype=torch.float32), label
 class LSTM(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers, output_size):
         super(LSTM, self).__init__()
@@ -58,8 +58,9 @@ for epoch in range(50):
 def predict_icu_mortality(patient_data):
     model.eval()
     with torch.no_grad():
-        patient_data = patient_data.apply(pd.to_numeric, errors='coerce')
+        patient_data = patient_data.drop(['Hours'], axis=1)
         patient_data = patient_data.fillna(0)
+        patient_data = patient_data.select_dtypes(include=[np.number])
         inputs = torch.tensor(patient_data.values, dtype=torch.float32).unsqueeze(0)
         prediction = model(inputs)
     return torch.sigmoid(prediction).item()
