@@ -19,8 +19,8 @@ class ICUData(torch.utils.data.Dataset):
     def __getitem__(self, idx):
         file_path = os.path.join(self.data_path, self.file_names[idx])
         data = pd.read_csv(file_path)
-        data = data.drop('Hours', axis=1)
-        data = data.apply(pd.to_numeric, errors='coerce').fillna(0)
+        data = data.drop('Hours', axis=1) 
+        data = data.apply(pd.to_numeric, errors='ignore').fillna(0) 
         data = torch.tensor(data.values, dtype=torch.float32)
         label = self.labels[idx].unsqueeze(-1)
         return data, label
@@ -32,11 +32,8 @@ class LSTM(nn.Module):
         self.lstm = nn.LSTM(input_size, hidden_size, num_layers, batch_first=True)
         self.fc = nn.Linear(hidden_size, output_size)
     def forward(self, x):
-        # Initialize hidden state with zeros
         h0 = torch.zeros(self.num_layers, x.size(1), self.hidden_size).to(x.device)
-        # Initialize cell state
         c0 = torch.zeros(self.num_layers, x.size(1), self.hidden_size).to(x.device)
-        # Propagate input through LSTM
         out, (hn, cn) = self.lstm(x, (h0, c0))
         out = self.fc(out[:, -1, :])
         return out
