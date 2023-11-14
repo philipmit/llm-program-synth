@@ -4,7 +4,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
-from sklearn.preprocessing import StandardScaler
+torch.manual_seed(42)
 # File paths
 TRAIN_DATA_PATH = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/"
 LABEL_FILE = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/listfile.csv"
@@ -32,14 +32,20 @@ def train_model(model, data_loader, criterion, optimizer, num_epochs):
             loss.backward()
             optimizer.step()
         if epoch % 10 == 0:
-            print('Epoch: {}/{}, Loss: {:.4f}'.format(epoch+1, num_epochs, loss.item()))
+            print('Epoch: {}/{}, Loss: {:.4f}'.format(epoch, num_epochs, loss.item()))
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-model = LSTM(input_size=13, hidden_size=64, num_layers=2, output_size=1).to(device)
-dataset = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
-data_loader = DataLoader(dataset, batch_size=1, shuffle=True)
-criterion = nn.BCEWithLogitsLoss()
-optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+input_size = 14 # total parameters excluding 'Hours'
+hidden_size = 64 
+num_layers = 2
+output_size = 1
+batch_size = 1
 num_epochs = 100
+lr = 0.001
+model = LSTM(input_size, hidden_size, num_layers, output_size).to(device)
+dataset = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
+data_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
+criterion = nn.BCEWithLogitsLoss()
+optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 train_model(model, data_loader, criterion, optimizer, num_epochs)
 def predict_icu_mortality(patient_data):
     model.eval()
