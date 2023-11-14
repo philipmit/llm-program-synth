@@ -26,9 +26,7 @@ class ICUData(torch.utils.data.Dataset):
         data_values = data.values
         return torch.tensor(data_values, dtype=torch.float32), self.labels[idx]
 def collate_fn(batch):
-    # separate sequences and labels
     sequences, labels = zip(*batch)
-    # pad the sequences
     sequences_padded = pad_sequence(sequences, batch_first=True)
     return sequences_padded, torch.tensor(labels, dtype=torch.float32)
 class LSTMPredictor(nn.Module):
@@ -61,7 +59,7 @@ model = train_model(model, data_loader)
 def predict_icu_mortality(patient_data):
     model.eval()
     with torch.no_grad():
-        test_seq = torch.tensor(patient_data).float()
+        test_seq = patient_data.squeeze().float()
         test_seq = test_seq.unsqueeze(0)
         y_pred = model(test_seq)
         y_prob = torch.sigmoid(y_pred)
