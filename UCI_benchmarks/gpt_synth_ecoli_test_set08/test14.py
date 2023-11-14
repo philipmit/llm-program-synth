@@ -6,14 +6,13 @@ from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.pipeline import Pipeline
 from sklearn.feature_selection import SelectFromModel
 from sklearn.metrics import roc_auc_score
-from xgboost import XGBClassifier
 from sklearn.model_selection import GridSearchCV
 from sklearn.ensemble import GradientBoostingClassifier
 # Load the ecoli dataset
 ecoli = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', delim_whitespace=True, header=None)
 ecoli.columns = ['Sequence Name', 'mcg', 'gvh', 'lip', 'chg', 'aac', 'alm1', 'alm2', 'class']
 # Prepare the data 
-X = ecoli.iloc[:, 1:-1]  
+X = ecoli.iloc[:, 1:-1]
 y = ecoli.iloc[:, -1]
 # Transform y from categorical to numerical values
 le = LabelEncoder()
@@ -33,15 +32,15 @@ clf.fit(X_train, y_train)
 # Get the best model
 best_gb = clf.best_estimator_
 model = Pipeline([
-  ('standardize', StandardScaler()),
-  ('feature_selection', SelectFromModel(best_gb)),
-  ('gradient_boost', best_gb)
+    ('standardize', StandardScaler()),
+    ('feature_selection', SelectFromModel(best_gb)),
+    ('gradient_boost', best_gb)
 ])
 model.fit(X_train, y_train)
 def predict_label(raw_data):
-    """ 
-    Predict probabilities for a given raw unprocessed data. 
+    """
+    Predict probabilities for a given raw unprocessed data.
     """
     raw_data = np.array(raw_data).reshape(1, -1)
     probabilities = model.predict_proba(raw_data)
-    return probabilities[0]
+    return probabilities
