@@ -2,15 +2,13 @@ import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
-from sklearn.preprocessing import StandardScaler, LabelEncoder
+from sklearn.preprocessing import StandardScaler
+# Function to preprocess raw data
 def preprocess_data(raw_data):
-    # Convert numpy array to DataFrame
-    raw_data = pd.DataFrame(raw_data).T
-    # Convert DataFrame to np.array
-    raw_data = raw_data.to_numpy()
     # Standardize
     raw_data = scaler.transform(raw_data)
     return raw_data
+# Function to predict label for raw data
 def predict_label(raw_data):
     # Raw data is reshaped since the input is expected to be 2D
     raw_data = raw_data.reshape(1, -1)
@@ -37,3 +35,4 @@ X_train = scaler.fit_transform(X_train)
 # Train the logistic regression model
 model = LogisticRegression(multi_class='multinomial')
 model.fit(X_train, y_train)
+scaler.fit(X_train)
