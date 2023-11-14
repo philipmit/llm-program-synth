@@ -21,8 +21,8 @@ model = LogisticRegression(multi_class='multinomial', solver='lbfgs', max_iter=1
 model.fit(X_train, y_train)
 # Function to predict labels
 def predict_label(single_sample):
-    # Take only the features (all columns except the first) in single_sample, as the model was trained on those
-    sample_features = single_sample[1:-1]
+    # Take only the features (all columns except the first and last) in single_sample, as the model was trained on those
+    sample_features = single_sample[1:]
     # Reshape the sample
     sample_reshaped = np.array(sample_features).reshape(1, -1)
     # Calculate probability for each class
