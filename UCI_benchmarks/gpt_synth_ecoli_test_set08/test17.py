@@ -1,17 +1,18 @@
-`
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler, LabelEncoder
-# Load the digits dataset
+# Load the Ecoli dataset
 ecoli = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', delim_whitespace=True, header=None)
 ecoli.columns = ['Sequence Name', 'mcg', 'gvh', 'lip', 'chg', 'aac', 'alm1', 'alm2', 'class']
+# Separating the features and target variable
 X = ecoli.iloc[:, 1:-1]  # All rows, all columns except the last one
 y = ecoli.iloc[:, -1]   # All rows, only the last column
 # Apply label encoding to class labels
 label_encoder = LabelEncoder()
 y = label_encoder.fit_transform(y.astype(str))
+# Convert DataFrame to numpy array
 X = X.to_numpy()
 y = y.to_numpy()
 # Split the dataset into training and testing sets
