@@ -30,17 +30,18 @@ class LSTM(nn.Module):
         self.fc = nn.Linear(hidden_size, output_size)
     def forward(self, x):
         h0, c0 = [torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device) for _ in range(2)]
-        out, _ = self.lstm(x.unsqueeze(0), (h0, c0))
+        out, _ = self.lstm(x, (h0, c0))
         out = self.fc(out[:, -1, :])
-        return out
+        return out.squeeze()  # change: adjust dimension
 def train_model(model, data_loader, criterion, optimizer, num_epochs):
     model.train()
-    for epoch in range(1, num_epochs + 1):
+    for epoch in range(1, num_epochs+1):
         for seq, labels in data_loader:
-            seq, labels = seq.to(device), labels.to(device).unsqueeze(0)
-            output = model(seq)
-            loss = criterion(output, labels)
+            seq = seq.unsqueeze(0).to(device)  # change:  adjust dimension
+            labels = labels.to(device)
             optimizer.zero_grad()
+            output = model(seq)
+            loss = criterion(output, labels.view(-1, 1))  # change: adjust dimension
             loss.backward()
             optimizer.step()
         if epoch % 10 == 0:
@@ -53,7 +54,7 @@ def predict_icu_mortality(patient_data):
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model = LSTM(input_size=13, hidden_size=64, num_layers=2, output_size=1).to(device)
 dataset = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
-data_loader = DataLoader(dataset, batch_size=1, shuffle=True)  # Changed batch_size to 1
+data_loader = DataLoader(dataset, batch_size=1, shuffle=True)
 criterion = nn.BCEWithLogitsLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 num_epochs = 100
