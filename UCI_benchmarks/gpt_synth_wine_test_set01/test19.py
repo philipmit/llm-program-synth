@@ -20,5 +20,5 @@ model.fit(X_train, y_train)
 def predict_label(raw_data):
     # Standardize the raw data
     standardized_data = scaler.transform(raw_data.reshape(1, -1))
-    # Predict and return the class with the highest probability
-    return np.argmax(model.predict_proba(standardized_data))
+    # Return the probabilities for all classes
+    return model.predict_proba(standardized_data)[0]
