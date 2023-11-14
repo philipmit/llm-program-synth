@@ -61,14 +61,11 @@ def train_model():
     torch.save(model.state_dict(), MODEL_PATH)  
 train_model()
 def predict_icu_mortality(patient_data):
-    num_features = patient_data.shape[1] if len(patient_data.shape) > 1 else 1
+    patient_data = patient_data.reshape(-1, patient_data.shape[-1])  # reshape to [sequence_length, num_features]
+    num_features = patient_data.shape[1]
     model = LSTM(input_size=num_features, hidden_size=64, num_layers=2, output_size=1)
     model.load_state_dict(torch.load(MODEL_PATH))
     model.eval()
-    if len(patient_data.shape) == 1:
-        patient_data = torch.tensor(patient_data.values.reshape(1,-1), dtype=torch.float32)
-    else:
-        patient_data = torch.tensor(patient_data.values, dtype=torch.float32)
     output = model(patient_data.unsqueeze(0))
     pred = torch.sigmoid(output)
     return pred.item()
