@@ -4,7 +4,8 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
 import numpy as np
 # Load the Ecoli dataset
-ecoli = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', delim_whitespace=True, header=None)
+ecoli = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', 
+                    delim_whitespace=True, header=None)
 ecoli.columns = ['Sequence Name', 'mcg', 'gvh', 'lip', 'chg', 'aac', 'alm1', 'alm2', 'class']
 X = ecoli.iloc[:, 1:-1]  # All rows, all the columns except the last one
 y = ecoli.iloc[:, -1]   # All rows, only the last column
@@ -25,5 +26,5 @@ model.fit(X_train, y_train)
 def predict_label(X_raw):
     X_raw_np_array = np.array(X_raw, dtype=float).reshape(1, -1)
     X_raw_scaled = scaler.transform(X_raw_np_array)
-    prediction = model.predict_proba(X_raw_scaled)
+    prediction = model.predict_proba(X_raw_scaled)[0] # Access the first element to avoid extra wrapping into list
     return prediction
