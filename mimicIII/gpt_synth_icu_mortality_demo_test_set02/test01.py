@@ -2,7 +2,7 @@ import os
 import pandas as pd
 import numpy as np
 import torch
-import torch.nn as nn 
+import torch.nn as nn
 import warnings
 from torch.utils.data import DataLoader, Dataset
 warnings.filterwarnings("ignore")
@@ -20,10 +20,9 @@ class ICUData(Dataset):
         file_path = os.path.join(self.data_path, self.file_names[idx])
         data = pd.read_csv(file_path)
         data = data.drop(['Hours'], axis=1)  
-        data = data.fillna(0)      
+        data = data.fillna(0)  
         data = data.select_dtypes(include=[np.number]) 
         data_values = torch.tensor(data.values, dtype=torch.float32)
-        data_values = data_values.unsqueeze(0)  # Adding an extra dimension for batch
         label = self.labels[idx]
         return data_values, label
 dataset = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
@@ -43,8 +42,8 @@ class LSTM(nn.Module):
         return out
 model = LSTM(input_size=14, hidden_size=64, num_layers=2, output_size=1)
 criterion = nn.BCEWithLogitsLoss()
-optimizer = torch.optim.Adam(model.parameters(), lr=0.001) 
-for epoch in range(5):  
+optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+for epoch in range(5): 
     for i, (inputs, labels) in enumerate(dataloader):
         optimizer.zero_grad()
         outputs = model(inputs)
