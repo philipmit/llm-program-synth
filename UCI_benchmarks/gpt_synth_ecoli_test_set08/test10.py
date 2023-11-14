@@ -12,9 +12,6 @@ y = ecoli.iloc[:, -1]    # All rows, only the last column
 # Replace string labels with numeric labels
 label_encoder = LabelEncoder()
 y = label_encoder.fit_transform(y)
-# Convert pandas DataFrame to NumPy arrays
-X = X.to_numpy()
-y = y.to_numpy()
 # Split the dataset into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
 # Initialize Logistic Regression model
