@@ -16,5 +16,5 @@ mlp = MLPClassifier(max_iter=1000)
 # Train the model
 mlp.fit(X_train, y_train)
 def predict_label(raw_data):
-    processed_data = scaler.transform([raw_data])  # note thar model was trained with standardized features
-    return mlp.predict_proba(processed_data)
+    processed_data = scaler.transform([raw_data])  # note that model was trained with standardized features
+    return mlp.predict_proba(processed_data)[0]
