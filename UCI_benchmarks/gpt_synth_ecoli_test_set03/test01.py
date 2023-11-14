@@ -1,4 +1,4 @@
-mport pandas as pd
+import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
@@ -7,8 +7,8 @@ from sklearn.preprocessing import StandardScaler
 ecoli = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', delim_whitespace=True, header=None)
 ecoli.columns = ['Sequence Name', 'mcg', 'gvh', 'lip', 'chg', 'aac', 'alm1', 'alm2', 'class']
 # Define features and target
-X = ecoli.iloc[:, 1:-1]    # All rows, all columns except the last one
-y = ecoli.iloc[:, -1]     # All rows, only the last column
+X = ecoli.iloc[:, 1:-1]  # All rows, all columns except the last one
+y = ecoli.iloc[:, -1]   # All rows, only the last column
 y = y.replace(list(np.unique(y)), [0,1,2,3,4,5,6,7])
 # Convert to numpy arrays
 X = X.to_numpy()
