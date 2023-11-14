@@ -2,10 +2,11 @@ import os
 import pandas as pd
 import numpy as np
 import torch
-import warnings
-from torch.utils.data import DataLoader
 import torch.nn as nn
 import torch.optim as optim
+import warnings
+from torch.nn.utils.rnn import pad_sequence
+from torch.utils.data import DataLoader
 warnings.filterwarnings("ignore")
 # File paths
 TRAIN_DATA_PATH = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/"
@@ -27,6 +28,16 @@ class ICUData(torch.utils.data.Dataset):
         data = data.select_dtypes(include=[np.number]) 
         label = self.labels[idx]
         return torch.tensor(data.values, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
+# Collate function to pad sequences
+def collate_fn(batch):
+    sequences, labels = zip(*batch)
+    lengths = torch.tensor([len(seq) for seq in sequences])
+    sequences = pad_sequence(sequences, batch_first=True)
+    labels = torch.stack(labels)
+    return sequences, labels, lengths
+# DataLoader
+train_dataset = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
+trainloader = DataLoader(train_dataset, batch_size=32, shuffle=True, collate_fn=collate_fn)
 # Define the LSTM model
 class LSTM(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers, output_size):
@@ -35,31 +46,31 @@ class LSTM(nn.Module):
         self.num_layers = num_layers
         self.lstm = nn.LSTM(input_size, hidden_size, num_layers, batch_first=True)
         self.fc = nn.Linear(hidden_size, output_size)
-    def forward(self, x):
+    def forward(self, x, lengths):
+        pack_sequence = nn.utils.rnn.pack_padded_sequence(x, lengths, batch_first=True, enforce_sorted=False)
         h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device) 
         c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device)
-        out, _ = self.lstm(x, (h0, c0))
+        out, _ = self.lstm(pack_sequence, (h0, c0))
+        out, _ = nn.utils.rnn.pad_packed_sequence(out, batch_first=True)
         out = self.fc(out[:, -1, :])
         return out
-# DataLoader
-train_dataset = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
-trainloader = DataLoader(train_dataset, batch_size=32, shuffle=True)
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+# LSTM parameters
 input_size = 13  
 hidden_size = 50 
 num_layers = 2  
 num_classes = 1  
+# Model, loss, and optimizer
 model = LSTM(input_size, hidden_size, num_layers, num_classes).to(device)
 criterion = nn.BCEWithLogitsLoss()
 optimizer = optim.Adam(model.parameters(), lr=0.001)
-# Training Loop
+# Training loop
 num_epochs = 10
 for epoch in range(num_epochs):
-    for i, (sequences, labels) in enumerate(trainloader):
+    for i, (sequences, labels, lengths) in enumerate(trainloader):
         sequences = sequences.to(device)
         labels = labels.view(-1, 1).to(device)
         # Forward pass
-        outputs = model(sequences)
+        outputs = model(sequences, lengths)
         loss = criterion(outputs, labels)
         # Backward and optimize
         optimizer.zero_grad()
@@ -71,6 +82,7 @@ def predict_icu_mortality(patient_data):
     patient_data = patient_data.fillna(0)
     patient_data = patient_data.select_dtypes(include=[np.number])
     patient_data = torch.tensor(patient_data.values, dtype=torch.float32).unsqueeze(0).to(device)
-    output = model(patient_data)
+    length = torch.tensor([len(patient_data)]).to(device)
+    output = model(patient_data, length)
     prediction = torch.sigmoid(output).item()
     return prediction
