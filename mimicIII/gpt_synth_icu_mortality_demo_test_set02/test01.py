@@ -4,11 +4,8 @@ import numpy as np
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader, Dataset
-from sklearn.preprocessing import StandardScaler
-# File paths
 TRAIN_DATA_PATH = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/"
 LABEL_FILE = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/listfile.csv"
-# Define the Dataset
 class ICUData(Dataset):
     def __init__(self, data_path, label_file):
         self.data_path = data_path
@@ -20,14 +17,11 @@ class ICUData(Dataset):
     def __getitem__(self, idx):
         file_path = os.path.join(self.data_path, self.file_names[idx])
         data = pd.read_csv(file_path)
-        data = data.drop(['Hours'], axis=1)  
-        scaler = StandardScaler()
-        data = pd.DataFrame(scaler.fit_transform(data), columns=data.columns)
-        data = data.fillna(0)  
-        data = data.select_dtypes(include=[np.number]) 
+        data = data.drop(['Hours'], axis=1)
+        data = data.apply(pd.to_numeric, errors='coerce')
+        data = data.fillna(0)
         label = self.labels[idx]
         return torch.tensor(data.values, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
-# Define the LSTM
 class LSTM(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers, output_size):
         super(LSTM, self).__init__()
@@ -41,13 +35,11 @@ class LSTM(nn.Module):
         out, _ = self.lstm(x, (h0, c0))
         out = self.fc(out[:, -1, :])
         return out
-# Create Data Loader and Neural Network
 dataset = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
 dataloader = DataLoader(dataset, batch_size=16)
 model = LSTM(input_size=14, hidden_size=128, num_layers=3, output_size=1)
 criterion = nn.BCEWithLogitsLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
-# Train the model
 model.train()
 for epoch in range(50):
     for inputs, labels in dataloader:
@@ -61,5 +53,7 @@ for epoch in range(50):
 def predict_icu_mortality(patient_data):
     model.eval()
     with torch.no_grad():
+        patient_data = patient_data.apply(pd.to_numeric, errors='coerce')
+        patient_data = patient_data.fillna(0)
         prediction = model(patient_data)
     return torch.sigmoid(prediction).item()
