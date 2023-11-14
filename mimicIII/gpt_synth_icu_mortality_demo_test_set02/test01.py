@@ -22,7 +22,7 @@ class ICUData(Dataset):
     def __getitem__(self, idx):
         file_path = os.path.join(self.data_path, self.file_names[idx])
         data = pd.read_csv(file_path)
-        data = data[['Capillary refill rate', 'Diastolic blood pressure', 'Fraction inspired oxygen', 'Glascow coma scale total', 'Glucose', 'Heart Rate', 'Height', 'Mean blood pressure', 'Oxygen saturation', 'Respiratory rate', 'Systolic blood pressure', 'Temperature', 'Weight', 'pH']]
+        data = data.drop(['Hours'], axis=1)  # 'Hours' is dropped here
         data = data.fillna(0)   
         label = self.labels[idx]
         return torch.tensor(data.values, dtype=torch.float32), label
@@ -44,7 +44,7 @@ class LSTM(nn.Module):
 def train_model(dataloader, model, criterion, optimizer, num_epochs):
     model.train()
     for epoch in range(num_epochs):
-        for index, (inputs, labels) in enumerate(dataloader):
+        for inputs, labels in dataloader:
             inputs = inputs.to(torch.float32)
             labels = labels.unsqueeze(1).to(torch.float32)
             optimizer.zero_grad()
@@ -54,24 +54,18 @@ def train_model(dataloader, model, criterion, optimizer, num_epochs):
             optimizer.step()
         if epoch % 10 == 0:
             print(f"Epoch: {epoch}, Loss: {loss.item()}")
-# Define a custom collate_fn to pad sequences of different length
-def my_collate(batch):
-    (data, label) = zip(*batch)
-    data = pad_sequence(data, batch_first=True, padding_value=0)
-    label = torch.tensor(label, dtype=torch.float32)
-    return data, label
 # Define the function to make predictions
 def predict_icu_mortality(raw_patient_data):
     model.eval()
-    raw_patient_data = raw_patient_data[['Capillary refill rate', 'Diastolic blood pressure', 'Fraction inspired oxygen', 'Glascow coma scale total', 'Glucose', 'Heart Rate', 'Height', 'Mean blood pressure', 'Oxygen saturation', 'Respiratory rate', 'Systolic blood pressure', 'Temperature', 'Weight', 'pH']]
+    raw_patient_data = raw_patient_data.drop(['Hours'], axis=1)    # 'Hours' is dropped here
     raw_patient_data = raw_patient_data.fillna(0)
     inputs = torch.tensor(raw_patient_data.values, dtype=torch.float32).unsqueeze(0)
     prediction = model(inputs)
     return torch.sigmoid(prediction).item()
 # Initialize dataloader, model, criterion and optimizer
 icudata = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
-dataloader = DataLoader(icudata, batch_size=16, collate_fn=my_collate)
-model = LSTM(input_size=13, hidden_size=100, num_layers=1, output_size=1)
+dataloader = DataLoader(icudata, batch_size=16, shuffle=True)
+model = LSTM(input_size=14, hidden_size=100, num_layers=2, output_size=1)
 criterion = nn.BCEWithLogitsLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 # Train the model
