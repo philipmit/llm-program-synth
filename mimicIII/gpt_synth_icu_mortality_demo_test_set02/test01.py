@@ -22,7 +22,7 @@ class ICUData(Dataset):
         data = data.drop(['Hours'], axis=1)  
         data = data.fillna(0)  
         data = data.select_dtypes(include=[np.number]) 
-        data_values = torch.tensor(data.values, dtype=torch.float32)
+        data_values = torch.tensor(data.values, dtype=torch.float32).unsqueeze(0)   # Added unsqueeze to create batch dimension
         label = self.labels[idx]
         return data_values, label
 dataset = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
@@ -38,7 +38,7 @@ class LSTM(nn.Module):
         h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device)
         c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device)
         out, _ = self.lstm(x, (h0, c0))
-        out = self.fc(out[:, -1, :])
+        out = self.fc(out[:, -1, :])   # reshaped output accordingly
         return out
 model = LSTM(input_size=14, hidden_size=64, num_layers=2, output_size=1)
 criterion = nn.BCEWithLogitsLoss()
@@ -52,5 +52,5 @@ for epoch in range(5):
         optimizer.step()
 def predict_icu_mortality(patient_data):
     with torch.no_grad():
-        prediction = model(patient_data.unsqueeze(0))
+        prediction = model(patient_data)    # Changed from (patient_data.unsqueeze(0)) 
     return torch.sigmoid(prediction).item()
