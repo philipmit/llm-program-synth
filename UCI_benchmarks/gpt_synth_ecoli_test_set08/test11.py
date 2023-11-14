@@ -1,34 +1,30 @@
 import pandas as pd
-import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.pipeline import make_pipeline
-from sklearn.model_selection import GridSearchCV
 # Load the ecoli dataset
-ecoli = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', 
-                    delim_whitespace=True, header=None)
+ecoli = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', delim_whitespace=True, header=None)
 ecoli.columns = ['Sequence Name', 'mcg', 'gvh', 'lip', 'chg', 'aac', 'alm1', 'alm2', 'class']
-X = ecoli.iloc[:, 1:-1]  # All rows and all columns except the last one
-y = ecoli.iloc[:, -1]   # All rows and only the last column
-# Replace categorical classes with numerical labels in y
-y = y.replace(list(np.unique(y)), [0,1,2,3,4,5,6,7])
-# Convert pandas DataFrame to numpy array
+X = ecoli.iloc[:, 1:-1]  # All rows, all columns except the last one
+y = ecoli.iloc[:, -1]   # All rows, only the last column
+# Encode the classes with LabelEncoder
+le = LabelEncoder()
+y = le.fit_transform(y)
+# Ensure the data is np.array format
 X = X.values
-y = y.values
+y = y.ravel()
 # Split the dataset into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
-# Standardize the features to have mean=0 and variance=1
-scaler = StandardScaler().fit(X_train)
-X_train = scaler.transform(X_train)
-# Define the logistic regression model
-model = LogisticRegression(multi_class='multinomial', solver='lbfgs')
+# Build a pipeline to standardize features and then apply logistic regression
+pipeline = make_pipeline(StandardScaler(), LogisticRegression(multi_class='ovr', class_weight='balanced', solver='liblinear'))
 # Fit the model using training data
-model.fit(X_train, y_train)
+pipeline.fit(X_train, y_train)
 def predict_label(raw_data):
-    # Preprocess the raw data
-    raw_data = np.array(raw_data)
-    raw_data = scaler.transform(raw_data.reshape(1, -1))
-    # Predict the probabilities
-    predicted_probabilities = model.predict_proba(raw_data)
+    """
+    This function takes raw unprocessed data for a single sample and returns predicted probabilities for that sample.
+    """
+    raw_data = np.array(raw_data).reshape(1, -1)
+    # predict probabilities
+    predicted_probabilities = pipeline.predict_proba(raw_data)
     return predicted_probabilities[0]
