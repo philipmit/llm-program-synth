@@ -6,8 +6,10 @@ import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
 import warnings
 warnings.filterwarnings("ignore")
+# File paths
 TRAIN_DATA_PATH = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/"
 LABEL_FILE = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/listfile.csv"
+# Define the Dataset
 class ICUData(Dataset):
     def __init__(self, data_path, label_file, max_len=100):
         self.data_path = data_path
@@ -22,7 +24,6 @@ class ICUData(Dataset):
         data = pd.read_csv(file_path)
         data = data.drop(['Hours'], axis=1)
         data = data.apply(pd.to_numeric, errors='coerce').fillna(0)  # Coerce non-numeric values to NaN and then fill with 0
-        data = torch.tensor(data.values, dtype=torch.float32)
         if data.shape[0] < self.max_len:
             data = torch.cat([data, torch.zeros(self.max_len - data.shape[0], data.shape[1])])
         else:
@@ -57,7 +58,6 @@ def predict_icu_mortality(raw_patient_data, model, max_len=100):
     model.eval()
     raw_patient_data = raw_patient_data.drop(['Hours'], axis=1)
     raw_patient_data = raw_patient_data.apply(pd.to_numeric, errors='coerce').fillna(0)  # Coerce non-numeric values to NaN and then fill with 0
-    raw_patient_data = torch.tensor(raw_patient_data.values, dtype=torch.float32)
     if raw_patient_data.shape[0] < max_len:
         raw_patient_data = torch.cat([raw_patient_data, torch.zeros(max_len - raw_patient_data.shape[0], raw_patient_data.shape[1])])
     else:
@@ -65,10 +65,14 @@ def predict_icu_mortality(raw_patient_data, model, max_len=100):
     inputs = raw_patient_data.unsqueeze(0)
     prediction = model(inputs)
     return torch.sigmoid(prediction).item()
+# Determine number of features
+data_sample_path = os.path.join(TRAIN_DATA_PATH, os.listdir(TRAIN_DATA_PATH)[0])
+data_sample = pd.read_csv(data_sample_path).drop(['Hours'], axis=1)
+NUM_FEATURES = len(data_sample.columns)
 icudata = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
 dataloader = DataLoader(icudata, batch_size=16, shuffle=True)
-model = LSTM(input_size=14, hidden_size=100, num_layers=2, output_size=1)
+model = LSTM(input_size=NUM_FEATURES, hidden_size=50, num_layers=2, output_size=1)
 criterion = nn.BCEWithLogitsLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
-# Train the model with 50 epochs
+# Train the model
 train_model(dataloader, model, criterion, optimizer, num_epochs=50)
