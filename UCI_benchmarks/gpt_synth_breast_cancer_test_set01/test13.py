@@ -1,16 +1,20 @@
 from sklearn.datasets import load_breast_cancer
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import make_pipeline
 # Load the Breast Cancer dataset
 breast_cancer = load_breast_cancer()
 X = breast_cancer.data
 y = breast_cancer.target
 # Split the dataset into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
-# Train the Logistic Regression model
-model = LogisticRegression(max_iter=5000)
+# Make a pipeline that standardizes the input features and trains a Logistic Regression model
+# Higher penalty leads to more regularization, smaller C --> more regularization (C is inverse of reg. strength)
+model = make_pipeline(StandardScaler(), LogisticRegression(C=0.01, max_iter=5000))
+# Train the model with the training data
 model.fit(X_train, y_train)
-def predict_label(raw_sample):
+def predict_icu_mortality(raw_sample):
     # predict label's probability for a single sample
     single_sample_reshape = raw_sample.reshape(1, -1)
     prob = model.predict_proba(single_sample_reshape)[0, 1]
