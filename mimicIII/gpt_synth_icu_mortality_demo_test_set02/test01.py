@@ -19,10 +19,10 @@ class ICUData(Dataset):
     def __getitem__(self, idx):
         file_path = os.path.join(self.data_path, self.file_names[idx])
         data = pd.read_csv(file_path)
-        data = data.drop(['Hours'], axis=1)  
-        data = data.fillna(0)  
-        data = data.select_dtypes(include=[np.number]) 
-        data_values = torch.tensor(data.values, dtype=torch.float32).unsqueeze(0)   # Added unsqueeze to create batch dimension
+        data = data.drop(['Hours'], axis=1)
+        data = data.fillna(0)
+        data = data.select_dtypes(include=[np.number])
+        data_values = torch.tensor(data.values, dtype=torch.float32).unsqueeze(0)  # Added Unsqueezed to create batch dimension
         label = self.labels[idx]
         return data_values, label
 dataset = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
@@ -35,15 +35,15 @@ class LSTM(nn.Module):
         self.lstm = nn.LSTM(input_size, hidden_size, num_layers, batch_first=True)
         self.fc = nn.Linear(hidden_size, output_size)
     def forward(self, x):
-        h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device)
-        c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device)
+        h0 = torch.zeros(self.num_layers, 1, self.hidden_size).to(x.device)  # Modified this line
+        c0 = torch.zeros(self.num_layers, 1, self.hidden_size).to(x.device)  # And this line
         out, _ = self.lstm(x, (h0, c0))
-        out = self.fc(out[:, -1, :])   # reshaped output accordingly
+        out = self.fc(out[:, -1, :])  
         return out
 model = LSTM(input_size=14, hidden_size=64, num_layers=2, output_size=1)
 criterion = nn.BCEWithLogitsLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
-for epoch in range(5): 
+for epoch in range(5):
     for i, (inputs, labels) in enumerate(dataloader):
         optimizer.zero_grad()
         outputs = model(inputs)
@@ -52,5 +52,5 @@ for epoch in range(5):
         optimizer.step()
 def predict_icu_mortality(patient_data):
     with torch.no_grad():
-        prediction = model(patient_data)    # Changed from (patient_data.unsqueeze(0)) 
+        prediction = model(patient_data)
     return torch.sigmoid(prediction).item()
