@@ -2,6 +2,8 @@ import pandas as pd
 import numpy as np
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import StandardScaler
 # Load the Ecoli dataset
 ecoli = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', delim_whitespace=True, header=None)
 ecoli.columns = ['Sequence Name', 'mcg', 'gvh', 'lip', 'chg', 'aac', 'alm1', 'alm2', 'class']
@@ -17,8 +19,8 @@ X = X.to_numpy()
 y = y.to_numpy()
 # Split the dataset into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
-# Train the logistic regression model
-lr = LogisticRegression(max_iter=2000)
+# Train the logistic regression model with new parameters
+lr = make_pipeline(StandardScaler(), LogisticRegression(C=0.9, penalty='l1', solver='liblinear', max_iter=5000))
 lr.fit(X_train, y_train)
 def predict_label(input_data):
     """
