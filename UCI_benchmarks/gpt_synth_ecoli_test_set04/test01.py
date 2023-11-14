@@ -8,8 +8,10 @@ ecoli.columns = ['Sequence Name', 'mcg', 'gvh', 'lip', 'chg', 'aac', 'alm1', 'al
 # Create feature matrix and target array
 X = ecoli.iloc[:, 1:-1]  
 y = ecoli.iloc[:, -1]
+# List to keep track of unique classes
+unique_classes = list(np.unique(y))
 # Convert string labels in y to numeric
-y = y.replace(list(np.unique(y)), [0,1,2,3,4,5,6,7])
+y = y.replace(unique_classes, list(range(len(unique_classes))))
 # Convert pandas objects to numpy arrays
 X = X.to_numpy()
 y = y.to_numpy()
@@ -23,5 +25,14 @@ def predict_label(input_data):
     Function to predict the label for given input data using trained logistic regression model.
     input_data should be a numpy array.
     """
-    input_data_features = input_data.reshape(1, -1)    # reshape the data for prediction 
-    return lr.predict_proba(input_data_features)[0]
+    # Initialize a prediction list of 0's with a length equal to the total number of classes
+    prediction_probs = [0 for _ in range(len(unique_classes))]
+    # Reshape the input data for prediction
+    input_data_features = input_data.reshape(1, -1)
+    # Perform prediction
+    predicted_probabilities = lr.predict_proba(input_data_features)[0]
+    # Get classes that the model was trained on
+    trained_classes = lr.classes_
+    for i in range(len(trained_classes)):
+        prediction_probs[trained_classes[i]] = predicted_probabilities[i]
+    return prediction_probs
