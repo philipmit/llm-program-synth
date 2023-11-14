@@ -1,30 +1,24 @@
-from sklearn.ensemble import RandomForestClassifier
-import numpy as np
 import pandas as pd
-from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
-# Load the Ecoli dataset
+from sklearn.linear_model import LogisticRegressionCV
+from sklearn import preprocessing
+from sklearn.preprocessing import StandardScaler
+import numpy as np
 ecoli = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', delim_whitespace=True, header=None)
 ecoli.columns = ['Sequence Name', 'mcg', 'gvh', 'lip', 'chg', 'aac', 'alm1', 'alm2', 'class']
-X = ecoli.iloc[:, 1:-1].values  # All rows, all columns excluding 'Sequence Name' and 'class'; Features
-y = ecoli.iloc[:, -1].values    # All rows, only last column, 'class'; Target labels
-# Replace string labels with unique integers
-unique_classes, y = np.unique(y, return_inverse=True)
-# Split the dataset into training and testing sets
+X = ecoli.iloc[:, 1:-1] 
+y = ecoli.iloc[:, -1]
+le = preprocessing.LabelEncoder()
+y = le.fit_transform(y)
+X = X.values
+y = y.ravel()
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
-# Scale the data; Fit the scaler only on the training set for unbiased transformation
+# Standardize features
 scaler = StandardScaler().fit(X_train)
 X_train = scaler.transform(X_train)
-# Train the RandomForestClassifier model
-rf = RandomForestClassifier(n_estimators=1000, max_depth=10, random_state=0)
-rf.fit(X_train, y_train)
-# Define the function to predict class probabilities for a single raw sample
+# Use an optimized logistic regression model for multi-class classification
+model = LogisticRegressionCV(cv=5, random_state=0, multi_class='multinomial').fit(X_train, y_train)
 def predict_label(single_sample):
-    # Preprocess the sample just as we did the training data
     processed_sample = scaler.transform(np.array(single_sample).reshape(1, -1))
-    # Get predicted probabilities from the model
-    predicted_probabilities = rf.predict_proba(processed_sample)
-    # Ensure probabilities for all classes by manually zero-filling for missing classes
-    all_probs = np.zeros(len(unique_classes))
-    all_probs[rf.classes_] = predicted_probabilities
-    return all_probs
+    predicted_probabilities = model.predict_proba(processed_sample)
+    return predicted_probabilities[0]
