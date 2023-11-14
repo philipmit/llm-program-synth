@@ -10,13 +10,11 @@ ecoli.columns = ['Sequence Name', 'mcg', 'gvh', 'lip', 'chg', 'aac', 'alm1', 'al
 # Define Predictor variables and target variable
 X = ecoli.iloc[:, 1:-1]  # All rows, all columns except the last one
 y = ecoli.iloc[:, -1]   # All rows, only the last column
-# Split the dataset into training and testing sets
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
 # Apply LabelEncoder() to the target variable
 le = LabelEncoder()
-# Fit and transform on y_train and only transform the y_test to ensure all classes are accounted for
-y_train = le.fit_transform(y_train)
-y_test = le.transform(y_test)
+y = le.fit_transform(y)
+# Split the dataset into training and testing sets using stratified sampling
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, stratify=y, random_state=42)
 # Standardize the features
 scaler = StandardScaler()
 # Fit on the training data and transform both the training and the test data
