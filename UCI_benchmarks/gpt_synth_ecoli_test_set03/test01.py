@@ -1,4 +1,4 @@
-import pandas as pd
+mport pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
@@ -20,9 +20,9 @@ sc = StandardScaler()
 X_train = sc.fit_transform(X_train)
 X_test = sc.transform(X_test)
 # Train Logistic Regression model
-lr = LogisticRegression(random_state=42, max_iter=10000)
+lr = LogisticRegression(random_state=42, max_iter=10000, multi_class='multinomial', solver='lbfgs')
 lr.fit(X_train, y_train)
 def predict_label(sample):
     sample = sc.transform(sample.reshape(1, -1))  # Apply the same scaling to the sample
-    probabilities = lr.predict_proba(sample)[0]   # Predict probabilities for the sample
+    probabilities = lr.predict_proba(sample)[0]  # Predict probabilities for the sample
     return probabilities
