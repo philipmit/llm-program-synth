@@ -2,7 +2,8 @@ import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
-from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
+# Let's use RandomForest classifier instead of logistic regression for potentially better performance
 # Load the Ecoli dataset
 ecoli = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', delim_whitespace=True, header=None)
 ecoli.columns = ['Sequence Name', 'mcg', 'gvh', 'lip', 'chg', 'aac', 'alm1', 'alm2', 'class']
@@ -17,7 +18,7 @@ X = X.to_numpy()
 y = y.to_numpy()
 # Split the Ecoli dataset into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
-# Only train on data that contains representive labels
+# Only train on data that contains representative labels
 unq_train_labels = np.unique(y_train)
 train_indices = np.isin(y, unq_train_labels)
 X_train = X[train_indices]
@@ -26,9 +27,10 @@ y_train = y[train_indices]
 scaler = StandardScaler()
 # Scaling the X_train data
 X_train = scaler.fit_transform(X_train)
-# Define and Fit logistic regression model
-log_reg = LogisticRegression(multi_class='ovr', solver='liblinear', max_iter=10000)
-log_reg.fit(X_train, y_train)
+# Define and Fit RandomForest model
+# We use more estimators for possibly better accuracy and set the random state for reproducibility
+rf_model = RandomForestClassifier(n_estimators=500, random_state=42)
+rf_model.fit(X_train, y_train)
 def predict_label(raw_sample):
     # reshape raw_sample if it's only 1D (it's a single sample)
     if len(raw_sample.shape) == 1:
@@ -36,10 +38,10 @@ def predict_label(raw_sample):
     # normalize the sample
     sample = scaler.transform(raw_sample)
     # use the fitted model to predict the probabilities
-    probas = log_reg.predict_proba(sample)
+    probas = rf_model.predict_proba(sample)
     # Ensure probabilities are only returned for represented classes
     proba_dict = {label: 0 for label in label_dict.values()}
-    for i, prob in zip(log_reg.classes_, probas[0]):
+    for i, prob in zip(rf_model.classes_, probas[0]):
         proba_dict[i] = prob
     probas = np.array(list(proba_dict.values()))
     return probas
