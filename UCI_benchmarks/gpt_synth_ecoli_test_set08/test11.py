@@ -19,6 +19,8 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_
 # Standardize the features to have mean=0 and variance=1
 scaler = StandardScaler().fit(X_train)
 X_train = scaler.transform(X_train)
+# Define the number of classes
+num_classes = len(np.unique(y))
 # Logistic Regression model training
 model = LogisticRegression(max_iter=10000)
 model.fit(X_train, y_train)
@@ -28,4 +30,8 @@ def predict_label(raw_data):
     raw_data = scaler.transform(raw_data.reshape(1, -1))
     # Predict the probabilities
     predicted_probabilities = model.predict_proba(raw_data)
-    return predicted_probabilities[0]
+    # Initialize a probabilities vector filled with zeros for each class type
+    probabilities = np.zeros(num_classes)
+    # Fill the probabilities of the classes that the model can predict
+    probabilities[model.classes_] = predicted_probabilities
+    return probabilities
