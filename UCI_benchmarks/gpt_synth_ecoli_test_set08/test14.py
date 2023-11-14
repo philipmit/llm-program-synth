@@ -1,17 +1,19 @@
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import LabelEncoder
 from sklearn.linear_model import LogisticRegression
+from sklearn import preprocessing
 # Load the Ecoli dataset
 ecoli = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', delim_whitespace=True, header=None)
 ecoli.columns = ['Sequence Name', 'mcg', 'gvh', 'lip', 'chg', 'aac', 'alm1', 'alm2', 'class']
 # Prepare the data 
 X = ecoli.iloc[:, 1:-1].values  
 y = ecoli.iloc[:, -1]
-# Encode the string labels to numbers
-le = LabelEncoder()
-y = le.fit_transform(y)
+# Encode the string labels to binary format
+le = preprocessing.LabelBinarizer()
+y_binary = le.fit_transform(y)
+# Combine back the labels to get an integer for each class
+y = np.array([np.argmax(item) for item in y_binary])
 # Split the data into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
 # Train a Logistic Regression Model
