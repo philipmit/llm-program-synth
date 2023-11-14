@@ -18,5 +18,9 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_
 log_reg = LogisticRegression(multi_class='multinomial', solver='lbfgs', max_iter=1000)
 log_reg.fit(X_train, y_train)
 def predict_label(raw_data_sample):
-    proba = log_reg.predict_proba(raw_data_sample.reshape(1, -1))
-    return proba[0]
+    # Ensure the input data is 2D
+    if len(raw_data_sample.shape) == 1:
+        raw_data_sample = np.expand_dims(raw_data_sample, 0)
+    # predict the class probalities
+    proba = log_reg.predict_proba(raw_data_sample)
+    return proba
