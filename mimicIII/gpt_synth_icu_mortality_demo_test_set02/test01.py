@@ -21,22 +21,28 @@ class ICUData(torch.utils.data.Dataset):
         data = pd.read_csv(file_path)
         data = data.drop('Hours', axis=1)
         data = data.apply(pd.to_numeric, errors='coerce').fillna(0)
-        data = torch.tensor(data.values, dtype=torch.float32).unsqueeze(0)  
-        label = self.labels[idx].unsqueeze(-1)  # convert to a 2D tensor
+        data = torch.tensor(data.values, dtype=torch.float32).unsqueeze(0)
+        label = self.labels[idx].unsqueeze(-1)
         return data, label
 class LSTM(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers, output_size):
         super(LSTM, self).__init__()
         self.hidden_size = hidden_size
         self.num_layers = num_layers
-        self.lstm = nn.LSTM(input_size, hidden_size, num_layers)
+        self.lstm = nn.LSTM(input_size, hidden_size, num_layers, batch_first=True)
         self.fc = nn.Linear(hidden_size, output_size)
     def forward(self, x):
-        h0 = torch.zeros(self.num_layers, 1, self.hidden_size).to(x.device)
-        c0 = torch.zeros(self.num_layers, 1, self.hidden_size).to(x.device)
-        out, _ = self.lstm(x, (h0, c0))
+        # Initialize hidden state with zeros
+        h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device) 
+        # Initialize cell state
+        c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device)
+        # We need to detach as we are doing truncated backpropagation through time (BPTT)
+        h0 = h0.detach()
+        c0 = c0.detach()
+        # Propagate input through LSTM
+        out, (hn, cn) = self.lstm(x, (h0, c0))
         out = self.fc(out[:, -1, :])
-        return out.squeeze() 
+        return out
 def train_model(model, data_loader, criterion, optimizer, num_epochs=100):
     model.train()
     for epoch in range(num_epochs):
@@ -54,6 +60,6 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model = LSTM(input_size=13, hidden_size=32, num_layers=2, output_size=1).to(device)
 dataset = ICUData(data_path=TRAIN_DATA_PATH, label_file=LABEL_FILE)
 data_loader = DataLoader(dataset=dataset, batch_size=1, shuffle=True)
-criterion = nn.BCEWithLogitsLoss()  
+criterion = nn.BCEWithLogitsLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
 train_model(model, data_loader, criterion, optimizer)
