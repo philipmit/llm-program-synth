@@ -2,7 +2,6 @@ from sklearn.datasets import load_wine
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
-import numpy as np
 # Load the wine dataset
 wine = load_wine()
 X = wine.data
@@ -18,13 +17,10 @@ lr = LogisticRegression(max_iter=10000)
 lr.fit(X_train_normalized, y_train)
 def predict_label(sample_data):
     # Ensure the sample data is 2D
-    if len(sample_data.shape) == 1:
+    if sample_data.ndim == 1:
         sample_data = sample_data.reshape(1, -1)
     # Normalize the sample data
     sample_data_normalized = scaler.transform(sample_data)
     # Predict probabilities
     probabilities = lr.predict_proba(sample_data_normalized)
-    # Convert to the class with highest probability
-    highest_probability_index = np.argmax(probabilities, axis=1)
-    predicted_class_probabilities = probabilities[np.arange(len(highest_probability_index)), highest_probability_index]
-    return predicted_class_probabilities.tolist()
+    return probabilities[0]
