@@ -5,15 +5,15 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler, LabelEncoder
 def preprocess_data(raw_data):
     # Convert numpy array to DataFrame
-    raw_data = pd.DataFrame(raw_data).iloc[:, 1:-1]
+    raw_data = pd.DataFrame(raw_data).T
     # Convert DataFrame to np.array
     raw_data = raw_data.to_numpy()
     # Standardize
     raw_data = scaler.transform(raw_data)
     return raw_data
 def predict_label(raw_data):
-    # Convert numpy array to DataFrame for preprocessing
-    raw_data = pd.DataFrame(raw_data).iloc[:,:-1] 
+    # Raw data is reshaped since the input is expected to be 2D
+    raw_data = raw_data.reshape(1, -1)
     # Preprocess the raw data
     processed_data = preprocess_data(raw_data)
     # Predict the probabilities using trained model
