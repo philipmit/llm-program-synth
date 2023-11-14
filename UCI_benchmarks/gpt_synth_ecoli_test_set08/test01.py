@@ -25,9 +25,5 @@ def predict_label(sample):
     sample = np.array(sample).reshape(1,-1)
     sample = scaler.transform(sample)  # We need to apply the same scaling to the new data
     probabilities = clf.predict_proba(sample)
-    print(probabilities)
-    # As we need to provide a list of probabilities, if it's a single class, we reshape to have a 2D list
-    probabilities = probabilities.reshape(-1, len(probabilities[0])).tolist()
-    # Flatten the list of probabilities as roc_auc_score expects a 2D input but one-dimensional output.
-    probabilities = [prob for sublist in probabilities for prob in sublist]
-    return probabilities
+    probabilities = probabilities.tolist()
+    return probabilities[0]
