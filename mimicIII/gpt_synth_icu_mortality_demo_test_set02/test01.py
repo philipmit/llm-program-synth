@@ -29,14 +29,14 @@ class LSTM(nn.Module):
         super(LSTM, self).__init__()
         self.hidden_size = hidden_size
         self.num_layers = num_layers
-        self.lstm = nn.LSTM(input_size, hidden_size, num_layers, batch_first=True)
+        self.lstm = nn.LSTM(input_size, hidden_size, num_layers)
         self.fc = nn.Linear(hidden_size, output_size)
     def forward(self, x):
-        h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device)
-        c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device)
+        h0 = torch.zeros(self.num_layers, 1, self.hidden_size).to(x.device)
+        c0 = torch.zeros(self.num_layers, 1, self.hidden_size).to(x.device)
         out, _ = self.lstm(x, (h0, c0))
         out = self.fc(out[:, -1, :])
-        return out.squeeze()  # remove unused dimension
+        return out.squeeze() 
 def train_model(model, data_loader, criterion, optimizer, num_epochs=100):
     model.train()
     for epoch in range(num_epochs):
