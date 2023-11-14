@@ -1,19 +1,20 @@
 import numpy as np
 import pandas as pd
 from sklearn.linear_model import LogisticRegression
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, LabelBinarizer
 from sklearn.model_selection import train_test_split
 # Load the dataset
 ecoli = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', delim_whitespace=True, header=None)
 ecoli.columns = ['Sequence Name', 'mcg', 'gvh', 'lip', 'chg', 'aac', 'alm1', 'alm2', 'class']
 X = ecoli.iloc[:, 1:-1]  # All rows, all columns except the last one
 y = ecoli.iloc[:, -1]   # All rows, only the last column
-# Replace strings with numbers in y
-np.unique( y)
-len(list(np.unique( y)))
-y = y.replace(list(np.unique(y)), [0,1,2,3,4,5,6,7])
+# Label binarize the string labels in y
+lb = LabelBinarizer()
+y = lb.fit_transform(y)
+# converting the 2-D array to 1-D
+y = [np.where(r==1)[0][0] for r in y]
 X=X.to_numpy()
-y=y.to_numpy()
+y=np.array(y)
 # Split the dataset into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
 # Normalize the features
@@ -33,4 +34,8 @@ def predict_label(raw_input_sample):
     sample = scaler.transform(raw_input_sample)
     # Perform prediction and return the probability for each class
     probabilities = model.predict_proba(sample)
-    return probabilities[0]  # flatten the result
+    # Creating a full length probabilities list for classes not predicted by the model
+    full_length_proba = [0]*len(lb.classes_)
+    for k, v in zip(model.classes_, probabilities[0]):
+        full_length_proba[k] = v
+    return full_length_proba
