@@ -15,6 +15,8 @@ class ICUData(Dataset):
         self.file_names = label_data['stay']
         self.labels = torch.tensor(label_data['y_true'].values, dtype=torch.float32)
         self.max_len = max_len
+    def __len__(self):
+        return len(self.file_names)
     def __getitem__(self, idx):
         file_path = os.path.join(self.data_path, self.file_names[idx])
         data = pd.read_csv(file_path)
