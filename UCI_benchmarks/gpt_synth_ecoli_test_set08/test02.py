@@ -1,7 +1,8 @@
 import pandas as pd
 import numpy as np
+from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import StandardScaler
 # Load the Ecoli dataset
 ecoli = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', delim_whitespace=True, header=None)
@@ -15,14 +16,13 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_
 # Feature scaling
 scaler = StandardScaler()
 X_train = scaler.fit_transform(X_train)
-# Create logistic regression object
-logreg = LogisticRegression(max_iter=1000, multi_class='ovr')
-logreg.fit(X_train, y_train)
-#Parsing output to meet the requirements of the validation code
+# Create Random Forest object
+rfc = RandomForestClassifier(n_estimators=500)
+rfc.fit(X_train, y_train)
 def predict_label(sample):
     sample = np.array(sample).reshape(1, -1) 
     sample = scaler.transform(sample)  
-    probabilities = logreg.predict_proba(sample)
+    probabilities = rfc.predict_proba(sample)
     #turn the probabilities into a list of length 8 (number of classes)
     #filling missing values with 0
     result = [0]*8
