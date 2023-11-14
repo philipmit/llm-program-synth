@@ -6,6 +6,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.model_selection import GridSearchCV
+from sklearn.ensemble import GradientBoostingClassifier
 # Load the ecoli dataset
 ecoli = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', 
                     delim_whitespace=True, header=None)
@@ -24,14 +25,16 @@ scaler = StandardScaler().fit(X_train)
 X_train = scaler.transform(X_train)
 # Define the number of classes
 num_classes = len(np.unique(y))
-# Creating a pipeline with Polynomial Features to capture interactions and Logistic Regression
-pipeline = make_pipeline(PolynomialFeatures(degree=2, include_bias=False), 
-                         LogisticRegression(max_iter=10000))
-# Grid Search to find the optimal hyperparameters
-param_grid = {'logisticregression__C': np.logspace(-4, 4, 20)}
-grid = GridSearchCV(pipeline, param_grid, cv=5, scoring='roc_auc_ovr')
+# Instead of logistic regression let's try using a Gradient Boosting Classifier which usually performs better
+pipeline = make_pipeline(GradientBoostingClassifier())
+param_grid = {
+    'gradientboostingclassifier__n_estimators': [80, 100, 120],
+    'gradientboostingclassifier__learning_rate': [0.01, 0.1, 1], 
+    'gradientboostingclassifier__max_depth': [1, 3, 5],
+    'gradientboostingclassifier__subsample': [0.5, 0.7, 1.0]
+}
+grid = GridSearchCV(pipeline, param_grid, cv=5, scoring='roc_auc_ovr', n_jobs=-1)
 grid.fit(X_train, y_train)
-# Logistic Regression model with optimal hyperparameters
 model = grid.best_estimator_
 def predict_label(raw_data):
     # Preprocess the raw data
