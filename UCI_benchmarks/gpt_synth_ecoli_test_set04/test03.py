@@ -19,13 +19,11 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_
 scaler = StandardScaler()
 scaler.fit(X_train)
 X_train = scaler.transform(X_train)
-# One vs Rest Logistic regression
+# One versus Rest Logistic Regression
 multi_class_regressor = LogisticRegression(max_iter=1000, multi_class='ovr').fit(X_train, y_train)
-# create dictionary for storing model related to respective classes
-regressors = {i: LogisticRegression(max_iter=1000).fit(X_train, (y_train==i).astype(int)) for i in labels}
-def predict_label(sample):
+def predict_label(sample): 
+    # Make sure to apply the same scaling to the sample
     sample = scaler.transform([sample])
-    probas = [regressor.predict_proba(sample)[0][1] for regressor in regressors.values()]
-    if sum(probas) != 0:
-        probas = [prob / sum(probas) for prob in probas] # normalizing probas if their sum is not zero
-    return probas
+    # Use the logistic regression model to predict the label for the sample
+    predicted_label_probabilities = multi_class_regressor.predict_proba(sample)
+    return predicted_label_probabilities[0]
