@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 from sklearn.linear_model import LogisticRegression
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, StratifiedShuffleSplit
 from sklearn.preprocessing import MinMaxScaler
 # Load the ecoli dataset
 ecoli = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', delim_whitespace=True, header=None)
@@ -12,8 +12,11 @@ y = ecoli.iloc[:, -1]   # All rows, only the last column
 y = y.replace(list(np.unique(y)), [0, 1, 2, 3, 4, 5, 6, 7])
 X = X.to_numpy()
 y = y.to_numpy()
-# Split the dataset into training and testing sets
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
+# Stratified Split the dataset into training and testing sets
+sss = StratifiedShuffleSplit(n_splits=1, test_size=0.5, random_state=42)
+for train_index, test_index in sss.split(X, y):
+    X_train, X_test = X[train_index], X[test_index]
+    y_train, y_test = y[train_index], y[test_index]
 # Feature scaling for normalization
 scaler = MinMaxScaler()
 X_train = scaler.fit_transform(X_train)
