@@ -16,7 +16,8 @@ def predict_label(raw_data):
     processed_data = preprocess_data(raw_data)
     # Predict the probabilities using trained model
     probabilities = model.predict_proba(processed_data)
-    return probabilities
+    # Return the class with highest probability
+    return probabilities.flatten()
 # Load the dataset
 ecoli = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', delim_whitespace=True, header=None)
 ecoli.columns = ['Sequence Name', 'mcg', 'gvh', 'lip', 'chg', 'aac', 'alm1', 'alm2', 'class']
