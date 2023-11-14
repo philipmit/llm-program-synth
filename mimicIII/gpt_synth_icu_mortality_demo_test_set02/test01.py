@@ -19,10 +19,10 @@ class ICUData(torch.utils.data.Dataset):
     def __getitem__(self, idx):
         file_path = os.path.join(self.data_path, self.file_names[idx])
         data = pd.read_csv(file_path)
-        data = data.drop(['Hours'], axis=1)
+        data = data.drop('Hours', axis=1)
         data = data.apply(pd.to_numeric, errors='coerce').fillna(0)
-        data = torch.tensor(data.values, dtype=torch.float32)  # accommodate batch dimension
-        label = self.labels[idx]  # accommodate batch dimension
+        data = torch.tensor(data.values, dtype=torch.float32).unsqueeze(0)  
+        label = self.labels[idx].unsqueeze(-1)  # convert to a 2D tensor
         return data, label
 class LSTM(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers, output_size):
@@ -41,15 +41,17 @@ def train_model(model, data_loader, criterion, optimizer, num_epochs=100):
     model.train()
     for epoch in range(num_epochs):
         for step, (seq, labels) in enumerate(data_loader):
-            seq = seq.unsqueeze(0)
-            model.zero_grad()
+            seq = seq.to(device)
+            labels = labels.to(device)
             outputs = model(seq)
             loss = criterion(outputs, labels)
+            model.zero_grad()
             loss.backward()
             optimizer.step()
         if (epoch+1) % 10 == 0:
             print('Epoch [{}/{}], Loss: {:.4f}'.format(epoch+1, num_epochs, loss.item()))
-model = LSTM(input_size=13, hidden_size=32, num_layers=2, output_size=1)
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+model = LSTM(input_size=13, hidden_size=32, num_layers=2, output_size=1).to(device)
 dataset = ICUData(data_path=TRAIN_DATA_PATH, label_file=LABEL_FILE)
 data_loader = DataLoader(dataset=dataset, batch_size=1, shuffle=True)
 criterion = nn.BCEWithLogitsLoss()  
