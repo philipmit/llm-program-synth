@@ -35,14 +35,14 @@ class LSTM(nn.Module):
         self.lstm = nn.LSTM(input_size, hidden_size, num_layers, batch_first=True)
         self.fc = nn.Linear(hidden_size, output_size)
     def forward(self, x):
-        h0 = torch.zeros(self.num_layers, 1, self.hidden_size).to(x.device)  # Modified this line
-        c0 = torch.zeros(self.num_layers, 1, self.hidden_size).to(x.device)  # And this line
+        h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device) 
+        c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device) 
         out, _ = self.lstm(x, (h0, c0))
         out = self.fc(out[:, -1, :])  
         return out
 model = LSTM(input_size=14, hidden_size=64, num_layers=2, output_size=1)
 criterion = nn.BCEWithLogitsLoss()
-optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
 for epoch in range(5):
     for i, (inputs, labels) in enumerate(dataloader):
         optimizer.zero_grad()
