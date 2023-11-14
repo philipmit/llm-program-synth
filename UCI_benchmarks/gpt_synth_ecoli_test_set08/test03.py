@@ -5,30 +5,21 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.multiclass import OneVsRestClassifier
 from sklearn.ensemble import RandomForestClassifier
-# Load the ecoli dataset
 ecoli = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', delim_whitespace=True, header=None)
 ecoli.columns = ['Sequence Name', 'mcg', 'gvh', 'lip', 'chg', 'aac', 'alm1', 'alm2', 'class']
-# Prepare the feature and target variables
-X = ecoli.iloc[:, 1:-1]  # All rows, all columns excluding the first and last one
-y = ecoli.iloc[:, -1]   # All rows, only the last column
-# Transform the target string labels into numbers using LabelEncoder
+X = ecoli.iloc[:, 1:-1]  
+y = ecoli.iloc[:, -1] 
 label_encoder = LabelEncoder()
 y_encoded = label_encoder.fit_transform(y)
-# Perform train test split
 X_train, X_test, y_train, y_test = train_test_split(X, y_encoded, stratify=y_encoded, test_size=0.5, random_state=42)
-# Normalize the features using standard scaler
 std_scaler = StandardScaler()
-# Train the model with optimized hyperparameters - using Random Forest for the comparative advantage it has over Gradient Boosting in certain scenarios
 rf_model = RandomForestClassifier(n_estimators=1000, max_features='sqrt', max_depth=None, bootstrap=True, random_state=42)
 classifier = OneVsRestClassifier(rf_model)
-# Fit the scaler and transform the training data
 X_train = std_scaler.fit_transform(X_train)
-# Fit the model
 classifier.fit(X_train, y_train)
 def predict_label(raw_data_sample):
-    # Normalize the raw data sample using the trained StandardScaler
+    raw_data_sample = np.array(raw_data_sample).reshape(1, -1)  # Reshaping the 1D sample to 2D
     raw_data_sample_scaled = std_scaler.transform(raw_data_sample)
-    # Predict the probability
     proba = classifier.predict_proba(raw_data_sample_scaled)[0]
     proba_dict = dict(zip(range(8), [0]*8))
     for c_index, c_proba in zip(classifier.classes_, proba):
