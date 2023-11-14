@@ -20,11 +20,10 @@ class ICUData(Dataset):
         file_path = os.path.join(self.data_path, self.file_names[idx])
         data = pd.read_csv(file_path)
         data = data.drop(['Hours'], axis=1)  
-        data = data.fillna(0) 
-        data = data.select_dtypes(include=np.number) 
-        data_values = torch.tensor(data.values, dtype=torch.float32)
+        data = data.fillna(0)  
+        data = data.select_dtypes(include=[np.number]) 
         label = self.labels[idx]
-        return data_values, label
+        return torch.tensor(data.values, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
 # Define the LSTM
 class LSTM(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers, output_size):
@@ -34,27 +33,30 @@ class LSTM(nn.Module):
         self.lstm = nn.LSTM(input_size, hidden_size, num_layers, batch_first=True)
         self.fc = nn.Linear(hidden_size, output_size)
     def forward(self, x):
-        h0 = torch.zeros(self.num_layers, 1, self.hidden_size).to(x.device)
-        c0 = torch.zeros(self.num_layers, 1, self.hidden_size).to(x.device)
+        h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device)
+        c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device)
         out, _ = self.lstm(x, (h0, c0))
         out = self.fc(out[:, -1, :])
         return out
+# Create Data Loader and Neural Network
+dataset = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
+dataloader = DataLoader(dataset, batch_size=1)
+model = LSTM(input_size=14, hidden_size=64, num_layers=2, output_size=1)
+criterion = nn.BCEWithLogitsLoss()
+optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
+# Train the model
+model.train()
+for epoch in range(5):
+    for inputs, labels in dataloader:
+        inputs = inputs.to(torch.float32)
+        labels = labels.to(torch.float32)
+        optimizer.zero_grad()
+        outputs = model(inputs)
+        loss = criterion(outputs, labels.unsqueeze(1))
+        loss.backward()
+        optimizer.step()
 def predict_icu_mortality(patient_data):
-    dataset = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
-    dataloader = DataLoader(dataset, batch_size=1)
-    model = LSTM(input_size=14, hidden_size=64, num_layers=2, output_size=1)
-    criterion = nn.BCEWithLogitsLoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
-    model.train()
-    for epoch in range(5):
-        for inputs, labels in dataloader:
-            inputs = inputs.unsqueeze(0)
-            optimizer.zero_grad()
-            outputs = model(inputs)
-            loss = criterion(outputs, labels.unsqueeze(0))
-            loss.backward()
-            optimizer.step()
     model.eval()
     with torch.no_grad():
-        prediction = model(patient_data.unsqueeze(0))
+        prediction = model(patient_data)
     return torch.sigmoid(prediction).item()
