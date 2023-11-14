@@ -2,10 +2,11 @@ import numpy as np
 import pandas as pd
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
-# Load the dataset
+# Load the ecoli dataset
 ecoli = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', delim_whitespace=True, header=None)
 ecoli.columns = ['Sequence Name', 'mcg', 'gvh', 'lip', 'chg', 'aac', 'alm1', 'alm2', 'class']
-X = ecoli.iloc[:, 1:]  # All rows, all columns except the first 
+# Get features and labels
+X = ecoli.iloc[:, 1:-1]  # All rows, all columns except the first and last 
 y = ecoli.iloc[:, -1]    # All rows, only the last column
 # replace strings with numbers in y
 y = y.replace(list(np.unique(y)), [0,1,2,3,4,5,6,7])
@@ -21,7 +22,7 @@ model.fit(X_train, y_train)
 # Function to predict labels
 def predict_label(single_sample):
     # Take only the features (all columns except the first) in single_sample, as the model was trained on those
-    sample_features = single_sample[1:]
+    sample_features = single_sample[1:-1]
     # Reshape the sample
     sample_reshaped = np.array(sample_features).reshape(1, -1)
     # Calculate probability for each class
