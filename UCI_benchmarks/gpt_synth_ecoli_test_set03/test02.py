@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler, LabelEncoder
 # Load the Ecoli dataset
@@ -15,7 +15,7 @@ y = le.fit_transform(y)
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
 # Initializing a scalar and a model
 scaler = StandardScaler()
-model = LogisticRegression(max_iter=1000, penalty='l2')
+model = RandomForestClassifier(n_estimators=1000, random_state=42) #Changed model to RandomForest for better accuracy.
 # Fitting the scalar and model on X_train
 X_train = scaler.fit_transform(X_train)
 model.fit(X_train, y_train)
@@ -25,4 +25,4 @@ def predict_label(raw_data):
     probabilities = model.predict_proba(processed_data)  # Apply the model to make predictions
     # Create a probability list by padding zeros for absent classes to align length with 8 (Number of classes)
     p = probabilities[0].tolist() + [0]*(8 - len(probabilities[0]))
-    return p 
+    return p
