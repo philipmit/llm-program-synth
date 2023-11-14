@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import make_pipeline
@@ -11,31 +11,29 @@ ecoli.columns = ['Sequence Name', 'mcg', 'gvh', 'lip', 'chg', 'aac', 'alm1', 'al
 X = ecoli.iloc[:, 1:-1]  # All rows, all columns except the last one
 y = ecoli.iloc[:, -1]   # All rows, only the last column
 # replace strings with numbers in y
-np.unique(y)
-len(list(np.unique(y)))
 y = y.replace(list(np.unique(y)), [0,1,2,3,4,5,6,7])
 X = X.to_numpy()
 y = y.to_numpy()
-# Split the dataset into training and testing sets using Stratification
+# Split the dataset into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42, stratify=y)
-# Quick grid search to find optimal C, solver and multi_class parameters
-param_grid = [{'C': [0.01, 0.1, 1, 10, 100], 
-               'solver': ['newton-cg', 'lbfgs', 'liblinear', 'sag', 'saga'],
-               'multi_class' : ['auto', 'ovr', 'multinomial']}]
-log_reg = LogisticRegression(max_iter=3000, penalty='l2', random_state=42)
-grid_search = GridSearchCV(log_reg, param_grid, cv=5, scoring='neg_mean_squared_error')
-grid_search.fit(X_train, y_train)
-# Print best parameters after tuning
-print(grid_search.best_params_)
-# Build model pipeline
-lr_tuned = make_pipeline(StandardScaler(),
-                          LogisticRegression(solver=grid_search.best_params_['solver'], 
-                                             multi_class=grid_search.best_params_['multi_class'], 
-                                             max_iter=3000, 
-                                             penalty='l2', 
-                                             C=grid_search.best_params_['C'], 
-                                             random_state=42))
-lr_tuned.fit(X_train, y_train)
+# classifier with grid search
+param_grid = { 
+    'n_estimators': [50, 100, 200],
+    'max_depth' : [4,6,8],
+    'criterion' :['gini', 'entropy']
+}
+rfc=RandomForestClassifier(random_state=42)
+CV_rfc = GridSearchCV(estimator=rfc, param_grid=param_grid, cv= 5, scoring='roc_auc_ovr')
+CV_rfc.fit(X_train, y_train)
+# print out optimal parameters
+print(CV_rfc.best_params_)
+# Build model pipeline with best parameters
+rf_tuned = make_pipeline(StandardScaler(),
+                         RandomForestClassifier(n_estimators=CV_rfc.best_params_['n_estimators'], 
+                                                max_depth=CV_rfc.best_params_['max_depth'],
+                                                criterion=CV_rfc.best_params_['criterion'],
+                                                random_state=42))
+rf_tuned.fit(X_train, y_train)
 def predict_label(sample):
     """
     Predict the class probabilities for a given sample.
@@ -44,4 +42,4 @@ def predict_label(sample):
     Returns: 
     the predicted probabilities for the sample
     """
-    return lr_tuned.predict_proba([sample])[0]
+    return rf_tuned.predict_proba([sample])[0]
