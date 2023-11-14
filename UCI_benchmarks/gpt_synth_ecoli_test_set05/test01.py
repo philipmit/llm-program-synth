@@ -18,13 +18,16 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_
 # Scaling the features as logistic regression requires features to be on similar scale
 scaler = MinMaxScaler().fit(X_train)
 X_train = scaler.transform(X_train)
-# Creating and training the logistic regression model
+# Define the Logistic Regression model
 model = LogisticRegression(random_state=42, max_iter=5000, multi_class='ovr')
 model.fit(X_train, y_train)
 def predict_label(input_data):
     # input_data should be raw data for single sample, array of the format [mcg, gvh, lip, chg, aac, alm1, alm2]
     # Scale the input
     input_data = scaler.transform([input_data])
-    # Return the predicted probabilities for each class
-    prediction = model.predict_proba(input_data)
-    return prediction[0]
+    # Return the predicted probabilities for each class, ensuring there is a probability for each class in y_train
+    prediction = model.predict_proba(input_data)[0]
+    full_prediction = np.zeros(len(unique_y))
+    for index, prob in zip(model.classes_, prediction):
+        full_prediction[index] = prob
+    return full_prediction
