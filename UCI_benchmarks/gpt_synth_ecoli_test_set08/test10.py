@@ -13,11 +13,9 @@ y = ecoli.iloc[:, -1]    # All rows, only the last column
 # replace strings with numbers in y
 label_encoder = LabelEncoder()
 y = label_encoder.fit_transform(y)
-# make a OneHotEncoder and fit it to the known classes
-enc = OneHotEncoder()
-enc.fit(y.reshape(-1, 1))
-X = X.to_numpy()
-y = y.to_numpy()
+# Convert pandas DataFrame to NumPy arrays
+X = X.values
+y = y
 # Split the dataset into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
 # Initialize Logistic Regression model
@@ -27,6 +25,4 @@ model.fit(X_train, y_train)
 def predict_label(sample):
     # the predict_proba function returns probabilities per class
     proba = model.predict_proba(sample.reshape(1, -1))
-    # we need to duplicate the probability array to match the same form as the OneHotEncoder
-    proba = np.repeat(proba, enc.transform([[0]]).shape[1])
     return proba
