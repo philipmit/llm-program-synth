@@ -33,4 +33,4 @@ def predict_label(raw_input_sample):
     sample = scaler.transform(raw_input_sample)
     # Perform prediction and return the probability for each class
     probabilities = model.predict_proba(sample)
-    return probabilities
+    return probabilities[0]  # flatten the result
