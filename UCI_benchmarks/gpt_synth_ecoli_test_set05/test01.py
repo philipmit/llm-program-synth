@@ -19,9 +19,9 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_
 # Standardization of the features
 scaler = StandardScaler().fit(X_train)
 X_train = scaler.transform(X_train)
-# Increase the number of trees and reduce the learning rate
+# Adjust the parameters for the GradientBoostingClassifier
 parameters = {
-    "loss":["deviance"],
+    "loss":["exponential", "log_loss"],
     "learning_rate": [0.01, 0.025, 0.05, 0.075, 0.1],
     "min_samples_split": np.linspace(0.1, 0.5, 12),
     "min_samples_leaf": np.linspace(0.1, 0.5, 12),
@@ -29,11 +29,12 @@ parameters = {
     "max_features":["log2","sqrt"],
     "subsample":[0.5, 0.618, 0.8, 0.85, 0.9, 0.95, 1.0],
     "n_estimators":[10, 50, 100, 150]
-    }
+}
 gb = GradientBoostingClassifier(random_state=42)
 clf = GridSearchCV(gb, parameters, cv=5, n_jobs=-1)
+# Fit the model on the training data
 clf.fit(X_train, y_train)
-# Extract best_model
+# Save the best model
 best_model = clf.best_estimator_
 def predict_label(input_data):
     # input_data should be raw data for single sample, array of the format [mcg, gvh, lip, chg, aac, alm1, alm2]
