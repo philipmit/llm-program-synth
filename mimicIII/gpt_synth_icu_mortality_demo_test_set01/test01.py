@@ -7,6 +7,7 @@ from torch.utils.data import DataLoader, Dataset
 # File paths
 TRAIN_DATA_PATH = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/"
 LABEL_FILE = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/listfile.csv"
+MODEL_PATH = "./lstm_model.pth" # specify the path of the model
 # LSTM Model
 class LSTM(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers, output_size):
@@ -53,14 +54,15 @@ def train_model():
             loss = criterion(outputs, labels.unsqueeze(1))
             loss.backward()
             optimizer.step()
-    torch.save(model.state_dict(), './lstm_model.pth')
-# Uncomment below line to start training
-# train_model()
+    torch.save(model.state_dict(), MODEL_PATH)  # save the model
+    print("Training completed and model saved.")
+# Train the model
+train_model()
 # Predict ICU mortality
 def predict_icu_mortality(patient_data):
     num_features = patient_data.shape[1] if len(patient_data.shape) > 1 else 1
     model = LSTM(input_size=num_features, hidden_size=64, num_layers=2, output_size=1)
-    model.load_state_dict(torch.load('./lstm_model.pth'))
+    model.load_state_dict(torch.load(MODEL_PATH))  # load the model
     model.eval()
     if len(patient_data.shape) == 1:
         patient_data = torch.tensor(patient_data.values.reshape(1,-1), dtype=torch.float32)
