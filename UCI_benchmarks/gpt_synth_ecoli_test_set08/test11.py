@@ -6,7 +6,8 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.model_selection import GridSearchCV
-from sklearn.ensemble import GradientBoostingClassifier
+from sklearn.ensemble import RandomForestClassifier
+from imblearn.over_sampling import SMOTE
 # Load the ecoli dataset
 ecoli = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', 
                     delim_whitespace=True, header=None)
@@ -20,18 +21,21 @@ X = X.values
 y = y.values
 # Split the dataset into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
+# Address imbalance in the dataset by Over Sampling
+smote = SMOTE(random_state=42)
+X_train, y_train = smote.fit_resample(X_train, y_train)
 # Standardize the features to have mean=0 and variance=1
 scaler = StandardScaler().fit(X_train)
 X_train = scaler.transform(X_train)
 # Define the number of classes
 num_classes = len(np.unique(y))
-# Instead of logistic regression let's try using a Gradient Boosting Classifier which usually performs better
-pipeline = make_pipeline(GradientBoostingClassifier())
+# Instead of logistic regression let's try using a Random Forest Classifier which usually performs better
+pipeline = make_pipeline(RandomForestClassifier())
 param_grid = {
-    'gradientboostingclassifier__n_estimators': [80, 100, 120],
-    'gradientboostingclassifier__learning_rate': [0.01, 0.1, 1], 
-    'gradientboostingclassifier__max_depth': [1, 3, 5],
-    'gradientboostingclassifier__subsample': [0.5, 0.7, 1.0]
+    'randomforestclassifier__n_estimators': [100, 200],
+    'randomforestclassifier__max_depth': [5, 10, 15],
+    'randomforestclassifier__max_features': ['auto', 'sqrt', 'log2'],
+    'randomforestclassifier__criterion' :['gini', 'entropy']
 }
 grid = GridSearchCV(pipeline, param_grid, cv=5, scoring='roc_auc_ovr', n_jobs=-1)
 grid.fit(X_train, y_train)
