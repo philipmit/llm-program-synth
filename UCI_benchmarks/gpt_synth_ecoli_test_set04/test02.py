@@ -14,16 +14,18 @@ X = X.to_numpy()
 y = y.to_numpy()
 # Split the Ecoli dataset into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
-# Scale the data
+# Define the scaler globally so we can use it in the predict_label function
 scaler = StandardScaler()
+# Scale the X_train data
 X_train = scaler.fit_transform(X_train)
 # Fit a logistic regression model on the training dataset
 log_reg = LogisticRegression(multi_class='ovr',solver='liblinear')
 log_reg.fit(X_train, y_train)
 def predict_label(raw_sample):
-    # Scale the raw_sample and reshape it to 2D
-    raw_sample = raw_sample.reshape(1, -1)
+    # reshape raw_sample if it's only 1D (a single sample)
+    if len(raw_sample.shape) == 1:
+        raw_sample = raw_sample.reshape(1, -1)
+    # normalize the sample
     sample = scaler.transform(raw_sample)
-    # Predict the probabilities
-    predicted_proba = log_reg.predict_proba(sample)
-    return predicted_proba[0]
+    # use the fitted model to predict_proba    
+    return log_reg.predict_proba(sample)
