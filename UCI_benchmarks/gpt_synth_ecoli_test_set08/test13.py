@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 # Load the Ecoli dataset
@@ -18,8 +18,8 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_
 # Standardize the training data
 scaler = StandardScaler()
 X_train = scaler.fit_transform(X_train)
-# Initialize Logistic Regression model with the 'lbfgs' solver, and fit it to the training data
-model = LogisticRegression(solver='lbfgs', multi_class='multinomial', n_jobs=-1, max_iter=1000)
+# Initialize RandomForestClassifier and fit it to the training data instead of Logistic Regression
+model = RandomForestClassifier(n_estimators=500, random_state=42, max_depth=100)
 model.fit(X_train, y_train)
 def predict_label(sample):
     # Convert the sample data to array, reshape and standardize it
