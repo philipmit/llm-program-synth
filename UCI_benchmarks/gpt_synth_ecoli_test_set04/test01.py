@@ -23,6 +23,5 @@ def predict_label(input_data):
     Function to predict the label for given input data using trained logistic regression model.
     input_data should be a numpy array.
     """
-    input_data_features = input_data[1:-1]  # Extract features in the same way as we did with the entire ecoli dataset
-    input_data_features = np.array(input_data_features).reshape(1, -1)    # reshape the data for prediction
+    input_data_features = input_data.reshape(1, -1)    # reshape the data for prediction 
     return lr.predict_proba(input_data_features)[0]
