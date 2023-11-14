@@ -23,9 +23,11 @@ X_train = scaler.transform(X_train)
 # Creating and Training the Logistic Regression model
 model = LogisticRegression(random_state=42, max_iter=5000)
 model.fit(X_train, y_train)
-# prediction function
 def predict_label(input_data):
     # input_data should be a list of the format [mcg, gvh, lip, chg, aac, alm1, alm2]
     # Scale the input
     input_data = scaler.transform([input_data])
-    return model.predict_proba(input_data)
+    prediction = model.predict_proba(input_data)
+    # shape of prediction is (1, n_classes), 
+    # taking the 0-index to reduce dimension
+    return prediction[0]
