@@ -24,7 +24,7 @@ logreg = LogisticRegression(max_iter=1000)
 logreg.fit(X_train, y_train)
 # Define the predict_label function
 def predict_label(sample):
-    sample = np.array(sample).reshape(1, -1) # No need to slice the array, it should already have the right shape
+    sample = np.array(sample).reshape(1, -1) # reshape the sample
     sample = scaler.transform(sample)  # scale the sample with the same scaler used for training data
     predicted_probabilities = logreg.predict_proba(sample)
-    return predicted_probabilities
+    return predicted_probabilities[0]  # return the inner array only, not the outer array
