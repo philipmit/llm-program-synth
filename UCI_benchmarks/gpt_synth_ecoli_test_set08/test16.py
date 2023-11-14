@@ -3,11 +3,13 @@ from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 import numpy as np
-class LogisticModel:
+from sklearn.ensemble import RandomForestClassifier
+class RandomForestModel:
     def __init__(self):
-        # Using 'saga' solver, L1 penalty for potential better performance
-        # And increasing max_iter to give the optimizer more space to reach to optimal solution
-        self.model = LogisticRegression(solver='saga', penalty='l1', max_iter=5000, random_state=42)
+        # Random Forest automatically takes care of feature correlations and could improve performance
+        # Increasing number of estimators (trees) could increase performance
+        # Setting max_depth to a high value to allow the estimator to make complex decisions
+        self.model = RandomForestClassifier(n_estimators=1000, max_depth=20, random_state=42)
         self.le = LabelEncoder()
         self.scaler = StandardScaler()
         self.fitted = False
@@ -18,7 +20,7 @@ class LogisticModel:
         self.le.fit(np.unique(y))  # ensure label encoder is fitted with all existing classes
         y = self.le.transform(y)
         X = ecoli.iloc[:, 1:-1].to_numpy()
-        X = self.scaler.fit_transform(X) # Standard scale the input for better convergence in LR
+        X = self.scaler.fit_transform(X) # Standard scale the input for better convergence in RF
         X_train, _, y_train, _ = train_test_split(X, y, test_size=0.5, random_state=42)
         return X_train, y_train
     def train_model(self, X_train, y_train):
@@ -31,9 +33,9 @@ class LogisticModel:
         # ensure the returned probabilities have probabilities for all classes
         return np.append(probabilities, [0]*(len(self.le.classes_) - len(probabilities[0])))
 # create an instance of the model and train it
-my_model = LogisticModel()
+my_model = RandomForestModel()
 X_train, y_train = my_model.load_data()
 my_model.train_model(X_train, y_train)
-# redefine predict_label to use the instance of LogisticModel - assuming that the third argument is no longer required
+# redefine predict_label to use the instance of RandomForestModel
 def predict_label(raw_input):
     return my_model.predict_label(raw_input)
