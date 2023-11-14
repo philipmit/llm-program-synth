@@ -9,9 +9,7 @@ class LogisticModel:
         self.le = LabelEncoder()
         self.fitted = False
     def load_data(self):
-        ecoli = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', 
-                            delim_whitespace=True, 
-                            header=None)
+        ecoli = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', delim_whitespace=True, header=None)
         ecoli.columns = ['Sequence Name', 'mcg', 'gvh', 'lip', 'chg', 'aac', 'alm1', 'alm2', 'class']
         y = ecoli.iloc[:, -1]
         self.le.fit(y)
@@ -24,8 +22,8 @@ class LogisticModel:
         self.fitted = True
     def predict_label(self, raw_input):
         assert self.fitted, "Model not yet fitted"
-        prediction = self.model.predict(raw_input.reshape(1, -1))
-        return prediction[0] 
+        probabilities = self.model.predict_proba(raw_input.reshape(1, -1))
+        return probabilities[0]
 # create an instance of the model and train it
 my_model = LogisticModel()
 X_train, y_train = my_model.load_data()
