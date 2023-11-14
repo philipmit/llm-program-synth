@@ -4,6 +4,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader, Dataset
+from sklearn.preprocessing import StandardScaler
 # File paths
 TRAIN_DATA_PATH = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/"
 LABEL_FILE = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/listfile.csv"
@@ -20,6 +21,8 @@ class ICUData(Dataset):
         file_path = os.path.join(self.data_path, self.file_names[idx])
         data = pd.read_csv(file_path)
         data = data.drop(['Hours'], axis=1)  
+        scaler = StandardScaler()
+        data = pd.DataFrame(scaler.fit_transform(data), columns=data.columns)
         data = data.fillna(0)  
         data = data.select_dtypes(include=[np.number]) 
         label = self.labels[idx]
@@ -40,13 +43,13 @@ class LSTM(nn.Module):
         return out
 # Create Data Loader and Neural Network
 dataset = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
-dataloader = DataLoader(dataset, batch_size=1)
-model = LSTM(input_size=14, hidden_size=64, num_layers=2, output_size=1)
+dataloader = DataLoader(dataset, batch_size=16)
+model = LSTM(input_size=14, hidden_size=128, num_layers=3, output_size=1)
 criterion = nn.BCEWithLogitsLoss()
-optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
+optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 # Train the model
 model.train()
-for epoch in range(5):
+for epoch in range(50):
     for inputs, labels in dataloader:
         inputs = inputs.to(torch.float32)
         labels = labels.to(torch.float32)
