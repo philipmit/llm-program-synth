@@ -26,5 +26,5 @@ def predict_label(raw_data_sample):
     if len(raw_data_sample.shape) == 1:
         raw_data_sample = np.expand_dims(raw_data_sample, 0)
     # Predict the class probabilities taking the first (and only) prediction when one sample is given
-    proba = ovr_log_reg.predict_proba(raw_data_sample)
+    proba = ovr_log_reg.predict_proba(raw_data_sample)[0]
     return proba
