@@ -7,7 +7,7 @@ from sklearn.preprocessing import LabelEncoder
 ecoli = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', delim_whitespace=True, header=None)
 ecoli.columns = ['Sequence Name', 'mcg', 'gvh', 'lip', 'chg', 'aac', 'alm1', 'alm2', 'class']
 # Prepare the feature and target variables
-X = ecoli.iloc[:, 1:-1].values  # All rows, all columns except the last one
+X = ecoli.iloc[:, 1:-1].values  # All rows, all the columns except the last one
 y = ecoli.iloc[:, -1]   # All rows, only the last column
 # Transform target labels into number using LabelEncoder
 le = LabelEncoder()
@@ -21,6 +21,6 @@ def predict_label(raw_data_sample):
     # Ensure the input data is 2D
     if len(raw_data_sample.shape) == 1:
         raw_data_sample = np.expand_dims(raw_data_sample, 0)
-    # predict the class probalities
-    proba = log_reg.predict_proba(raw_data_sample)
+    # Predict the class probabilities
+    proba = log_reg.predict_proba(raw_data_sample)[0]
     return proba
