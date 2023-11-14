@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler, LabelEncoder
 # Load the Ecoli dataset
@@ -13,14 +13,14 @@ le = LabelEncoder()
 y = le.fit_transform(y)
 # Split the dataset into a training set and a test set
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
-# Initializing a scalar and a model
+# Initializing a scalar and model
 scaler = StandardScaler()
-model = RandomForestClassifier(n_estimators=1000, random_state=42) #Changed model to RandomForest for better accuracy.
+model = GradientBoostingClassifier(n_estimators=1000, learning_rate=0.01, random_state=42) # Changed model to GradientBoosting 
 # Fitting the scalar and model on X_train
 X_train = scaler.fit_transform(X_train)
 model.fit(X_train, y_train)
 # Defining function that takes raw unprocessed data for a single sample
-def predict_label(raw_data):
+def predict_icu_mortality(raw_data):
     processed_data = scaler.transform(raw_data.reshape(1, -1))  # Preprocess the data 
     probabilities = model.predict_proba(processed_data)  # Apply the model to make predictions
     # Create a probability list by padding zeros for absent classes to align length with 8 (Number of classes)
