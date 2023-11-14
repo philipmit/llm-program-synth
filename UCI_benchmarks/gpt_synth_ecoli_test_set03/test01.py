@@ -7,14 +7,11 @@ from sklearn.preprocessing import LabelEncoder
 ecoli = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', delim_whitespace=True, header=None)
 ecoli.columns = ['Sequence Name', 'mcg', 'gvh', 'lip', 'chg', 'aac', 'alm1', 'alm2', 'class']
 # Define features and target
-X = ecoli.iloc[:, 1:-1]
-y = ecoli.iloc[:, -1]
+X = ecoli.drop(['Sequence Name', 'class'], axis=1)
+y = ecoli['class']
 # Replace strings with numbers in y
 label_encoder = LabelEncoder()
 y = label_encoder.fit_transform(y)
-# Convert to numpy arrays
-X = X.to_numpy()
-y = y.to_numpy()
 # Split the dataset into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
 # Train the Logistic Regression model
