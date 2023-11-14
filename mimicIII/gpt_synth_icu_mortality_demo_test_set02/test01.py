@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import torch
 import torch.nn as nn
+from torch.nn.utils.rnn import pad_sequence
 from torch.utils.data import Dataset, DataLoader
 # File paths
 TRAIN_DATA_PATH = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/"
@@ -19,9 +20,9 @@ class ICUData(Dataset):
     def __getitem__(self, idx):
         file_path = os.path.join(self.data_path, self.file_names[idx])
         data = pd.read_csv(file_path)
-        data = data.drop(['Hours'], axis=1)
-        data = data.fillna(0)
-        data = data.select_dtypes(include=[np.number])
+        data = data.drop(['Hours'], axis=1) 
+        data = data.fillna(0)  
+        data = data.select_dtypes(include=[np.number]) 
         label = self.labels[idx]
         return torch.tensor(data.values, dtype=torch.float32), label
 # Define LSTM model
@@ -52,6 +53,12 @@ def train_model(dataloader, model, criterion, optimizer, num_epochs):
             optimizer.step()
         if epoch % 10 == 0:
             print(f"Epoch: {epoch}, Loss: {loss.item()}")
+# Define a custom collate_fn to pad sequences of different length
+def my_collate(batch):
+    (data, label) = zip(*batch)
+    data = pad_sequence(data, batch_first=True, padding_value=0)
+    label = torch.tensor(label, dtype=torch.float32)
+    return data, label
 # Define the function to make predictions
 def predict_icu_mortality(raw_patient_data):
     model.eval()
@@ -63,7 +70,7 @@ def predict_icu_mortality(raw_patient_data):
     return torch.sigmoid(prediction).item()
 # Initialize dataloader, model, criterion and optimizer
 icudata = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
-dataloader = DataLoader(icudata, batch_size=16)
+dataloader = DataLoader(icudata, batch_size=16, collate_fn=my_collate)
 model = LSTM(input_size=13, hidden_size=100, num_layers=1, output_size=1)
 criterion = nn.BCEWithLogitsLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
