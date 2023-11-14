@@ -4,10 +4,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import make_pipeline
-from sklearn.preprocessing import PolynomialFeatures
 from sklearn.model_selection import GridSearchCV
 from sklearn.ensemble import RandomForestClassifier
-from imblearn.over_sampling import SMOTE
 # Load the ecoli dataset
 ecoli = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', 
                     delim_whitespace=True, header=None)
@@ -21,9 +19,6 @@ X = X.values
 y = y.values
 # Split the dataset into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
-# Address imbalance in the dataset by Over Sampling
-smote = SMOTE(random_state=42)
-X_train, y_train = smote.fit_resample(X_train, y_train)
 # Standardize the features to have mean=0 and variance=1
 scaler = StandardScaler().fit(X_train)
 X_train = scaler.transform(X_train)
