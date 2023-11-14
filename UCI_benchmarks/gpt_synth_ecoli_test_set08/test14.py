@@ -17,30 +17,25 @@ y = ecoli.iloc[:, -1]
 # Transform y from categorical to numerical values
 le = LabelEncoder()
 y = le.fit_transform(y)
-# Stratified Split of data into Training and Test set ensuring all classes are represented
+# Stratified split of data into training and test sets, ensuring all classes are represented
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
-# Training a Gradient Boosting model with feature selection and data standardization
-# Use GridSearchCV to optimize hyperparameters
+# Define and train the model
 param_grid = {
-    'learning_rate': [0.01, 0.1, 0.5, 1],
-    'n_estimators': [100, 200, 500],
-    'max_depth': [3, 5, 10]
+    'gb__learning_rate': [0.01, 0.1, 0.5, 1],
+    'gb__n_estimators': [100, 200, 500],
+    'gb__max_depth': [3, 5, 10]
 }
 gb = GradientBoostingClassifier(random_state=42)
-clf = GridSearchCV(gb, param_grid, cv=5)
+pipe = Pipeline(steps=[('standardize', StandardScaler()), ('gb', gb)])
+clf = GridSearchCV(pipe, param_grid, cv=5)
 clf.fit(X_train, y_train)
 # Get the best model
-best_gb = clf.best_estimator_
-model = Pipeline([
-    ('standardize', StandardScaler()),
-    ('feature_selection', SelectFromModel(best_gb)),
-    ('gradient_boost', best_gb)
-])
-model.fit(X_train, y_train)
+model = clf.best_estimator_
+# Define the prediction function
 def predict_label(raw_data):
     """
     Predict probabilities for a given raw unprocessed data.
     """
     raw_data = np.array(raw_data).reshape(1, -1)
-    probabilities = model.predict_proba(raw_data)
+    probabilities = model.predict_proba(raw_data)[0]
     return probabilities
