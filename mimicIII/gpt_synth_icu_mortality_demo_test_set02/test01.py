@@ -5,8 +5,6 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 from sklearn.preprocessing import StandardScaler
-import warnings
-warnings.filterwarnings("ignore")
 TRAIN_DATA_PATH = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/"
 LABEL_FILE = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/listfile.csv"
 class ICUData(torch.utils.data.Dataset):
@@ -32,14 +30,14 @@ class LSTM(nn.Module):
         self.fc = nn.Linear(hidden_size, output_size)
     def forward(self, x):
         h0, c0 = [torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device) for _ in range(2)]
-        out, _ = self.lstm(x, (h0, c0))
+        out, _ = self.lstm(x.unsqueeze(0), (h0, c0))
         out = self.fc(out[:, -1, :])
         return out
 def train_model(model, data_loader, criterion, optimizer, num_epochs):
     model.train()
     for epoch in range(1, num_epochs + 1):
         for seq, labels in data_loader:
-            seq, labels = seq.to(device), labels.to(device)
+            seq, labels = seq.to(device), labels.to(device).unsqueeze(0)
             output = model(seq)
             loss = criterion(output, labels)
             optimizer.zero_grad()
@@ -50,13 +48,12 @@ def train_model(model, data_loader, criterion, optimizer, num_epochs):
 def predict_icu_mortality(patient_data):
     model.eval()
     with torch.no_grad():
-        prediction = model(patient_data)
+        prediction = model(patient_data.unsqueeze(0))
         return torch.sigmoid(prediction).item()
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model = LSTM(input_size=13, hidden_size=64, num_layers=2, output_size=1).to(device)
-model = model.to(device)
 dataset = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
-data_loader = DataLoader(dataset, batch_size=64, shuffle=True)
+data_loader = DataLoader(dataset, batch_size=1, shuffle=True)  # Changed batch_size to 1
 criterion = nn.BCEWithLogitsLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 num_epochs = 100
