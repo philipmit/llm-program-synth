@@ -30,4 +30,4 @@ def predict_label(sample):
     # Standardize the features 
     sample = scaler.transform(sample)
     # Return the predicted probabilities for that sample
-    return log_reg.predict_proba(sample)
+    return log_reg.predict_proba(sample)[0]  # Select the first item of the multi-dimensional array 
