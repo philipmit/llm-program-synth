@@ -33,4 +33,7 @@ def predict_label(raw_sample):
     sample = scaler.transform(raw_sample)
     # use the fitted model to predict the probabilities
     probas = log_model.predict_proba(sample)
+    # Only the first row of probas is required when predicting for single samples.
+    if sample.shape[0] == 1:
+        probas = probas[0]
     return probas
