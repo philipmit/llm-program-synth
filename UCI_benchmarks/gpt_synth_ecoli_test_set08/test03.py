@@ -7,7 +7,7 @@ from sklearn.preprocessing import LabelBinarizer
 ecoli = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', delim_whitespace=True, header=None)
 ecoli.columns = ['Sequence Name', 'mcg', 'gvh', 'lip', 'chg', 'aac', 'alm1', 'alm2', 'class']
 # Prepare the feature and target variables
-X = ecoli.iloc[:, 1:-1]
+X = ecoli.iloc[:, 1:-1].values  # convert DataFrame to numpy array using .values instead of .to_numpy()
 y = ecoli.iloc[:, -1]
 # Transform target labels into binary array
 lb = LabelBinarizer()
@@ -15,8 +15,6 @@ y = lb.fit_transform(y)
 # If y has only 1 column, i.e., only 2 unique labels, reshape it to (n_samples,)
 if y.shape[1] == 1:
     y = y.reshape(-1)
-X = X.to_numpy()
-y = y.to_numpy()
 # Split the dataset into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
 # Train the logistic regression model
