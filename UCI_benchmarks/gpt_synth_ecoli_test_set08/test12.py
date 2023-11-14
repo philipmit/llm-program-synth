@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import StandardScaler, LabelBinarizer
 from sklearn.model_selection import train_test_split
 # Load the dataset
@@ -13,22 +13,22 @@ lb = LabelBinarizer()
 y = lb.fit_transform(y)
 # converting the 2-D array to 1-D
 y = [np.where(r==1)[0][0] for r in y]
-X=X.to_numpy()
-y=np.array(y)
+X = X.to_numpy()
+y = np.array(y)
 # Split the dataset into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
 # Normalize the features
 scaler = StandardScaler()
 X_train = scaler.fit_transform(X_train)
-# Train the logistic regression model
-model = LogisticRegression(multi_class='ovr', solver='liblinear')
+# Train the RandomForestClassifier model
+model = RandomForestClassifier(n_estimators=1000, max_depth=None, random_state=42)
 model.fit(X_train, y_train)
 # Define a predict function
 def predict_label(raw_input_sample):
     # Ensure the raw_input_sample is numpy array and reshape(-1, 1) if necessary
     if isinstance(raw_input_sample, list):
         raw_input_sample = np.array(raw_input_sample)
-    if len(raw_input_sample.shape) == 1:
+    elif len(raw_input_sample.shape) == 1:
         raw_input_sample = raw_input_sample.reshape(1, -1)
     # Normalize the raw input sample
     sample = scaler.transform(raw_input_sample)
