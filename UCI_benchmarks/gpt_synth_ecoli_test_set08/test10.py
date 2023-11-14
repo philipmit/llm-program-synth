@@ -15,10 +15,10 @@ y = y.to_numpy()
 # Split the dataset into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
 # Initialize Logistic Regression model
-model = LogisticRegression(max_iter=1000)
+model = LogisticRegression(multi_class='multinomial', solver='lbfgs', max_iter=1000)
 # Fit the model to the training data
 model.fit(X_train, y_train)
 # Function that predicts label for a single input sample
 def predict_label(sample):
     proba = model.predict_proba(sample.reshape(1, -1))
-    return proba.flatten()  # Flatten the array
+    return proba[0]
