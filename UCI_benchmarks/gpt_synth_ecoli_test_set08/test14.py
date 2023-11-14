@@ -23,4 +23,4 @@ def predict_label(raw_data):
     """
     raw_data = np.array(raw_data).reshape(1, -1)
     probabilities = log_reg.predict_proba(raw_data)
-    return probabilities
+    return probabilities[0]
