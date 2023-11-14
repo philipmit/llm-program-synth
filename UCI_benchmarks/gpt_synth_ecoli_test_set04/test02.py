@@ -18,8 +18,11 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_
 scaler = StandardScaler()
 # Scale the X_train data
 X_train = scaler.fit_transform(X_train)
-# Fit a logistic regression model
-log_reg = LogisticRegression(multi_class='ovr',solver='liblinear')
+# Define the total unique classes in the dataset
+total_classes = np.unique(np.concatenate((y_train, y_test)))
+# Define the Logistic Regression model
+log_reg = LogisticRegression(multi_class='ovr', solver='liblinear', classes=total_classes)
+# Fit the model
 log_reg.fit(X_train, y_train)
 def predict_label(raw_sample):
     # reshape raw_sample if it's only 1D (a single sample)
@@ -30,4 +33,4 @@ def predict_label(raw_sample):
     # use the fitted model to predict_proba
     probas = log_reg.predict_proba(sample)
     # return the probabilities
-    return probas.tolist()[0]
+    return probas[0]
