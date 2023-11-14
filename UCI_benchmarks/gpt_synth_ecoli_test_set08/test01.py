@@ -11,6 +11,7 @@ y = ecoli.iloc[:, -1]
 # Replace strings with numbers in y
 classes = list(np.unique(y))
 y = y.replace(classes, list(range(len(classes))))
+# Convert to numpy arrays
 X = X.to_numpy()
 y = y.to_numpy()
 # Split the dataset into training and testing sets
@@ -24,6 +25,10 @@ clf.fit(X_train, y_train)
 # Define a function that predicts label for new data
 def predict_label(sample):
     sample = np.array(sample).reshape(1,-1)
-    sample = scaler.transform(sample)  # We need to apply the same scaling to the new data
+    # Apply the same scaling to the sample
+    sample = scaler.transform(sample)
+    # Function returns a list of prediction probabilities
     probabilities = clf.predict_proba(sample)
-    return probabilities[0]
+    padding = [0]*(len(classes)-len(probabilities[0]))
+    probabilities = np.append(probabilities,padding)
+    return probabilities
