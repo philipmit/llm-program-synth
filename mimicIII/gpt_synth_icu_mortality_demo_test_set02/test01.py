@@ -6,10 +6,8 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 import warnings
 warnings.filterwarnings("ignore")
-# File paths
 TRAIN_DATA_PATH = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/"
 LABEL_FILE = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/listfile.csv"
-# Define the Dataset
 class ICUData(torch.utils.data.Dataset):
     def __init__(self, data_path, label_file):
         self.data_path = data_path
@@ -23,10 +21,9 @@ class ICUData(torch.utils.data.Dataset):
         data = pd.read_csv(file_path)
         data = data.drop(['Hours'], axis=1)
         data = data.apply(pd.to_numeric, errors='coerce').fillna(0)
-        data = torch.tensor(data.values, dtype=torch.float32)
-        label = self.labels[idx]
+        data = torch.tensor(data.values, dtype=torch.float32).unsqueeze(0)  # accommodate batch dimension
+        label = self.labels[idx].unsqueeze(0)  # accommodate batch dimension
         return data, label
-# Define the Model
 class LSTM(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers, output_size):
         super(LSTM, self).__init__()
@@ -39,34 +36,27 @@ class LSTM(nn.Module):
         c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device)
         out, _ = self.lstm(x, (h0, c0))
         out = self.fc(out[:, -1, :])
-        return out
-# Training function
+        return out.squeeze()  # remove unused dimension
 def train_model(model, data_loader, criterion, optimizer, num_epochs):
     model.train()
     for epoch in range(num_epochs):
         for step, (seq, labels) in enumerate(data_loader):
-            seq = seq.float().unsqueeze(0)
-            labels = labels.float().unsqueeze(0)
+            model.zero_grad()
             outputs = model(seq)
             loss = criterion(outputs, labels)
-            optimizer.zero_grad()
             loss.backward()
             optimizer.step()
         if (epoch+1) % 10 == 0:
             print('Epoch [{}/{}], Loss: {:.4f}'.format(epoch+1, num_epochs, loss.item()))
-# Training parameters
 num_epochs = 100
 learning_rate = 0.01
-input_size = 13  # number of features
-hidden_size = 32  # number of features in hidden state
-num_layers = 2  # number of stacked LSTM layers
-num_classes = 1  # number of output classes 
-# Create Dataset and Dataloader
+input_size = 13  
+hidden_size = 32  
+num_layers = 2  
+num_classes = 1  
 dataset = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
 data_loader = DataLoader(dataset=dataset, batch_size=1, shuffle=True)
-# Create model, loss function, and optimizer
 model = LSTM(input_size, hidden_size, num_layers, num_classes)
-criterion = nn.MSELoss()    # mean-squared error for regression
+criterion = nn.BCEWithLogitsLoss()  # binary cross entropy with logits for binary classification
 optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
-# Train the model
 train_model(model, data_loader, criterion, optimizer, num_epochs)
