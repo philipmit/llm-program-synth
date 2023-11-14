@@ -29,5 +29,5 @@ def predict_label(raw_sample):
     sample = scaler.transform(raw_sample)
     # use the fitted model to predict_proba
     probas = log_reg.predict_proba(sample)
-    # return the label with max probability
-    return np.argmax(probas, axis=1)
+    # return the probabilities
+    return probas.tolist()[0]
