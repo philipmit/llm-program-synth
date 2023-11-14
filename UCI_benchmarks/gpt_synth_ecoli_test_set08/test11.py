@@ -3,6 +3,9 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import PolynomialFeatures
+from sklearn.model_selection import GridSearchCV
 # Load the ecoli dataset
 ecoli = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', 
                     delim_whitespace=True, header=None)
@@ -21,9 +24,15 @@ scaler = StandardScaler().fit(X_train)
 X_train = scaler.transform(X_train)
 # Define the number of classes
 num_classes = len(np.unique(y))
-# Logistic Regression model training
-model = LogisticRegression(max_iter=10000)
-model.fit(X_train, y_train)
+# Creating a pipeline with Polynomial Features to capture interactions and Logistic Regression
+pipeline = make_pipeline(PolynomialFeatures(degree=2, include_bias=False), 
+                         LogisticRegression(max_iter=10000))
+# Grid Search to find the optimal hyperparameters
+param_grid = {'logisticregression__C': np.logspace(-4, 4, 20)}
+grid = GridSearchCV(pipeline, param_grid, cv=5, scoring='roc_auc_ovr')
+grid.fit(X_train, y_train)
+# Logistic Regression model with optimal hyperparameters
+model = grid.best_estimator_
 def predict_label(raw_data):
     # Preprocess the raw data
     raw_data = np.array(raw_data)
