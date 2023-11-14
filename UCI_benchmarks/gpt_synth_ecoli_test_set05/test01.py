@@ -1,4 +1,4 @@
-mport pandas as pd
+import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
@@ -21,7 +21,8 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_
 scaler = MinMaxScaler().fit(X_train)
 X_train = scaler.transform(X_train)
 # Creating and Training the Logistic Regression model
-model = LogisticRegression(random_state=42, max_iter=5000).fit(X_train, y_train)
+model = LogisticRegression(random_state=42, max_iter=5000)
+model.fit(X_train, y_train)
 # prediction function
 def predict_label(input_data):
     # input_data should be a list of the format [mcg, gvh, lip, chg, aac, alm1, alm2]
