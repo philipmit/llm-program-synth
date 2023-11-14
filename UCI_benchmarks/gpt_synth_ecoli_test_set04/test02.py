@@ -1,9 +1,8 @@
 import pandas as pd
 import numpy as np
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.preprocessing import StandardScaler
-from sklearn.ensemble import RandomForestClassifier
-# Let's use RandomForest classifier instead of logistic regression for potentially better performance
+from xgboost import XGBClassifier
 # Load the Ecoli dataset
 ecoli = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', delim_whitespace=True, header=None)
 ecoli.columns = ['Sequence Name', 'mcg', 'gvh', 'lip', 'chg', 'aac', 'alm1', 'alm2', 'class']
@@ -18,19 +17,23 @@ X = X.to_numpy()
 y = y.to_numpy()
 # Split the Ecoli dataset into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
-# Only train on data that contains representative labels
-unq_train_labels = np.unique(y_train)
-train_indices = np.isin(y, unq_train_labels)
-X_train = X[train_indices]
-y_train = y[train_indices]
-# Defining the scaler
+# Define the scaler
 scaler = StandardScaler()
 # Scaling the X_train data
 X_train = scaler.fit_transform(X_train)
-# Define and Fit RandomForest model
-# We use more estimators for possibly better accuracy and set the random state for reproducibility
-rf_model = RandomForestClassifier(n_estimators=500, random_state=42)
-rf_model.fit(X_train, y_train)
+# Define XGBClassifier with initial parameters
+xgb_model = XGBClassifier(n_estimators=100, learning_rate=0.05, random_state=42)
+# Setup Grid Search parameters
+param_grid = {
+    'max_depth': [3, 6, 10],
+    'subsample': [0.5, 0.7, 1.0],
+    'colsample_bytree': [0.5, 0.7, 1.0],
+}
+# Apply Grid Search on the model
+grid_search = GridSearchCV(estimator=xgb_model, param_grid=param_grid, cv=3, scoring='roc_auc', verbose=1, n_jobs=-1)
+grid_search.fit(X_train, y_train)
+# Update the model with the best parameters
+xgb_model = grid_search.best_estimator_
 def predict_label(raw_sample):
     # reshape raw_sample if it's only 1D (it's a single sample)
     if len(raw_sample.shape) == 1:
@@ -38,10 +41,5 @@ def predict_label(raw_sample):
     # normalize the sample
     sample = scaler.transform(raw_sample)
     # use the fitted model to predict the probabilities
-    probas = rf_model.predict_proba(sample)
-    # Ensure probabilities are only returned for represented classes
-    proba_dict = {label: 0 for label in label_dict.values()}
-    for i, prob in zip(rf_model.classes_, probas[0]):
-        proba_dict[i] = prob
-    probas = np.array(list(proba_dict.values()))
+    probas = xgb_model.predict_proba(sample)
     return probas
