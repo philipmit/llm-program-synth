@@ -19,4 +19,5 @@ def predict_label(raw_sample):
     # Process the raw sample
     processed_sample = scaler.transform([raw_sample])
     # Return the predicted probabilities
-    return model.predict_proba(processed_sample)
+    # Flatten the output to return a 2-dimensional array
+    return model.predict_proba(processed_sample)[0]
