@@ -4,6 +4,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
+from sklearn.preprocessing import StandardScaler
 import warnings
 warnings.filterwarnings("ignore")
 TRAIN_DATA_PATH = "/data/sls/scratch/pschro/p2/data/benchmark_output_demo2/in-hospital-mortality/train/"
@@ -14,6 +15,7 @@ class ICUData(torch.utils.data.Dataset):
         label_data = pd.read_csv(label_file)
         self.file_names = label_data['stay']
         self.labels = torch.tensor(label_data['y_true'].values, dtype=torch.float32)
+        self.scaler = StandardScaler()
     def __len__(self):
         return len(self.file_names)
     def __getitem__(self, idx):
@@ -22,7 +24,8 @@ class ICUData(torch.utils.data.Dataset):
         data = data.drop('Hours', axis=1)
         # Replace non-numeric values with NaN and then fill them with 0
         data = data.apply(pd.to_numeric, errors='coerce').fillna(0)
-        data = torch.tensor(data.values, dtype=torch.float32)
+        data = self.scaler.fit_transform(data)
+        data = torch.tensor(data, dtype=torch.float32)
         label = self.labels[idx].unsqueeze(-1)
         return data, label
 class LSTM(nn.Module):
@@ -35,7 +38,7 @@ class LSTM(nn.Module):
     def forward(self, x):
         h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device)
         c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device)
-        out, _ = self.lstm(x, (h0, c0))
+        out, _ = self.lstm(x, (h0,c0))
         out = self.fc(out[:, -1, :])
         return out
 def train_model(model, data_loader, criterion, optimizer, num_epochs=100):
@@ -52,7 +55,7 @@ def train_model(model, data_loader, criterion, optimizer, num_epochs=100):
         if (epoch+1) % 10 == 0:
             print('Epoch [{}/{}], Loss: {:.4f}'.format(epoch+1, num_epochs, loss.item()))
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-model = LSTM(input_size=13, hidden_size=32, num_layers=2, output_size=1).to(device)
+model = LSTM(input_size=17, hidden_size=32, num_layers=2, output_size=1).to(device)
 dataset = ICUData(data_path=TRAIN_DATA_PATH, label_file=LABEL_FILE)
 data_loader = DataLoader(dataset=dataset, batch_size=1, shuffle=True)
 criterion = nn.BCEWithLogitsLoss()
