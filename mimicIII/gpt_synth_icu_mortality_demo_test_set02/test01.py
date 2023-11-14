@@ -49,13 +49,13 @@ def predict_icu_mortality(patient_data):
     optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
     for epoch in range(5):
         for i, (inputs, labels) in enumerate(dataloader):
-            optimizer.zero_grad()
             inputs = inputs.unsqueeze(0)
+            optimizer.zero_grad()
             outputs = model(inputs)
             loss = criterion(outputs, labels.view(-1, 1))
             loss.backward()
             optimizer.step()
     with torch.no_grad():
-        patient_data = torch.tensor(patient_data.values, dtype=torch.float32).unsqueeze(0)
+        patient_data = patient_data.unsqueeze(0)
         prediction = model(patient_data)
     return torch.sigmoid(prediction).item()
