@@ -1,26 +1,31 @@
 import pandas as pd
+import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LogisticRegression
-# Download dataset
-ecoli = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', 
-                    delim_whitespace=True, header=None)
+# Load the dataset
+ecoli = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', delim_whitespace=True, header=None)
 ecoli.columns = ['Sequence Name', 'mcg', 'gvh', 'lip', 'chg', 'aac', 'alm1', 'alm2', 'class']
-# Preprocessing
+# Preprocess
 X = ecoli.iloc[:, 1:-1]  # All rows, all columns except the last one
-y = ecoli.iloc[:, -1]  # All rows, only the last column
-y = y.replace(list(np.unique(y)), [0,1,2,3,4,5,6,7])
+y = ecoli.iloc[:, -1] # All rows, only the last column
+labels = list(np.unique(y))
+y = y.replace(labels, list(range(len(labels))))
 X = X.to_numpy()
 y = y.to_numpy()
-# Split the dataset into training and testing sets
+# Split the dataset
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
-# Create a StandardScaler instance and fit it to the training data
-scaler_all = StandardScaler()
-scaler_all.fit(X)  
-X_train = scaler_all.transform(X_train)
-# Fit logistic regression to the training set
-logisticRegr = LogisticRegression(max_iter=1000)
-logisticRegr.fit(X_train, y_train)
+# Scale
+scaler = StandardScaler()
+scaler.fit(X_train)
+X_train = scaler.transform(X_train)
+# One vs Rest Logistic regression
+multi_class_regressor = LogisticRegression(max_iter=1000, multi_class='ovr').fit(X_train, y_train)
+# create dictionary for storing model related to respective classes
+regressors = {i: LogisticRegression(max_iter=1000).fit(X_train, (y_train==i).astype(int)) for i in labels}
 def predict_label(sample):
-    sample = scaler_all.transform([sample])  # apply the same scaler used in training to the new sample
-    return logisticRegr.predict_proba(sample)[0]  # return probabilities for each class
+    sample = scaler.transform([sample])
+    probas = [regressor.predict_proba(sample)[0][1] for regressor in regressors.values()]
+    if sum(probas) != 0:
+        probas = [prob / sum(probas) for prob in probas] # normalizing probas if their sum is not zero
+    return probas
