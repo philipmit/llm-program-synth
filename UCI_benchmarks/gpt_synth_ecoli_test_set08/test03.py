@@ -16,4 +16,5 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_
 # Train the logistic regression model
 log_reg = LogisticRegression(max_iter=1000).fit(X_train, y_train)
 def predict_label(raw_data_sample):
-    return log_reg.predict_proba(raw_data_sample.reshape(1, -1))
+    proba = log_reg.predict_proba(raw_data_sample.reshape(1, -1))
+    return proba[0]
