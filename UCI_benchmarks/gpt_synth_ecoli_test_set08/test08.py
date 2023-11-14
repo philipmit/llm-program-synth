@@ -1,27 +1,27 @@
 import pandas as pd
 import numpy as np
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LogisticRegression
-from sklearn.preprocessing import LabelEncoder, StandardScaler
+from sklearn.preprocessing import LabelEncoder
 # Load dataset
 ecoli = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', delim_whitespace=True, header=None)
 ecoli.columns = ['Sequence Name', 'mcg', 'gvh', 'lip', 'chg', 'aac', 'alm1', 'alm2', 'class']
-X = ecoli.iloc[:, 1:-1].values  # All rows, all the columns except the last one
-y = ecoli.iloc[:, -1].values   # All rows, only the last column
-# Use LabelEncoder to encode class labels as numbers
-le = LabelEncoder()
-all_classes = np.unique(y)
-num_classes = len(all_classes)
-y_encoded = le.fit_transform(y)
-# Split the dataset
-X_train, X_test, y_train, y_test = train_test_split(X, y_encoded, test_size=0.2, random_state=42)
+# preparing feature (X) and target (y) arrays
+X = ecoli.iloc[:, 1:-1].values  
+y = ecoli.iloc[:, -1].values 
+# Encode class labels as numbers
+label_encoder = LabelEncoder()
+y_labeled = label_encoder.fit_transform(y)
+# Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y_labeled, test_size=0.2, random_state=42)
 # Standardize the features
 scaler = StandardScaler()
 X_train = scaler.fit_transform(X_train)
 X_test = scaler.transform(X_test)
-# Train logistic regression
-logreg = LogisticRegression(random_state=42, multi_class='multinomial', solver='saga', max_iter=5000, C=0.1)
-logreg.fit(X_train, y_train)
+# Use RandomForestClassifier to predict
+random_forest = RandomForestClassifier(n_estimators=200, max_depth=8, random_state=42)
+random_forest.fit(X_train, y_train)
 # Define the predict_label function
 def predict_label(X):
     # Assume the input X is a list with 7 elements
@@ -29,10 +29,6 @@ def predict_label(X):
     X = np.array(X).reshape(1, -1)
     # Standardize the features
     X = scaler.transform(X)
-    # Get probabilities as output of the logistic regression model
-    probas = logreg.predict_proba(X)[0]
-    # Create a zero-filled array to hold probabilities for all classes
-    all_probas = np.zeros(num_classes)
-    # Fill in the probabilities for the classes that the model was trained on
-    all_probas[logreg.classes_] = probas
-    return all_probas
+    # Get probabilities as output of the Random Forest model
+    probas = random_forest.predict_proba(X)[0]
+    return probas
