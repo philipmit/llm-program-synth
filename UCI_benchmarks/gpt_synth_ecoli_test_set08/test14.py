@@ -9,11 +9,12 @@ ecoli.columns = ['Sequence Name', 'mcg', 'gvh', 'lip', 'chg', 'aac', 'alm1', 'al
 # All rows, all columns except the last one for features
 # All rows, only the last column for the target
 X = ecoli.iloc[:, 1:-1].values  
-y = ecoli.iloc[:, -1].values
 # replace strings with numbers in y
+y = ecoli.iloc[:, -1]
 unique_classes = np.unique(y)
-for i, class_name in enumerate(unique_classes):
-    y[y == class_name] = i
+y = y.replace(unique_classes, list(range(len(unique_classes))), inplace=False)
+# Now convert to numpy array
+y = y.values
 # Split the dataset into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.5, random_state=42)
