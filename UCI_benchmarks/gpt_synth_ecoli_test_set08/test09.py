@@ -7,7 +7,7 @@ from sklearn.linear_model import LogisticRegression
 ecoli = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', delim_whitespace=True, header=None)
 ecoli.columns = ['Sequence Name', 'mcg', 'gvh', 'lip', 'chg', 'aac', 'alm1', 'alm2', 'class']
 # Split into predictors and target
-X = ecoli.iloc[:, 1:-1]  
+X = ecoli.iloc[:, 1:-1]
 y = ecoli.iloc[:, -1]
 # Convert class labels to numeric
 y_labels = np.unique(y)
@@ -21,8 +21,6 @@ X_train = scaler.transform(X_train)
 # Define and train model
 model = LogisticRegression(multi_class='ovr', max_iter=200)
 model.fit(X_train, y_train)
-# Store classes used during model training
-model.classes_ = y_labels 
 # Define prediction function
 def predict_label(raw_sample):
     # Reshape the sample
@@ -31,7 +29,4 @@ def predict_label(raw_sample):
     raw_sample = scaler.transform(raw_sample)
     # Predict the probabilities for each class
     probabilities = model.predict_proba(raw_sample)
-    # Expand the predicted probabilities to cover all classes in original dataset if not already covered
-    full_probs = np.zeros(len(model.classes_))
-    full_probs[model.classes_] = probabilities[0]
-    return full_probs
+    return probabilities[0]
