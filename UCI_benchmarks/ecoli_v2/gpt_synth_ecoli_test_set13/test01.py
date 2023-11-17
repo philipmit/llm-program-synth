@@ -2,8 +2,8 @@
 ######## Load and preview the dataset and datatypes
 # Import necessary libraries
 import pandas as pd
-# Read file
-df = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', header=None, delimiter=' ')
+# Read file, correcting the error by replacing possible multiple spaces with a single one and adding 'sep' parameter
+df = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', header=None, sep='\s+', engine='python')
 # Preview dataset and datatypes
 print(df.shape)
 print(df.head())
