@@ -52,3 +52,13 @@ if not df.empty:
     model = LogisticRegression()
     model.fit(X_train, y_train)
 #</Train>
+#<Predict>
+######## Define a function that can be used to make new predictions given one raw sample of data
+# Note that this function should ONLY be used if the dataframe was not empty and a model was trained prior to this
+if not df.empty:
+    def predict_ecoli_label(raw_sample):
+        # Standardize the raw_sample to match the data model was trained on
+        raw_sample = sc.transform(raw_sample.reshape(1, -1))
+        # Return the predicted label
+        return model.predict(raw_sample)[0] 
+#</Predict>
