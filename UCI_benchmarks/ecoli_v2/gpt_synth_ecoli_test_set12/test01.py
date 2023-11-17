@@ -48,3 +48,34 @@ print(y_train[0:5])
 model = LogisticRegression()
 model.fit(X_train, y_train)
 #</Train>
+#<Eval>
+######## Evaluate the model on the test data
+# Transform test set
+X_test = sc.transform(X_test)
+# Predict test set results
+y_pred = model.predict(X_test)
+#</Eval>
+
+#<Metrics>
+######## Compute accuracy and other evaluation metrics
+from sklearn.metrics import accuracy_score
+from sklearn.metrics import classification_report
+# Calculate accuracy
+accuracy = accuracy_score(y_test, y_pred)
+
+# Print accuracy
+print('The accuracy of the Logistic Regression model on the test data is {:.2f}%.'.format(accuracy*100))
+
+# Print Classification Report
+report = classification_report(y_test, y_pred)
+print('\nClassification Report: \n', report)
+#</Metrics>
+
+#<Predict>
+######## Define a function that can be used to make new predictions given one raw sample of data
+def predict_label(raw_sample):
+    # Standardize the raw_sample to match the data model was trained on
+    raw_sample = sc.transform(raw_sample.reshape(1, -1))
+    # Return the class probabilities as a 1D array
+    return model.predict_proba(raw_sample)[0]
+#</Predict>
