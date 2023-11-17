@@ -3,7 +3,7 @@
 # Import necessary libraries
 import pandas as pd
 # Read file
-df = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/Ecoli/ecoli.data', sep='\s+', header=None)
+df = pd.read_csv('ecoli.data', sep='\s+', header=None)  #Use the correct file path or url to load the dataset.
 # Preview dataset and datatypes
 print(df.shape)
 print(df.head())
