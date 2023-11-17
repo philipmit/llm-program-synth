@@ -45,3 +45,10 @@ if not df.empty:
     print(X_train[0:5])
     print(y_train[0:5])
 #</PrepData>
+#<Train>
+######## Train the model using the training data, X_train and y_train
+# Check if the dataframe to train is not empty
+if not df.empty:
+    model = LogisticRegression()
+    model.fit(X_train, y_train)
+#</Train>
