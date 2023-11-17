@@ -41,3 +41,10 @@ from sklearn.linear_model import LogisticRegression
 model = LogisticRegression()
 model.fit(X_train, y_train)
 #</Train>
+#<Predict>
+######## Predict the labels of the test data, X_test
+# Standardize X_test
+X_test_sc = sc.transform(X_test)
+# Predict the labels
+y_pred = model.predict(X_test_sc)
+#</Predict>
