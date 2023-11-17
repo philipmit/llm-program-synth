@@ -13,3 +13,33 @@ for col in df.applymap(type).columns:
     print(col, df.applymap(type)[col].unique())
 print(df.isnull().sum())
 #</PrevData>
+#<PrepData>
+######## Prepare the dataset for training
+# Import necessary packages
+import numpy as np
+from sklearn.linear_model import LogisticRegression
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import train_test_split
+
+# Clean data - split data values into separate columns
+split_data = df[0].str.strip().str.split("\s+", expand=True)
+
+# Define features, X, and labels, y
+X = split_data.iloc[:, 1:-1]  # All rows, all columns except the last one
+y = split_data.iloc[:, -1]   # All rows, only the last column
+y = y.replace(list(np.unique(y)), list(range(len(np.unique(y)))))
+X=X.to_numpy()
+y=y.to_numpy()
+
+# Split the dataset into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
+
+# Scale the features 
+sc = StandardScaler()
+X_train = sc.fit_transform(X_train)
+
+print(X_train.shape)
+print(y_train.shape)
+print(X_train[0:5])
+print(y_train[0:5])
+#</PrepData>
