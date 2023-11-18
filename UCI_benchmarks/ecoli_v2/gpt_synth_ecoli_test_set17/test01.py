@@ -28,3 +28,27 @@ y = df.iloc[:, -1]    # All rows, only the last column
 # Replace the unique labels with unique numbers
 y = y.replace(list(np.unique(y)), list(range(len(np.unique(y)))))
 #</PrepData>
+#<PrepDataContinued>
+######## Continue preparing the dataset for training
+# Convert pandas dataframe to numpy array
+X = X.to_numpy()
+y = y.to_numpy()
+# Split the dataset into training and testing sets
+from sklearn.model_selection import train_test_split
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+# Scale features to have the same scale
+from sklearn.preprocessing import StandardScaler
+sc = StandardScaler()
+X_train = sc.fit_transform(X_train)
+print(X_train.shape)
+print(y_train.shape)
+print(X_train[0:5])
+print(y_train[0:5])
+#</PrepDataContinued>
+
+#<Train>
+######## Train the model using the training data, X_train and y_train
+from sklearn.linear_model import LogisticRegression
+model = LogisticRegression()
+model.fit(X_train, y_train)
+#</Train>
