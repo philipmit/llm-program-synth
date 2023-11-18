@@ -2,6 +2,7 @@
 ######## Load and preview the dataset and datatypes
 # Import necessary libraries
 import pandas as pd
+import numpy as np
 # Read file
 df = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', header=None)
 # Preview dataset and datatypes
