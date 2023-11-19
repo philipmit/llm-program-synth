@@ -3,7 +3,7 @@
 # Import necessary libraries
 import pandas as pd
 # Read file
-df = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', header=None,sep="\s+")
+df = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', header=None, sep="\s+")
 # Preview dataset and datatypes
 print(df.shape)
 print(df.head())
@@ -69,9 +69,13 @@ print('Validation AUC: ' + str(auc))
 #<Predict>
 ######## Define a function that can be used to make new predictions given one raw sample of data
 def predict_label(raw_sample, model=model, sc=sc):
-    # Standardize the raw_sample to match the data model was trained on
-    raw_sample = sc.transform(raw_sample.reshape(1, -1))
-    # Return the class probabilities as a 1D numpy array
-    proba_predictions = model.predict_proba(raw_sample)
-    return np.squeeze(proba_predictions)
+    # Expect the raw_sample as a 2D array and standardize it to match the data model was trained on
+    raw_sample_std = sc.transform(raw_sample.reshape(-1, raw_sample.shape[0]))
+    proba_predictions = model.predict_proba(raw_sample_std)
+    # Ensure proba_predictions is a list of lists, where each sub-list sums up to 1.0
+    for sublist in proba_predictions:
+        total = sum(sublist)
+        for i in range(len(sublist)):
+            sublist[i] /= total
+    return proba_predictions
 #</Predict>
