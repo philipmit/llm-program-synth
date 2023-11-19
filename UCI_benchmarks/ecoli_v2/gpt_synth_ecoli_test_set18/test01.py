@@ -69,6 +69,6 @@ def predict_label(raw_samples, model=model, sc=sc):
     # Expect the raw_samples as a 2D array and standardize it to match the data model was trained on
     raw_samples = np.atleast_2d(raw_samples)
     raw_samples_std = sc.transform(raw_samples)
-    # Return the class predictions as a 1D array
-    return model.predict(raw_samples_std)
+    # Return class probabilities, which can be used as score for AUC calculation
+    return model.predict_proba(raw_samples_std)
 #</Predict>
