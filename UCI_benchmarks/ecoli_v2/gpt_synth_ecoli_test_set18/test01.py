@@ -64,12 +64,11 @@ print('Validation AUC: ' + str(auc))
 #</Eval>
 
 #<Predict>
-######## Define a corrected function that can be used to make new predictions given one or more raw samples of data
+######## Define a function that can be used to make new predictions given one or more raw samples of data
 def predict_label(raw_samples, model=model, sc=sc):
     # Expect the raw_samples as a 2D array and standardize it to match the data model was trained on
-    if len(raw_samples.shape) == 1:
-        raw_samples = np.array(raw_samples).reshape(1, -1)
+    raw_samples = np.atleast_2d(raw_samples)
     raw_samples_std = sc.transform(raw_samples)
     # Return the class probabilities as a 2D array
-    return model.predict_proba(raw_samples_std).tolist()
+    return model.predict_proba(raw_samples_std)
 #</Predict>
