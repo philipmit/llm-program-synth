@@ -71,7 +71,7 @@ print('Validation AUC: ' + str(auc))
 def predict_label(raw_sample, model=model, sc=sc):
     # Standardize the raw_sample to match the data model was trained on
     raw_sample = sc.transform(raw_sample.reshape(1, -1))
-    # Return the class probabilities as label encoded
-    prob_prediction = model.predict_proba(raw_sample)[0]
-    return np.array([1 if i==list(prob_prediction).index(max(list(prob_prediction))) else 0 for i in range(len(prob_prediction))])
+    # Return the class probabilities as a 1D numpy array
+    proba_predictions = model.predict_proba(raw_sample)
+    return np.squeeze(proba_predictions)
 #</Predict>
