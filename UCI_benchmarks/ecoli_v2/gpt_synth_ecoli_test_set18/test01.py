@@ -43,3 +43,22 @@ print(y_train[0:5])
 model = LogisticRegression(multi_class='multinomial', solver='lbfgs', random_state=42)
 model.fit(X_train, y_train)
 #</Train>
+#<Eval>
+######## Evaluate the model using the test data, X_test and y_test
+from sklearn.metrics import accuracy_score, classification_report
+
+# Scale the X_test to match X_train data features before evaluation
+X_test = sc.transform(X_test)
+y_pred = model.predict(X_test)
+print("Model Accuracy: ", accuracy_score(y_test,y_pred))
+print("Classification Report: ", classification_report(y_test,y_pred))
+#</Eval>
+
+#<Predict>
+######## Define a function that can be used to make new predictions given one raw sample of data
+def predict_label(raw_sample):
+    # Standardize the raw_sample to match the data model was trained on
+    raw_sample = sc.transform(raw_sample.reshape(1, -1))
+    # Return the class probabilities as a 1D array
+    return model.predict_proba(raw_sample)[0]
+#</Predict>
