@@ -67,15 +67,13 @@ print('Validation AUC: ' + str(auc))
 #</Eval>
 
 #<Predict>
-######## Define a function that can be used to make new predictions given one raw sample of data
-def predict_label(raw_sample, model=model, sc=sc):
-    # Expect the raw_sample as a 2D array and standardize it to match the data model was trained on
-    raw_sample_std = sc.transform(raw_sample.reshape(-1, raw_sample.shape[0]))
-    proba_predictions = model.predict_proba(raw_sample_std)
-    # Ensure proba_predictions is a list of lists, where each sub-list sums up to 1.0
-    for sublist in proba_predictions:
-        total = sum(sublist)
-        for i in range(len(sublist)):
-            sublist[i] /= total
+######## Define a corrected function that can be used to make new predictions given one or more raw samples of data
+def predict_label(raw_samples, model=model, sc=sc):
+    # Expect the raw_samples as a 2D array and standardize it to match the data model was trained on
+    if len(raw_samples.shape) == 1:
+        raw_samples = raw_samples.reshape(1, -1)
+    raw_samples_std = sc.transform(raw_samples) 
+    proba_predictions = model.predict_proba(raw_samples_std)
+
     return proba_predictions
 #</Predict>
