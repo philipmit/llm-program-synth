@@ -80,7 +80,7 @@ print('Validation AUC: ' + str(auc))
 def predict_label(raw_samples, model=model, sc=sc):
     # Expect the raw_samples as a 2D array and standardize it to match the data model was trained on
     if len(raw_samples.shape) == 1:
-        raw_samples = np.array([raw_samples])
+        raw_samples = np.array(raw_samples).reshape(1, -1)
     raw_samples_std = sc.transform(raw_samples) 
     proba_predictions = model.predict_proba(raw_samples_std)
 
