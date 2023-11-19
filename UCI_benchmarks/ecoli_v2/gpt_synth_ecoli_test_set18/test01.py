@@ -13,6 +13,7 @@ for col in df.applymap(type).columns:
     print(col, df.applymap(type)[col].unique())
 print(df.isnull().sum())
 #</PrevData>
+
 #<PrepData>
 ######## Prepare the dataset for training
 # Import necessary packages
@@ -38,20 +39,31 @@ print(y_train.shape)
 print(X_train[0:5])
 print(y_train[0:5])
 #</PrepData>
+
 #<Train>
 ######## Train the model using the training data, X_train and y_train
-model = LogisticRegression(multi_class='multinomial', solver='lbfgs', random_state=42)
+model = LogisticRegression(multi_class='ovr', solver='liblinear', random_state=42)
 model.fit(X_train, y_train)
 #</Train>
+
 #<Eval>
 ######## Evaluate the model using the test data, X_test and y_test
-from sklearn.metrics import accuracy_score, classification_report
+from sklearn.metrics import accuracy_score, classification_report, roc_auc_score
 
 # Scale the X_test to match X_train data features before evaluation
 X_test = sc.transform(X_test)
 y_pred = model.predict(X_test)
 print("Model Accuracy: ", accuracy_score(y_test,y_pred))
 print("Classification Report: ", classification_report(y_test,y_pred))
+
+# Converting predicted probabilities into label encoded
+prediction_prob = model.predict_proba(X_test)
+prediction_label = []
+for pred in prediction_prob:
+    prediction_label.append(list(pred).index(max(list(pred))))
+
+auc=roc_auc_score(y_test, prediction_label, multi_class='ovr')
+print('Validation AUC: ' + str(auc))
 #</Eval>
 
 #<Predict>
@@ -59,6 +71,7 @@ print("Classification Report: ", classification_report(y_test,y_pred))
 def predict_label(raw_sample, model=model, sc=sc):
     # Standardize the raw_sample to match the data model was trained on
     raw_sample = sc.transform(raw_sample.reshape(1, -1))
-    # Return the class probabilities as a 1D array
-    return model.predict_proba(raw_sample)[0]
+    # Return the class probabilities as label encoded
+    prob_prediction = model.predict_proba(raw_sample)[0]
+    return np.array([1 if i==list(prob_prediction).index(max(list(prob_prediction))) else 0 for i in range(len(prob_prediction))])
 #</Predict>
