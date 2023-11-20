@@ -67,3 +67,15 @@ roc_auc = roc_auc_score(y_test, y_pred_proba, multi_class='ovr')
 print('ROC AUC: %.3f' % roc_auc)
 ### End your code
 #</Train>
+#<Predict>
+######## Define the predict_labels function that can be used to make new predictions using the trained model above given one raw sample of data
+def predict_label(raw_sample):
+    # Process the raw sample
+    sample = np.array(raw_sample[1:]).reshape(1, -1)
+    # Scale the sample
+    sample = sc.transform(sample)
+    # Get the prediction
+    proba = log_reg.predict_proba(sample)
+    return proba
+### End your code
+#</Predict>
