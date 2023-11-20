@@ -4,7 +4,7 @@
 import pandas as pd
 # Read file
 df = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', delim_whitespace=True, header=None)
-# Provide suitable column names
+# Provide suitable column names according to the data description
 df.columns=['SequenceName','mcg','gvh','lip','chg','aac','alm1','alm2','Class']
 # Preview dataset and datatypes
 print(df.shape)
@@ -44,7 +44,7 @@ print(y_train[0:5])
 
 #<Train>
 ######## Train the model using the training data, X_train and y_train
-model = LogisticRegression(multi_class='ovr')
+model = LogisticRegression(multi_class='multinomial', solver='lbfgs', random_state=42)
 model.fit(X_train, y_train)
 #</Train>
 
@@ -54,12 +54,5 @@ def predict_label(raw_sample, scaler=scaler, model=model):
     # Standardize the raw_sample to match the data model was trained on
     raw_sample = scaler.transform([raw_sample])
     # Return the class probabilities as a 1D array
-    proba = model.predict_proba(raw_sample)[0]
-    # Generate an array of zeros with length equal to number of unique classes in target array
-    pred_arr = np.zeros(len(np.unique(y_train)))  
-    # Get the predicted class label of raw_sample
-    class_ = model.predict(raw_sample)[0] 
-    # Set the probability of predicted class label to 1
-    pred_arr[class_] = 1
-    return pred_arr
+    return model.predict_proba(raw_sample)[0]
 #</Predict>
