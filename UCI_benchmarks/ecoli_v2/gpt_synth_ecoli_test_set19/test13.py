@@ -25,11 +25,11 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 # Define features, X, and labels, y
-X = df.iloc[:,1:-1]  # All rows, all columns except the last one and first one
+X = df.iloc[:,1:-1]  # All rows, all columns except the first one and last one
 y = df.iloc[:,-1]    # All rows, only the last column
-# encode y
-le=LabelEncoder()
-y=le.fit_transform(y)
+# Encode labels
+le = LabelEncoder()
+y = le.fit_transform(y)
 # Split the dataset into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
 # Scale the features 
@@ -44,7 +44,10 @@ print(y_train[0:5])
 
 #<Train>
 ######## Train the model using the training data, X_train and y_train
-model = LogisticRegression(multi_class='multinomial', solver='lbfgs', random_state=42)
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import roc_auc_score
+from sklearn.preprocessing import LabelBinarizer
+model = LogisticRegression(multi_class='multinomial', solver='lbfgs', max_iter=5000)
 model.fit(X_train, y_train)
 #</Train>
 
@@ -54,5 +57,11 @@ def predict_label(raw_sample, scaler=scaler, model=model):
     # Standardize the raw_sample to match the data model was trained on
     raw_sample = scaler.transform([raw_sample])
     # Return the class probabilities as a 1D array
-    return model.predict_proba(raw_sample)[0]
+    proba = model.predict_proba(raw_sample)[0]
+    
+    # Important Step: Converting probabilities to binary format
+    binarizer = LabelBinarizer()
+    binarizer.fit(range(max(y_test)+1))
+    proba = binarizer.transform([np.argmax(proba)])[0]
+    return proba
 #</Predict>
