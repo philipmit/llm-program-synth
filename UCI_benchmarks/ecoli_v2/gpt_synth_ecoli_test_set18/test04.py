@@ -40,7 +40,7 @@ X_test = sc.transform(X_test) # Using the same scaler to transform the test data
 
 #<Train>
 ######## Train the model using the training data, X_train and y_train
-model = LogisticRegression(max_iter=1000, multi_class='ovr') # Setting multi_class to ovr
+model = LogisticRegression(max_iter=1000) # multi_class configured as multiclass by default
 model.fit(X_train, y_train)
 #</Train>
 
@@ -50,9 +50,9 @@ def predict_label(raw_sample, model=model, scaler=sc, np=np):
   # Standardize the raw_sample with scaler to match the data the model was trained on
   raw_sample = scaler.transform(np.array(raw_sample).reshape(1, -1))
   
-  # Get the label prediction. Use predict_proba method to get probabilities first then argmax 
-  label_prediction = np.argmax(model.predict_proba(raw_sample), axis=1)
+  # Get the label prediction. Use predict_proba method to get probabilities which sum up to 1.0
+  label_prediction = model.predict_proba(raw_sample)
 
   # Return the label prediction
-  return label_prediction
+  return label_prediction[0]   
 #</Predict>
