@@ -1,10 +1,8 @@
 #<PrevData>
-######## Load and preview the dataset and datatypes
-# Import necessary libraries
+# Load and preview the dataset and datatypes
 import pandas as pd
-# Read file
 df = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', header=None, delim_whitespace=True)
-# Preview dataset and datatypes
+df.columns = ['Sequence Name', 'mcg', 'gvh', 'lip', 'chg', 'aac', 'alm1', 'alm2', 'class']
 print(df.shape)
 print(df.head())
 print(df.info())
@@ -15,51 +13,42 @@ print(df.isnull().sum())
 #</PrevData>
 
 #<PrepData>
-######## Prepare the dataset for training
-# Import necessary packages
-from sklearn import preprocessing
+# Prepare the dataset for training
 import numpy as np
 from sklearn.linear_model import LogisticRegression
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.model_selection import train_test_split
-from sklearn import utils
 
-# Define features, X, and labels, y
 X = df.iloc[:, 1:-1]  # All rows, all columns except the first and last one
 y = df.iloc[:, -1]   # All rows, only the last column
-# To make sure that the labels y are integers, map the unique label values to integers
-le = preprocessing.LabelEncoder()
+le = LabelEncoder()
 y = le.fit_transform(y)
-mapping = dict(zip(le.classes_, le.transform(le.classes_)))
-# Ensure data type consistency
-X, y = utils.check_X_y(X, y, force_all_finite=False, ensure_2d=True, allow_nd=True, multi_output=True, ensure_min_samples=1, ensure_min_features=1)
+
+X=X.to_numpy()
+y=y.to_numpy()
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
-# Scale the features 
+
+# Scale the features
 sc = StandardScaler()
-sc.fit(X_train) # fit the scaler based on the training data
-X_train = sc.transform(X_train) # then transform the training data
+X_train = sc.fit_transform(X_train)
 #</PrepData>
 
 #<Train>
-######## Train the model using the training data, X_train and y_train
+# Train the model using the training data
 from sklearn.multiclass import OneVsRestClassifier
 
-# Instantiate the logistic regression classifier with "ovr" setting for multiclass classification
+# Create an instance of Logistic Regression Classifier and fit the data.
 lr = OneVsRestClassifier(LogisticRegression(solver='lbfgs'))
-
-# Fit the model
 lr.fit(X_train, y_train)
 #</Train>
 
 #<Predict>
-######## Define a function that can be used to make new predictions given one raw sample of data
+# Define a function that can be used to make new predictions given one raw sample of data
 def predict_label(raw_sample):
-    # We need to ensure that the input raw_sample is 2D
     if raw_sample.ndim == 1:
         raw_sample = raw_sample.reshape(1, -1)
-    # Standardize the raw_sample to match the data model was trained on
     raw_sample = sc.transform(raw_sample)
-    probabilities = lr.predict_proba(raw_sample)
-    return probabilities
+    prediction = lr.predict_proba(raw_sample)[0] # Get the first item from the predictions list
+    return prediction
 #</Predict>
