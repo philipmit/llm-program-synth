@@ -55,7 +55,7 @@ def predict_label(sample):
     # Reshape the sample for scikit-learn
     sample = np.array(sample).reshape(1, -1)
     # Scale the sample features
-    sample = sc.fit_transform(sample)
+    sample = sc.transform(sample)
     # Use the trained model to predict the target
     predicted_prob = logreg.predict_proba(sample)
     return predicted_prob
