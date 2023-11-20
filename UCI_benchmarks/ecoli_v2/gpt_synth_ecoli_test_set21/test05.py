@@ -24,8 +24,8 @@ from sklearn.preprocessing import LabelBinarizer, StandardScaler
 
 ecoli = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', delim_whitespace=True, header=None)
 ecoli.columns = ['Sequence Name', 'mcg', 'gvh', 'lip', 'chg', 'aac', 'alm1', 'alm2', 'class']
-X = ecoli.iloc[:, 1:-1]  
-y = ecoli.iloc[:, -1]  
+X = ecoli.iloc[:, 1:-1]
+y = ecoli.iloc[:, -1]
 
 # Convert categorical labels to one-hot-encoding
 lb = LabelBinarizer()
@@ -40,10 +40,9 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_
 # Scale the features 
 sc = StandardScaler()
 X_train = sc.fit_transform(X_train)
-print(X_train.shape)
-print(y_train.shape)
-print(X_train[0:5])
-print(y_train[0:5])
+
+# Reconvert y_train to binary form for the training.
+y_train = lb.transform(y_train)
 #</PrepData>
 
 #<Train>
