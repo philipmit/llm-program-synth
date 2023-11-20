@@ -27,9 +27,8 @@ from sklearn.model_selection import train_test_split
 X = df.iloc[:, 1:-1]  # All rows, all columns except the first and the last one, first is an object and cannot be converted to float.
 y = df.iloc[:, -1]   # All rows, only the last column
 # replace strings with numbers in y
-np.unique(y)
-len(list(np.unique(y)))
-y = y.replace(list(np.unique(y)), [0,1,2,3,4,5,6,7])
+len(set(y))
+y = y.replace(list(np.unique(y)), list(range(len(set(y)))))
 X = X.to_numpy()
 y = y.to_numpy()
 # Split the dataset into training and testing sets
@@ -45,7 +44,7 @@ print(y_train[0:5])
 
 #<Train>
 ######## Train the model using the training data, X_train and y_train
-model = LogisticRegression(multi_class='multinomial', solver='lbfgs', random_state=42, max_iter=200)
+model = LogisticRegression(max_iter=200)
 model.fit(X_train, y_train)
 #</Train>
 
@@ -55,11 +54,5 @@ def predict_label(raw_sample):
     # Standardize the raw_sample to match the data model was trained on
     raw_sample = sc.transform(raw_sample.reshape(1, -1))
     # Return the class probabilities as a 1D array
-    predicted_class = model.predict(raw_sample)[0]
-    predicted_probs = model.predict_proba(raw_sample)[0]
-    # Creating a zero array of size equal to number of classes
-    pred = np.zeros(len(np.unique(y_train)))
-    # Assigning the predicted probability to the respective class index
-    pred[predicted_class] = predicted_probs[predicted_class]
-    return pred
+    return model.predict_proba(raw_sample)[0]  
 #</Predict>
