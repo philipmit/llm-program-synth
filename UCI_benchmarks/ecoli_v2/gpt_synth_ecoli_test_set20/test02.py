@@ -37,21 +37,22 @@ X, y = utils.check_X_y(X, y, force_all_finite=False, ensure_2d=True, allow_nd=Tr
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
 # Scale the features 
 sc = StandardScaler()
-X_train = sc.fit_transform(X_train)
-
-print(X_train.shape)
-print(y_train.shape)
-print(X_train[0:5])
-print(y_train[0:5])
+sc.fit(X_train) # fit the scaler based on the training data
+X_train = sc.transform(X_train) # then transform the training data
 #</PrepData>
 
 #<Train>
 ######## Train the model using the training data, X_train and y_train
-models = [] #list to hold models for each class
-for i in range(len(np.unique(y_train))): #loop over each class and train a model for each class
-    model = LogisticRegression()
-    model.fit(X_train, y_train==i) #train model to distinguish class i from rest
-    models.append(model)
+from sklearn.multiclass import OneVsRestClassifier
+
+# Instantiate the LogisticRegression object
+lr = LogisticRegression()
+
+# Wrap the model in the OneVsRestClassifier
+model = OneVsRestClassifier(lr)
+
+# Fit the model
+model.fit(X_train, y_train)
 #</Train>
 
 #<Predict>
@@ -59,8 +60,6 @@ for i in range(len(np.unique(y_train))): #loop over each class and train a model
 def predict_label(raw_sample):
     # Standardize the raw_sample to match the data model was trained on
     raw_sample = sc.transform(raw_sample.reshape(1, -1))
-    predictions = []
-    for model in models: #loop over each class and get prediction for each class
-        predictions.append(model.predict_proba(raw_sample)[0][1])
-    return np.array(predictions)  
+    # Return the class probabilities as a 1D array
+    return model.predict_proba(raw_sample)[0]
 #</Predict>
