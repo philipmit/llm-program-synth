@@ -68,6 +68,6 @@ print('Model accuracy:', score)
 def predict_label(raw_sample, model=model, scaler=sc):
     # Standardize the raw_sample with scaler to match the data the model was trained on
     raw_sample = scaler.transform(raw_sample.reshape(1, -1))
-    # Return the predicted class and class probabilities 
-    return model.predict(raw_sample)[0], model.predict_proba(raw_sample)[0] 
+    # Return only the predicted class probability
+    return model.predict_proba(raw_sample).flatten()
 #</Predict>
