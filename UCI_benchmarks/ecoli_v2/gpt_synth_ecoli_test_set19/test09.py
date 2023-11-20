@@ -62,6 +62,6 @@ print('Confusion Matrix: \n', cm)
 def predict_label(raw_sample):
     # Standardize the raw_sample to match the data model was trained on
     raw_sample = sc.transform(raw_sample.reshape(1, -1))
-    # Return the class probabilities as a 1D array
-    return model.predict_proba(raw_sample)[0]   
+    # Predicting the label and return.
+    return model.predict(raw_sample)  
 #</Predict>
