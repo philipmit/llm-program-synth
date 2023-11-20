@@ -18,18 +18,6 @@ print(df.isnull().sum())
 ######## Parse and prepare the dataset for training
 col_names = ['Sequence Name', 'mcg', 'gvh', 'lip', 'chg', 'aac', 'alm1', 'alm2', 'Class'] # Adding column names
 df = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', delim_whitespace=True, names=col_names)
-# Preview dataset and datatypes
-print(df.shape)
-print(df.head())
-print(df.info())
-print(df.dtypes)
-for col in df.applymap(type).columns:
-    print(col, df.applymap(type)[col].unique())
-print(df.isnull().sum())
-
-num_classes = len(np.unique(df['Class'])) # Number of unique classes
-
-######## Prepare the dataset for training
 # Import necessary packages
 import numpy as np
 from sklearn.linear_model import LogisticRegression
@@ -67,20 +55,11 @@ print('Model accuracy:', score)
 
 #<Predict>
 ######## When using this model in a separate script, make sure to define the `StandardScaler` object `sc`
-import numpy as np
-def predict_label(raw_sample, model=model, scaler=sc, num_classes=num_classes):
+def predict_label(raw_sample, model=model, scaler=sc, np=np): 
   # Standardize the raw_sample with scaler to match the data the model was trained on
   raw_sample = scaler.transform(np.array(raw_sample).reshape(1, -1))
   # Return the confidence scores for each class
   class_probs = model.predict_proba(raw_sample).flatten()
 
-  # Create a list of zero probabilities for each class
-  prob_vector = [0]*num_classes
-
-  # Associate the predicted probabilities with the appropriate class
-  # The index of the class in predict_proba might not match the class label
-  predicted_class = model.predict(raw_sample)[0]
-  prob_vector[predicted_class] = class_probs.max()
-
-  return prob_vector
+  return class_probs
 #</Predict>
