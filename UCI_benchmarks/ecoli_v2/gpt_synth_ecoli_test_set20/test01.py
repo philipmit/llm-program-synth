@@ -22,17 +22,15 @@ import numpy as np
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import LabelBinarizer
 
 # Define features, X, and labels, y
 X = df.iloc[:, 1:-1]  # All rows, all columns except the first and the last one, first is an object and cannot be converted to float.
 y = df.iloc[:, -1]   # All rows, only the last column
 # replace strings with numbers in y
-lb = LabelBinarizer()
-y = lb.fit_transform(y)  
+y = y.replace(list(np.unique(y)), list(range(len(np.unique(y)))))
 
 X = X.to_numpy()
-# no need to transform y to numpy array since its a matrix not an array
+y = y.to_numpy()
 
 # Split the dataset into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
@@ -47,7 +45,7 @@ print(y_train[0:5])
 
 #<Train>
 ######## Train the model using the training data, X_train and y_train
-# Use multi_class='ovr' since its a multi-class classification problem and each label is one-hot encoded.
+# Use multi_class='ovr' since its a multi-class classification problem.
 model = LogisticRegression(max_iter=200, multi_class='ovr')
 model.fit(X_train, y_train)
 #</Train>
@@ -57,6 +55,6 @@ model.fit(X_train, y_train)
 def predict_label(raw_sample):
     # Standardize the raw_sample to match the data model was trained on
     raw_sample = sc.transform(raw_sample.reshape(1, -1))
-    # Return the class probabilities as a 2D matrix, with each row is probability for each class
-    return model.predict_proba(raw_sample)  
+    # Return the class probabilities as a 1D array
+    return model.predict_proba(raw_sample)[0]  
 #</Predict>
