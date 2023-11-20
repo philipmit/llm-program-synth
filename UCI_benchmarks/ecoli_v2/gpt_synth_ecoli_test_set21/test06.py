@@ -62,3 +62,13 @@ lr = LogisticRegression(max_iter=1000)
 # Fit the model to the training data
 lr.fit(X_train, y_train)
 #</Train>
+#<Predict>
+######## Define the predict_labels function that can be used to make new predictions using the trained model above given one sample from X_test
+def predict_label(sample):
+    # Transform the sample using Standard Scaler 'sc' used in training
+    sample = sc.transform([sample])
+    # Predict the labels
+    prediction = lr.predict_proba(sample)
+    return prediction
+### End your code
+#</Predict>
