@@ -13,9 +13,9 @@ for col in df.applymap(type).columns:
     print(col, df.applymap(type)[col].unique())
 print(df.isnull().sum())
 #</PrevData>
+
 #<PrepData>
 ######## Parse and prepare the dataset for training
-# It appears this file contains tab-separated data. Try again with appropriate options.
 col_names = ['Sequence Name', 'mcg', 'gvh', 'lip', 'chg', 'aac', 'alm1', 'alm2', 'Class'] # Adding column names
 df = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', delim_whitespace=True, names=col_names)
 # Preview dataset and datatypes after parsing
@@ -49,11 +49,13 @@ print(y_train.shape)
 print(X_train[0:5])
 print(y_train[0:5])
 #</PrepData>
+
 #<Train>
 ######## Train the model using the training data, X_train and y_train
 model = LogisticRegression(max_iter=1000) # Setting maximum iterations to a high value in order to ensure convergence in this case
 model.fit(X_train, y_train)
 #</Train>
+
 #<Eval>
 ######## Evaluate the model with the test data
 X_test = sc.transform(X_test) 
@@ -62,10 +64,10 @@ print('Model accuracy:', score)
 #</Eval>
 
 #<Predict>
-######## Define a function that can be used to make new predictions given one raw sample of data
-def predict_label(raw_sample):
-    # Standardize the raw_sample to match the data model was trained on
-    raw_sample = sc.transform(raw_sample.reshape(1, -1))
-    # Return the predicted class
-    return model.predict(raw_sample)[0]  
+######## When using this model in a separate script, make sure to define the `StandardScaler` object `sc`
+def predict_label(raw_sample, model=model, scaler=sc):
+    # Standardize the raw_sample with scaler to match the data the model was trained on
+    raw_sample = scaler.transform(raw_sample.reshape(1, -1))
+    # Return the predicted class and class probabilities 
+    return model.predict(raw_sample)[0], model.predict_proba(raw_sample)[0] 
 #</Predict>
