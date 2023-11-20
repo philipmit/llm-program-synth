@@ -4,7 +4,7 @@
 import pandas as pd
 
 # Read file
-df = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', header=None)
+df = pd.read_csv('/data/sls/scratch/pschro/p2/data/ECOLI_BENCHMARKS/ecoli/ecoli.data', header=None)
 
 # Preview dataset and datatypes
 print(df.shape)
@@ -27,18 +27,15 @@ from sklearn.metrics import roc_auc_score
 from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import StandardScaler
 
-ecoli = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', delim_whitespace=True, header=None)
+ecoli = pd.read_csv('/data/sls/scratch/pschro/p2/data/ECOLI_BENCHMARKS/ecoli/ecoli.data', delim_whitespace=True, header=None)
 ecoli.columns = ['Sequence Name', 'mcg', 'gvh', 'lip', 'chg', 'aac', 'alm1', 'alm2', 'class']
 
-X = ecoli.iloc[:, 1:-1]  
-y = ecoli.iloc[:, -1]  
+X = ecoli.iloc[:, 1:-1].values
+y = ecoli.iloc[:, -1].values
 
 # replace strings with numbers in y
 encoder = LabelEncoder()
 y = encoder.fit_transform(y)
-
-X=X.to_numpy()
-y=y.to_numpy()
 
 # Split the data
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
