@@ -1,5 +1,5 @@
 #<PrevData>
-######## Load and preview the dataset and datatypes
+######## Load, preview, and prepare the dataset and datatypes
 # Import necessary libraries
 import pandas as pd
 # Read file
@@ -12,10 +12,7 @@ print(df.dtypes)
 for col in df.applymap(type).columns:
     print(col, df.applymap(type)[col].unique())
 print(df.isnull().sum())
-#</PrevData>
 
-#<PrepData>
-######## Prepare the dataset for training
 # Import necessary packages
 import numpy as np
 from sklearn.model_selection import train_test_split
@@ -40,29 +37,25 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_
 # Scale the features 
 sc = StandardScaler()
 X_train = sc.fit_transform(X_train)
-
-# Reconvert y_train to binary form for the training.
-y_train = lb.transform(y_train)
-#</PrepData>
+#</PrevData>
 
 #<Train>
-######## Train the model using the training data, X_train and y_train
+######## Train the model using the training data, X_train, and y_train
 from sklearn.linear_model import LogisticRegression
-# Instantiate the model (using the multinomial and soft-max to allow multiclass classification)
-logreg = LogisticRegression(multi_class='multinomial', solver = 'lbfgs', random_state=42)
+# Instantiate the model (using the default parameters)
+logreg = LogisticRegression(random_state=42, multi_class='multinomial')
 # Fit the model with data
-logreg.fit(X_train, y_train)
+logreg.fit(X_train,y_train)
 #</Train>
 
 #<Predict>
-######## Define the predict_labels function that can be used to make new predictions using the trained model above given one raw sample of data
+######## Define the predict_labels function that can be used to make new predictions using the trained model given one raw sample of data
 def predict_label(sample):
-    # Reshape the sample for scikit-learn
+    # Reshape the sample for processing
     sample = np.array(sample).reshape(1, -1)
     # Scale the sample features
     sample = sc.transform(sample)
     # Use the trained model to predict the target
     predicted_prob = logreg.predict_proba(sample)
-    # Only the probabilities for the respective classes should be returned
     return predicted_prob[0]
 #</Predict>
