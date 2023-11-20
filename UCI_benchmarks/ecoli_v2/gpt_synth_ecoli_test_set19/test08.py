@@ -26,16 +26,12 @@ from sklearn.model_selection import train_test_split
 df = df.drop(columns=[0], axis=1) 
 
 # Define features, X, and labels, y
-X = df.iloc[:, :-1]  # All rows, all columns except the last one
-y = df.iloc[:, -1]   # All rows, only the last column
+X = df.iloc[:, :-1].values  # All rows, all columns except the last one
+y = df.iloc[:, -1].values   # All rows, only the last column
 
 # Encode labels to numerical value
 le = LabelEncoder()
 y = le.fit_transform(y)
-
-# Convert to numpy arrays for compatibility with sklearn right away
-X = X.to_numpy()
-y = y.to_numpy()
 
 # Split the dataset into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
