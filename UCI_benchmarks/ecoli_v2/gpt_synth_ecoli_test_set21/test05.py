@@ -58,5 +58,6 @@ def predict_label(sample):
     sample = sc.transform(sample)
     # Use the trained model to predict the target
     predicted_prob = logreg.predict_proba(sample)
-    return predicted_prob
+    # Only the probabilities for the respective classes should be returned
+    return predicted_prob[0]
 #</Predict>
