@@ -29,6 +29,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import roc_auc_score
 from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import LabelBinarizer
 
 ecoli = pd.read_csv(path_to_ecoli, delim_whitespace=True, header=None)
 ecoli.columns = ['Sequence Name', 'mcg', 'gvh', 'lip', 'chg', 'aac', 'alm1', 'alm2', 'class']
@@ -39,6 +40,10 @@ y = ecoli.iloc[:, -1].values
 # replace strings with numbers in y
 encoder = LabelEncoder()
 y = encoder.fit_transform(y)
+
+# one-hot encode y for multi-label classification
+lb = LabelBinarizer()
+y = lb.fit_transform(y)
 
 # Split the data
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
@@ -62,15 +67,16 @@ from sklearn.linear_model import LogisticRegression
 
 # Create an instance of LogisticRegression
 logreg = LogisticRegression(multi_class='ovr', solver='liblinear')
-
-# Fit the model with data
-logreg.fit(X_train, y_train)
+logreg.fit(X_train, y_train.argmax(axis=1))  # Fit only with the class max value
 #</Train>
 
 #<Predict>
 ######## Define the predict_labels function that can be used to make new predictions using the trained model above given one sample from X_test
 
 def predict_label(sample):
-    proba = logreg.predict_proba([sample])  # Get the probability of each class
-    return proba[0]  # Return the inner list only
+    proba = logreg.predict_proba([sample])  # Predict probability for each class
+    # Convert the probability to match with one-hot encoded labels
+    proba_binarized = np.zeros((proba.shape[0], len(lb.classes_)))
+    proba_binarized[np.arange(proba.shape[0]), proba.argmax(axis=1)] = 1
+    return proba_binarized[0]  # Return only the inner list
 #</Predict>
