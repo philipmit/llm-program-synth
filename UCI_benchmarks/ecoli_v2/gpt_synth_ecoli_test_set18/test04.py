@@ -46,13 +46,6 @@ model = LogisticRegression(max_iter=1000, multi_class='ovr') # Setting multi_cla
 model.fit(X_train, y_train)
 #</Train>
 
-#<Eval>
-######## Evaluate the model with the test data
-X_test = sc.transform(X_test) 
-score = model.score(X_test, y_test)
-print('Model accuracy:', score)
-#</Eval>
-
 #<Predict>
 ######## When using this model in a separate script, make sure to define the `StandardScaler` object `sc`
 def predict_label(raw_sample, model=model, scaler=sc, np=np): 
@@ -60,6 +53,7 @@ def predict_label(raw_sample, model=model, scaler=sc, np=np):
   raw_sample = scaler.transform(np.array(raw_sample).reshape(1, -1))
   # Return the confidence scores for each class
   class_probs = model.predict_proba(raw_sample).flatten()
-
-  return class_probs
+  # Extend the predictions to match the number of classes in the data
+  extended_probs = list(class_probs) + [0] * (8 - len(class_probs))
+  return extended_probs
 #</Predict>
