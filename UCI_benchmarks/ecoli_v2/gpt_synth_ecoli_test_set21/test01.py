@@ -43,38 +43,24 @@ print(y_train[0:5])
 
 #<Train>
 ######## Train the model using the training data, X_train and y_train
-### Start your code
-### End your code
-#</Train>
-
-#<Predict>
-######## Define the predict_labels function that can be used to make new predictions using the trained model above given one raw sample of data
-### Start your code
-### End your code
-#</Predict>
-
-
-#<Train>
-######## Train the model using the training data, X_train and y_train
 # Import necessary libraries
 from sklearn.linear_model import LogisticRegression
 # Create a logistic regression model
 logreg = LogisticRegression(solver='liblinear', multi_class='ovr')
 # Train the model
 logreg.fit(X_train, y_train)
-### End your code
 #</Train>
+
 #<Predict>
 ######## Define the predict_labels function that can be used to make new predictions using the trained model above given one raw sample of data
 
 def predict_label(raw_sample):
-    # Assuming raw_sample is a pandas DataFrame
+    # Note: Considering raw_sample as an array, thus removing 'iloc'
     # Prepare the sample
-    sample = raw_sample.iloc[1:-1]  # all columns except the first and last one
+    sample = raw_sample[1:-1]  
     # Scale the sample
-    sample = sc.transform(sample)
+    sample = sc.transform([sample])
     # Predict the probability
     pred_proba = logreg.predict_proba(sample)
     return pred_proba
-### End your code
 #</Predict>
