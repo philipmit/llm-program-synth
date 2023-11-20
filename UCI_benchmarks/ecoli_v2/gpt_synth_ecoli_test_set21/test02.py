@@ -62,3 +62,15 @@ log_reg = LogisticRegression(random_state=0, multi_class='ovr', n_jobs=-1)
 # Fit the model
 log_reg.fit(X_train, y_train)
 #</Train>
+#<Predict>
+######## Define the predict_label function that can be used to make new predictions using the trained model above given one raw sample of data
+def predict_label(raw_data):
+    # First, we'll process the raw_data to match the training data format
+    # Assuming that raw_data is a single record and includes all the input features excluding the 'Sequence Name' and 'class'
+    processed_data = sc.transform(raw_data.reshape(1, -1))
+
+    # Predict the probability of each class
+    pred_probs = log_reg.predict_proba(processed_data)
+
+    return pred_probs
+#</Predict>
