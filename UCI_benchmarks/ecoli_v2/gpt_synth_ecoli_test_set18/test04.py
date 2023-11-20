@@ -49,3 +49,8 @@ print(y_train.shape)
 print(X_train[0:5])
 print(y_train[0:5])
 #</PrepData>
+#<Train>
+######## Train the model using the training data, X_train and y_train
+model = LogisticRegression(max_iter=1000) # Setting maximum iterations to a high value in order to ensure convergence in this case
+model.fit(X_train, y_train)
+#</Train>
