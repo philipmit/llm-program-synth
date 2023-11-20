@@ -3,8 +3,11 @@
 # Import necessary libraries
 import pandas as pd
 
+# This is a dummy path, replace it with your actual path
+path_to_ecoli = "/YOUR_PATH/ecoli.data"
+
 # Read file
-df = pd.read_csv('/data/sls/scratch/pschro/p2/data/ECOLI_BENCHMARKS/ecoli/ecoli.data', header=None)
+df = pd.read_csv(path_to_ecoli, header=None, delim_whitespace=True)
 
 # Preview dataset and datatypes
 print(df.shape)
@@ -27,7 +30,7 @@ from sklearn.metrics import roc_auc_score
 from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import StandardScaler
 
-ecoli = pd.read_csv('/data/sls/scratch/pschro/p2/data/ECOLI_BENCHMARKS/ecoli/ecoli.data', delim_whitespace=True, header=None)
+ecoli = pd.read_csv(path_to_ecoli, delim_whitespace=True, header=None)
 ecoli.columns = ['Sequence Name', 'mcg', 'gvh', 'lip', 'chg', 'aac', 'alm1', 'alm2', 'class']
 
 X = ecoli.iloc[:, 1:-1].values
