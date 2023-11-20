@@ -2,8 +2,9 @@
 ######## Load and preview the dataset and datatypes
 # Import necessary libraries
 import pandas as pd
+import io
 # Read file
-df = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', header=None)
+df = pd.read_csv(io.BytesIO(uploaded['Ecoli.csv']))
 # Preview dataset and datatypes
 print(df.shape)
 print(df.head())
