@@ -46,7 +46,7 @@ X_train = sc.transform(X_train) # then transform the training data
 from sklearn.multiclass import OneVsRestClassifier
 
 # Instantiate the logistic regression classifier with "ovr" setting for multiclass classification
-lr = LogisticRegression(solver='lbfgs', multi_class='ovr')
+lr = OneVsRestClassifier(LogisticRegression(solver='lbfgs'))
 
 # Fit the model
 lr.fit(X_train, y_train)
@@ -55,8 +55,11 @@ lr.fit(X_train, y_train)
 #<Predict>
 ######## Define a function that can be used to make new predictions given one raw sample of data
 def predict_label(raw_sample):
+    # We need to ensure that the input raw_sample is 2D
+    if raw_sample.ndim == 1:
+        raw_sample = raw_sample.reshape(1, -1)
     # Standardize the raw_sample to match the data model was trained on
-    raw_sample = sc.transform(raw_sample.reshape(1, -1))
-    probabilities = lr.predict_proba(raw_sample)[0]
+    raw_sample = sc.transform(raw_sample)
+    probabilities = lr.predict_proba(raw_sample)
     return probabilities
 #</Predict>
