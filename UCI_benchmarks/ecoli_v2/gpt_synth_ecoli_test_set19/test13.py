@@ -43,3 +43,11 @@ print(y_train[0:5])
 model = LogisticRegression()
 model.fit(X_train, y_train)
 #</Train>
+#<Predict>
+######## Define a function that can be used to make new predictions given one raw sample of data
+def predict_label(raw_sample):
+    # Standardize the raw_sample to match the data model was trained on
+    raw_sample = sc.transform(raw_sample.reshape(1, -1))
+    # Return the class probabilities as a 1D array
+    return model.predict_proba(raw_sample)[0]  
+#</Predict>
