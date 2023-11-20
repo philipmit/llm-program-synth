@@ -47,5 +47,5 @@ def predict_label(raw_sample):
     if len(raw_sample.shape) == 1:
         raw_sample = raw_sample.reshape(1, -1)
     raw_sample = sc.transform(raw_sample)
-    return lr.predict_proba(raw_sample)
+    return lr.predict_proba(raw_sample)[0]  # Corrected this line to return 1D array instead of 2D
 #</Predict>
