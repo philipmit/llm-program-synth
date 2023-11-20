@@ -41,3 +41,27 @@ print(y_train[0:5])
 model = LogisticRegression(multi_class='multinomial', max_iter=10000)
 model.fit(X_train, y_train)
 #</Train>
+#<Test>
+######## Validate the model using the testing data, X_test and y_test
+X_test = sc.transform(X_test)
+y_pred = model.predict(X_test)
+#</Test>
+
+#<Evaluate>
+######## Evaluate the model using accuracy and confusion matrix
+from sklearn.metrics import accuracy_score, confusion_matrix
+accuracy = accuracy_score(y_test, y_pred)
+cm = confusion_matrix(y_test, y_pred)
+
+print('Accuracy: ', accuracy)
+print('Confusion Matrix: \n', cm)
+#</Evaluate>
+
+#<Predict>
+######## Define a function that can be used to make new predictions given one raw sample of data
+def predict_label(raw_sample):
+    # Standardize the raw_sample to match the data model was trained on
+    raw_sample = sc.transform(raw_sample.reshape(1, -1))
+    # Return the class probabilities as a 1D array
+    return model.predict_proba(raw_sample)[0]   
+#</Predict>
