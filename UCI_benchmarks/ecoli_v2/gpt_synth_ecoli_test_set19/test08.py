@@ -49,3 +49,21 @@ print(y_train[0:5])
 model = LogisticRegression()
 model.fit(X_train, y_train)
 #</Train>
+#<Test>
+######## Test the model on unseen data, X_test and evaluate its performance
+from sklearn.metrics import classification_report
+# Scale the test data
+X_test = sc.transform(X_test)
+y_pred = model.predict(X_test)
+# Output precision, recall, f1-score, and accuracy
+print(classification_report(y_test, y_pred))
+#<Test>
+
+#<Predict>
+######## Define a function that can be used to make new predictions given one raw sample of data
+def predict_label(raw_sample):
+    # Standardize the raw_sample to match the data model was trained on
+    raw_sample = sc.transform(raw_sample.reshape(1, -1))
+    # Return the predicted label
+    return le.inverse_transform(model.predict(raw_sample))[0]  
+#</Predict>
