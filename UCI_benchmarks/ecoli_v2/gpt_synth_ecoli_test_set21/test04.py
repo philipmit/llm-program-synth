@@ -65,3 +65,18 @@ logistic_model = LogisticRegression(multi_class="ovr", solver="liblinear")
 # Fit the model on the training data
 logistic_model.fit(X_train, y_train)
 #</Train>
+#<Predict>
+######## Define the predict_labels function that can be used to make new predictions using the trained model above given one raw sample of data
+def predict_label(raw_data):
+    # Clean and preprocess the data similar to what was done on the ecoli data
+    # Assume that similar preprocessing steps are needed as inferred from the earlier part of the script
+    
+    raw_data = raw_data[1:-1]  # remove the 'Sequence Name' and 'class' columns
+    raw_data = np.array(raw_data).reshape(1, -1)  # reshape to a 2D array
+    raw_data = sc.transform(raw_data)  # standardize the features
+    
+    # Use the logistic model to predict the label
+    predicted_probability = logistic_model.predict_proba(raw_data)
+    
+    return predicted_probability
+#</Predict>
