@@ -30,8 +30,6 @@ y = df.iloc[:,-1]    # All rows, only the last column
 # encode y
 le=LabelEncoder()
 y=le.fit_transform(y)
-X=X.to_numpy()
-y=y.to_numpy()
 # Split the dataset into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
 # Scale the features 
@@ -52,7 +50,7 @@ model.fit(X_train, y_train)
 
 #<Predict>
 ######## Define a function that can be used to make new predictions given one raw sample of data
-def predict_label(raw_sample, scaler, model):
+def predict_label(raw_sample, scaler=scaler, model=model):
     # Standardize the raw_sample to match the data model was trained on
     raw_sample = scaler.transform([raw_sample])
     # Return the class probabilities as a 1D array
