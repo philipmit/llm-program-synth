@@ -20,7 +20,6 @@ df = df[0].str.split(expand=True)
 # Define features, X, and labels, y
 X = df.iloc[:, 1:-1]  # All rows, all columns except the first and last one
 y = df.iloc[:, -1]   # All rows, only the last column
-
 # To make sure that the labels y are integers, map the unique label values to integers
 mapping = {label: idx for idx, label in enumerate(y.unique())}
 y = y.replace(mapping)
@@ -62,12 +61,11 @@ from sklearn.metrics import accuracy_score
 accuracy = accuracy_score(y_test, y_pred)
 print(f'Model accuracy: {accuracy}')
 #</Eval>
-
 #<Predict>
 ######## Define a function that can be used to make new predictions given one raw sample of data
 def predict_label(raw_sample):
     # Standardize the raw_sample to match the data model was trained on
     raw_sample = sc.transform(raw_sample.reshape(1, -1))
     # Return the label with the highest probability
-    return model.predict(raw_sample)[0]  
+    return model.predict(raw_sample)  # Changed this line, earlier it was returning only the label, and not as an iterable 
 #</Predict>
