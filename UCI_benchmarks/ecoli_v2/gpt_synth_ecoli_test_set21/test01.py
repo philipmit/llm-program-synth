@@ -64,3 +64,17 @@ logreg = LogisticRegression(solver='liblinear', multi_class='ovr')
 logreg.fit(X_train, y_train)
 ### End your code
 #</Train>
+#<Predict>
+######## Define the predict_labels function that can be used to make new predictions using the trained model above given one raw sample of data
+
+def predict_label(raw_sample):
+    # Assuming raw_sample is a pandas DataFrame
+    # Prepare the sample
+    sample = raw_sample.iloc[1:-1]  # all columns except the first and last one
+    # Scale the sample
+    sample = sc.transform(sample)
+    # Predict the probability
+    pred_proba = logreg.predict_proba(sample)
+    return pred_proba
+### End your code
+#</Predict>
