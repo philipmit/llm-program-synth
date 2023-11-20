@@ -3,7 +3,7 @@
 # Import necessary libraries
 import pandas as pd
 # Read file
-df = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', header=None)
+df = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', header=None, delim_whitespace=True)
 # Preview dataset and datatypes
 print(df.shape)
 print(df.head())
@@ -13,10 +13,9 @@ for col in df.applymap(type).columns:
     print(col, df.applymap(type)[col].unique())
 print(df.isnull().sum())
 #</PrevData>
+
 #<PrepData>
 ######## Prepare the dataset for training
-# Split the data into different columns
-df = df[0].str.split(expand=True)
 # Define features, X, and labels, y
 X = df.iloc[:, 1:-1]  # All rows, all columns except the first and last one
 y = df.iloc[:, -1]   # All rows, only the last column
@@ -46,11 +45,13 @@ print(y_train.shape)
 print(X_train[0:5])
 print(y_train[0:5])
 #</PrepData>
+
 #<Train>
 ######## Train the model using the training data, X_train and y_train
 model = LogisticRegression()
 model.fit(X_train, y_train)
 #</Train>
+
 #<Eval>
 ######## Evaluate the model using the test data, X_test and y_test
 X_test = sc.transform(X_test)  # Scale the test dataset
@@ -61,11 +62,12 @@ from sklearn.metrics import accuracy_score
 accuracy = accuracy_score(y_test, y_pred)
 print(f'Model accuracy: {accuracy}')
 #</Eval>
+
 #<Predict>
 ######## Define a function that can be used to make new predictions given one raw sample of data
 def predict_label(raw_sample):
     # Standardize the raw_sample to match the data model was trained on
     raw_sample = sc.transform(raw_sample.reshape(1, -1))
-    # Return the label with the highest probability
-    return model.predict(raw_sample)  # Changed this line, earlier it was returning only the label, and not as an iterable 
+    # Return the class probabilities as a 1D array
+    return model.predict_proba(raw_sample)[0]  
 #</Predict>
