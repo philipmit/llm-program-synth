@@ -32,6 +32,7 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_
 # Scale the features 
 sc = StandardScaler()
 X_train = sc.fit_transform(X_train)
+X_test = sc.transform(X_test)
 print(X_train.shape)
 print(y_train.shape)
 print(X_train[0:5])
@@ -44,12 +45,12 @@ model.fit(X_train, y_train)
 #</Train>
 #<Predict>
 ######## Define a function that can be used to make new predictions given one raw sample of data
-def predict_label(raw_sample):
+def predict_label(raw_sample, sc, model):
     # Standardize the raw_sample to match the data model was trained on
     raw_sample = sc.transform(raw_sample.reshape(1, -1))
     # Return the class probabilities as a 1D array
     return model.predict_proba(raw_sample)[0]
 # Use the predict_label function to predict the label of the first 5 records in the test dataset
 for i in range(5):
-  print(f"Test record {i+1}: {predict_label(X_test[i])}")
+  print(f"Test record {i+1}: {predict_label(X_test[i], sc, model)}")
 #</Predict>
