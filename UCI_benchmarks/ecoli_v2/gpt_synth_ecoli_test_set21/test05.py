@@ -24,12 +24,12 @@ ecoli.columns = ['Sequence Name', 'mcg', 'gvh', 'lip', 'chg', 'aac', 'alm1', 'al
 X = ecoli.iloc[:, 1:-1]
 y = ecoli.iloc[:, -1]
 
-# Convert categorical labels to one-hot-encoding
-lb = LabelBinarizer()
-y = lb.fit_transform(y)
+# Convert categorical labels to numerical labels using LabelEncoder
+from sklearn.preprocessing import LabelEncoder 
+le = LabelEncoder() 
+y= le.fit_transform(y)
 
 X=X.to_numpy()
-y=np.argmax(y, axis=1)
 
 # Split the data
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
@@ -37,6 +37,7 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_
 # Scale the features 
 sc = StandardScaler()
 X_train = sc.fit_transform(X_train)
+X_test = sc.transform(X_test)
 #</PrevData>
 
 #<Train>
