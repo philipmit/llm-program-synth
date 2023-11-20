@@ -54,3 +54,18 @@ print(y_train[0:5])
 model = LogisticRegression(max_iter=1000) # Setting maximum iterations to a high value in order to ensure convergence in this case
 model.fit(X_train, y_train)
 #</Train>
+#<Eval>
+######## Evaluate the model with the test data
+X_test = sc.transform(X_test) 
+score = model.score(X_test, y_test)
+print('Model accuracy:', score)
+#</Eval>
+
+#<Predict>
+######## Define a function that can be used to make new predictions given one raw sample of data
+def predict_label(raw_sample):
+    # Standardize the raw_sample to match the data model was trained on
+    raw_sample = sc.transform(raw_sample.reshape(1, -1))
+    # Return the predicted class
+    return model.predict(raw_sample)[0]  
+#</Predict>
