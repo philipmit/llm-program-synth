@@ -52,3 +52,22 @@ print(y_train[0:5])
 model = LogisticRegression()
 model.fit(X_train, y_train)
 #</Train>
+#<Eval>
+######## Evaluate the model using the test data, X_test and y_test
+X_test = sc.transform(X_test)  # Scale the test dataset
+y_pred = model.predict(X_test)  # Make predictions using the model
+# Import the necessary library
+from sklearn.metrics import accuracy_score
+# Calculate and print the accuracy score
+accuracy = accuracy_score(y_test, y_pred)
+print(f'Model accuracy: {accuracy}')
+#</Eval>
+
+#<Predict>
+######## Define a function that can be used to make new predictions given one raw sample of data
+def predict_label(raw_sample):
+    # Standardize the raw_sample to match the data model was trained on
+    raw_sample = sc.transform(raw_sample.reshape(1, -1))
+    # Return the label with the highest probability
+    return model.predict(raw_sample)[0]  
+#</Predict>
