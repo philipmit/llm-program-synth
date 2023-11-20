@@ -21,6 +21,13 @@ from sklearn.model_selection import train_test_split
 
 X = df.iloc[:, 1:-1].values  # All rows, all columns except the first and last one
 y = df.iloc[:, -1].values   # All rows, only the last column
+
+# replace strings with numbers in y
+np.unique(y)
+len(list(np.unique(y)))
+y = y.replace(list(np.unique(y)), [0,1,2,3,4,5,6,7])
+
+# Perform label encoding
 le = LabelEncoder()
 y = le.fit_transform(y)
 
@@ -37,8 +44,8 @@ X_train = sc.fit_transform(X_train)
 from sklearn.multiclass import OneVsRestClassifier
 
 # Create an instance of Logistic Regression Classifier and fit the data.
-lr = OneVsRestClassifier(LogisticRegression(solver='lbfgs'))
-lr.fit(X_train, y_train)
+model = OneVsRestClassifier(LogisticRegression(solver='lbfgs'))
+model.fit(X_train, y_train)
 #</Train>
 
 #<Predict>
@@ -47,5 +54,5 @@ def predict_label(raw_sample):
     if len(raw_sample.shape) == 1:
         raw_sample = raw_sample.reshape(1, -1)
     raw_sample = sc.transform(raw_sample)
-    return lr.predict_proba(raw_sample)[0]  # Corrected this line to return 1D array instead of 2D
+    return model.predict_proba(raw_sample)[0]  # Corrected this line to return 1D array instead of 2D
 #</Predict>
