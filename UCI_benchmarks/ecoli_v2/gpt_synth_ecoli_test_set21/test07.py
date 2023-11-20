@@ -63,3 +63,11 @@ logreg = LogisticRegression(multi_class='ovr', solver='liblinear')
 # Fit the model with data
 logreg.fit(X_train, y_train)
 #</Train>
+#<Predict>
+######## Define the predict_labels function that can be used to make new predictions using the trained model above given one sample from X_test
+def predict_label(sample):
+    sample = sc.transform([sample])  # Scale the sample
+    proba = logreg.predict_proba(sample)  # Get the probability of each class
+    return proba
+### End your code
+#</Predict>
