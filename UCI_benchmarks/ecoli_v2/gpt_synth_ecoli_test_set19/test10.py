@@ -3,7 +3,7 @@
 # Import necessary libraries
 import pandas as pd
 # Read file
-df = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', header=None)
+df = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', header=None, sep='\s+', names=["name","mcg","gvh","lip","chg","aac","alm1","alm2","class"])
 # Preview dataset and datatypes
 print(df.shape)
 print(df.head())
@@ -20,9 +20,6 @@ import numpy as np
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
-
-# Split data into separate rows
-df = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', header=None, sep='\s+', names=["name","mcg","gvh","lip","chg","aac","alm1","alm2","class"])
 
 # Remove name column
 df.drop(['name'], axis=1, inplace=True)
@@ -43,21 +40,24 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_
 sc = StandardScaler()
 X_train = sc.fit_transform(X_train)
 
-print(X_train.shape)
-print(y_train.shape)
-print(X_train[0:5])
-print(y_train[0:5])
+# Scale the testing data
+X_test = sc.transform(X_test)
+
+# End of PrepData
 #</PrepData>
-#<Train>
+
 ######## Train the model using the training data, X_train and y_train
+#<Train>
 model = LogisticRegression()
 model.fit(X_train, y_train)
 #</Train>
-#<Predict>
+
 ######## Define a function that can be used to make new predictions given one raw sample of data
+#<Predict>
 def predict_label(raw_sample):
+    # Use 'sc' and 'model' defined in PrepData and Train
     # Standardize the raw_sample to match the data model was trained on
     raw_sample = sc.transform(raw_sample.reshape(1, -1))
-    # Return the class
-    return le.inverse_transform(model.predict(raw_sample))[0]  
+    # Return model's prediction probabilities as a 1D array
+    return model.predict_proba(raw_sample)[0]
 #</Predict>
