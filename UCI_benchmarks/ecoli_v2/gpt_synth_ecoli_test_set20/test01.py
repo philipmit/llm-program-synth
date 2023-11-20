@@ -3,7 +3,7 @@
 # Import necessary libraries
 import pandas as pd
 # Read file
-df = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', header=None)
+df = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', header=None, sep="\s+")
 # Preview dataset and datatypes
 print(df.shape)
 print(df.head())
@@ -21,14 +21,8 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 
-# The data appears to be space separated. Let's parse it before getting into training.
-df = df[0].str.split(expand=True)
-df.columns = range(df.shape[1])
-print(df.head())
-print(df.info())
-
 # Define features, X, and labels, y
-X = df.iloc[:, :-1]  # All rows, all columns except the last one
+X = df.iloc[:, 1:-1]  # All rows, all columns except the first and the last one, first is an object and cannot be converted to float.
 y = df.iloc[:, -1]   # All rows, only the last column
 # Label encoding if necessary
 if y.dtype == object:
