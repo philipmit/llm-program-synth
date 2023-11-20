@@ -33,11 +33,9 @@ y = y.to_numpy()
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
 # Scale the features 
 sc = StandardScaler()
-X_train = sc.fit_transform(X_train)
-print(X_train.shape)
-print(y_train.shape)
-print(X_train[0:5])
-print(y_train[0:5])
+sc.fit(X_train) # Fit the scaler using train dataset only. The same scaler will be used for test dataset
+X_train = sc.transform(X_train)
+X_test = sc.transform(X_test) # Using the same scaler to transform the test dataset
 #</PrepData>
 
 #<Train>
@@ -51,8 +49,23 @@ model.fit(X_train, y_train)
 def predict_label(raw_sample, model=model, scaler=sc, np=np):
   # Standardize the raw_sample with scaler to match the data the model was trained on
   raw_sample = scaler.transform(np.array(raw_sample).reshape(1, -1))
-  # Extend the predictions to match the number of classes in the data
-  class_probs = model.predict_proba(raw_sample).flatten()
-  extended_probs = list(class_probs) + [0] * (8 - len(class_probs)) 
-  return extended_probs  
+  # Return the label prediction
+  return model.predict(raw_sample)[0]  
+
+# To get class probabilities for QLabel
+def predict_proba(raw_sample, model=model, scaler=sc, np=np):
+  # Standardize the raw_sample with scaler to match the data the model was trained on
+  raw_sample = scaler.transform(np.array(raw_sample).reshape(1, -1))
+  # Return the class probabilities as a 1D array
+  return model.predict_proba(raw_sample)[0]  
+
+# Modify the predict_label function to use 'predict_proba' function for correct outputs
+def predict_label_new(raw_sample):
+  # Get class probabilities from the 'predict_proba' function
+  class_probs = predict_proba(raw_sample)
+  # Get the class label for the maximum probability
+  class_label = np.argmax(class_probs)
+  return class_label
+ 
+print('Validation Code can be executed now')
 #</Predict>
