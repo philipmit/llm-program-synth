@@ -70,7 +70,7 @@ print('Model accuracy:', score)
 import numpy as np
 def predict_label(raw_sample, model=model, scaler=sc, num_classes=num_classes):
   # Standardize the raw_sample with scaler to match the data the model was trained on
-  raw_sample = scaler.transform(raw_sample.reshape(1, -1))
+  raw_sample = scaler.transform(np.array(raw_sample).reshape(1, -1))
   # Return the confidence scores for each class
   class_probs = model.predict_proba(raw_sample).flatten()
 
