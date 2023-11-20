@@ -49,3 +49,14 @@ logreg = LogisticRegression(random_state=42)
 # fit the model with data
 logreg.fit(X_train, y_train)
 #</Train>
+#<Predict>
+######## Define the predict_labels function that can be used to make new predictions using the trained model above given one raw sample of data
+def predict_label(sample):
+    # Reshape the sample for scikit-learn
+    sample = np.array(sample).reshape(1, -1)
+    # Scale the sample features
+    sample = sc.fit_transform(sample)
+    # Use the trained model to predict the target
+    predicted_prob = logreg.predict_proba(sample)
+    return predicted_prob
+#</Predict>
