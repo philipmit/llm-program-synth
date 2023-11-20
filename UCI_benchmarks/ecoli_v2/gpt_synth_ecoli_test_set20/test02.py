@@ -42,11 +42,10 @@ lr.fit(X_train, y_train)
 #</Train>
 
 #<Predict>
-# Define a function that can be used to make new predictions given one raw sample of data
+# Corrected predict_label function to handle single sample or multiple samples
 def predict_label(raw_sample):
     if len(raw_sample.shape) == 1:
         raw_sample = raw_sample.reshape(1, -1)
     raw_sample = sc.transform(raw_sample)
-    prediction = lr.predict_proba(raw_sample)[0] 
-    return prediction
+    return lr.predict_proba(raw_sample)
 #</Predict>
