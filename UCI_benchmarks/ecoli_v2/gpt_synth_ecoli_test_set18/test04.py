@@ -49,23 +49,10 @@ model.fit(X_train, y_train)
 def predict_label(raw_sample, model=model, scaler=sc, np=np):
   # Standardize the raw_sample with scaler to match the data the model was trained on
   raw_sample = scaler.transform(np.array(raw_sample).reshape(1, -1))
+  
+  # Get the label prediction. Use predict_proba method to get probabilities first then argmax 
+  label_prediction = np.argmax(model.predict_proba(raw_sample), axis=1)
+
   # Return the label prediction
-  return model.predict(raw_sample)[0]  
-
-# To get class probabilities for QLabel
-def predict_proba(raw_sample, model=model, scaler=sc, np=np):
-  # Standardize the raw_sample with scaler to match the data the model was trained on
-  raw_sample = scaler.transform(np.array(raw_sample).reshape(1, -1))
-  # Return the class probabilities as a 1D array
-  return model.predict_proba(raw_sample)[0]  
-
-# Modify the predict_label function to use 'predict_proba' function for correct outputs
-def predict_label_new(raw_sample):
-  # Get class probabilities from the 'predict_proba' function
-  class_probs = predict_proba(raw_sample)
-  # Get the class label for the maximum probability
-  class_label = np.argmax(class_probs)
-  return class_label
- 
-print('Validation Code can be executed now')
+  return label_prediction
 #</Predict>
