@@ -22,7 +22,7 @@ import numpy as np
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
-from keras.utils import to_categorical
+from sklearn import utils
 
 # Define features, X, and labels, y
 X = df.iloc[:, 1:-1]  # All rows, all columns except the first and last one
@@ -31,11 +31,9 @@ y = df.iloc[:, -1]   # All rows, only the last column
 le = preprocessing.LabelEncoder()
 y = le.fit_transform(y)
 mapping = dict(zip(le.classes_, le.transform(le.classes_)))
+# Ensure data type consistency
+X, y = utils.check_X_y(X, y, force_all_finite=False, ensure_2d=True, allow_nd=True, multi_output=True, ensure_min_samples=1, ensure_min_features=1)
 
-X = X.to_numpy()
-y = to_categorical(y) #one-hot encoding of y labels for multi-class classification
-
-# Split the dataset into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
 # Scale the features 
 sc = StandardScaler()
@@ -49,9 +47,11 @@ print(y_train[0:5])
 
 #<Train>
 ######## Train the model using the training data, X_train and y_train
-model = LogisticRegression()
-for i in range(y_train.shape[1]): #loop over each class and train a model for each class
-    model.fit(X_train, y_train[:,i])
+models = [] #list to hold models for each class
+for i in range(len(np.unique(y_train))): #loop over each class and train a model for each class
+    model = LogisticRegression()
+    model.fit(X_train, y_train==i) #train model to distinguish class i from rest
+    models.append(model)
 #</Train>
 
 #<Predict>
@@ -59,9 +59,8 @@ for i in range(y_train.shape[1]): #loop over each class and train a model for ea
 def predict_label(raw_sample):
     # Standardize the raw_sample to match the data model was trained on
     raw_sample = sc.transform(raw_sample.reshape(1, -1))
-    # Return the class probabilities as a 1D array
     predictions = []
-    for i in range(y_train.shape[1]): #loop over each class and get prediction for each class
+    for model in models: #loop over each class and get prediction for each class
         predictions.append(model.predict_proba(raw_sample)[0][1])
     return np.array(predictions)  
 #</Predict>
