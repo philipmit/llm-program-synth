@@ -43,22 +43,9 @@ print(y_train[0:5])
 
 #<Train>
 ######## Train the model using the training data, X_train and y_train
-### Start your code
-### End your code
-#</Train>
-
-#<Predict>
-######## Define the predict_labels function that can be used to make new predictions using the trained model above given one raw sample of data
-### Start your code
-### End your code
-#</Predict>
-
-
-<Train>
 from sklearn.linear_model import LogisticRegression
 # instantiate the model (using the default parameters)
 logreg = LogisticRegression(random_state=42)
-
 # fit the model with data
 logreg.fit(X_train, y_train)
-</Train>
+#</Train>
