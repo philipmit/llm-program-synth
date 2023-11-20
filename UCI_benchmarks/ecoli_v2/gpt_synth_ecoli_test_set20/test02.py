@@ -46,13 +46,10 @@ X_train = sc.transform(X_train) # then transform the training data
 from sklearn.multiclass import OneVsRestClassifier
 
 # Instantiate the LogisticRegression object
-lr = LogisticRegression()
-
-# Wrap the model in the OneVsRestClassifier
-model = OneVsRestClassifier(lr)
+lr = LogisticRegression(solver='lbfgs', multi_class='multinomial')
 
 # Fit the model
-model.fit(X_train, y_train)
+lr.fit(X_train, y_train)
 #</Train>
 
 #<Predict>
@@ -60,6 +57,15 @@ model.fit(X_train, y_train)
 def predict_label(raw_sample):
     # Standardize the raw_sample to match the data model was trained on
     raw_sample = sc.transform(raw_sample.reshape(1, -1))
-    # Return the class probabilities as a 1D array
-    return model.predict_proba(raw_sample)[0]
+    # since 'lbfgs' and 'multinomial' are used for one-vs-the-rest (OvR) scheme, 
+    # we need to use classes_.shape[0] against the length of the unique labels to ensure correct classification
+    if le.classes_.shape[0] == len(np.unique(y)):
+      return lr.predict_proba(raw_sample)[0]
+    else: # if unique elements are less than total classes
+      probabilities = list(lr.predict_proba(raw_sample)[0])
+      difference = le.classes_.shape[0] - len(np.unique(y))
+      for _ in range(difference): 
+        probabilities.append(0.0) 
+      # Return the class probabilities as a 1D array
+      return probabilities
 #</Predict>
