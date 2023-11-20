@@ -4,7 +4,7 @@
 import pandas as pd
 
 # This is a dummy path, replace it with your actual path
-path_to_ecoli = "/YOUR_PATH/ecoli.data"
+path_to_ecoli = "/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data"
 
 # Read file
 df = pd.read_csv(path_to_ecoli, header=None, delim_whitespace=True)
