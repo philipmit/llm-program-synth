@@ -9,13 +9,13 @@ print(df.shape)
 print(df.head())
 print(df.info())
 print(df.dtypes)
-for col in df.applymap(type).columns:
-    print(col, df.applymap(type)[col].unique())
+for col in df.applymap(type).apply(pd.value_counts).idxmax(axis=0):
+    print(col, type(df[col].loc[0]))
 print(df.isnull().sum())
 #</PrevData>
 
 #<PrepData>
-######## Parse and prepare the dataset for training
+######## Prepare the dataset for training
 col_names = ['Sequence Name', 'mcg', 'gvh', 'lip', 'chg', 'aac', 'alm1', 'alm2', 'Class'] # Adding column names
 df = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', delim_whitespace=True, names=col_names)
 # Import necessary packages
@@ -24,7 +24,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 # Define features, X, and labels, y
-X = df.iloc[:, 1:-1]  # All rows, all columns except the sequence name and the last one
+X = df.iloc[:, 1:-1]  # All rows, all columns except the Sequence Name and the last one
 y = df.iloc[:, -1]   # All rows, only the last column
 y = y.replace(list(np.unique(y)), list(range(len(np.unique(y)))))
 X=X.to_numpy()
@@ -48,12 +48,11 @@ model.fit(X_train, y_train)
 
 #<Predict>
 ######## When using this model in a separate script, make sure to define the `StandardScaler` object `sc`
-def predict_label(raw_sample, model=model, scaler=sc, np=np): 
+def predict_label(raw_sample, model=model, scaler=sc, np=np):
   # Standardize the raw_sample with scaler to match the data the model was trained on
   raw_sample = scaler.transform(np.array(raw_sample).reshape(1, -1))
-  # Return the confidence scores for each class
-  class_probs = model.predict_proba(raw_sample).flatten()
   # Extend the predictions to match the number of classes in the data
+  class_probs = model.predict_proba(raw_sample).flatten()
   extended_probs = list(class_probs) + [0] * (8 - len(class_probs))
   return extended_probs
 #</Predict>
