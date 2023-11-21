@@ -20,15 +20,14 @@ print(df.isnull().sum())
 import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import roc_auc_score
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import LabelBinarizer, StandardScaler
 ecoli = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', delim_whitespace=True, header=None)
 ecoli.columns = ['Sequence Name', 'mcg', 'gvh', 'lip', 'chg', 'aac', 'alm1', 'alm2', 'class']
-X = ecoli.iloc[:, 1:-1]  
-y = ecoli.iloc[:, -1]  
-# replace strings with numbers in y
-np.unique( y)
-len(list(np.unique( y)))
-y = y.replace(list(np.unique(y)), [0,1,2,3,4,5,6,7])
+X = ecoli.iloc[:, 1:-1]
+y = ecoli.iloc[:, -1]
+# Encode the labels
+label_binarizer = LabelBinarizer()
+y = label_binarizer.fit_transform(y)
 X=X.to_numpy()
 y=y.to_numpy()
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
@@ -47,7 +46,7 @@ print(y_train[0:5])
 ######## Train the model using the training data, X_train and y_train
 from sklearn.linear_model import LogisticRegression
 # Initialize the model
-LR = LogisticRegression(random_state=0, multi_class='ovr', solver='lbfgs')
+LR = LogisticRegression(random_state=0, multi_class='ovr', max_iter=1000)
 # Fit the model to the data
 LR.fit(X_train, y_train)
 #</Train>
@@ -57,7 +56,9 @@ LR.fit(X_train, y_train)
 def predict_label(sample):
     # reshape sample to be 2D as model expects the input to be in 2D
     sample = np.array(sample).reshape(1, -1)
+    # scaling the sample
+    sample = sc.transform(sample)
     # predict the class label for the sample
-    pred = LR.predict_proba(sample)[0]
+    pred = LR.predict_proba(sample)
     return pred
 #</Predict>
