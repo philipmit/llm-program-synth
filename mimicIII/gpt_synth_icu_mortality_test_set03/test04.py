@@ -8,6 +8,7 @@ import torch
 import warnings
 warnings.filterwarnings("ignore")
 from torch.utils.data import Dataset
+from torch.nn.utils.rnn import pad_sequence
 #</PrevData>
 
 #<PrepData>
@@ -31,15 +32,28 @@ class ICUData(Dataset):
         data = data.fillna(0)  
         data = data.select_dtypes(include=[np.number]) 
         label = self.labels[idx]
-        return torch.tensor(data.values, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
+        return torch.tensor(data.values, dtype=torch.float32) , torch.tensor(label, dtype=torch.float32)
 #</PrepData>
+
+#<DataLoader>
+# Define a collate function to pad the sequences
+def pad_collate(batch):
+    (xx, yy) = zip(*batch)
+    x_lens = [len(x) for x in xx]
+    xx_pad = pad_sequence(xx, batch_first=True, padding_value=0)
+    return xx_pad, torch.tensor(yy, dtype=torch.float32), x_lens
+
+# Create DataLoader
+icu_data = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
+data_loader = DataLoader(icu_data, batch_size=128, shuffle=True, collate_fn=pad_collate)
+#</DataLoader>
 
 #<Train>
 ######## Prepare to train the LSTM model
 # Import necessary libraries
 import torch.nn as nn
 from torch.optim import Adam
-from torch.utils.data import DataLoader
+from torch.nn.utils.rnn import pack_padded_sequence
 
 # Define LSTM model
 class LSTM(nn.Module):
@@ -49,14 +63,11 @@ class LSTM(nn.Module):
         self.lstm = nn.LSTM(input_size, hidden_size, num_layers=2, dropout=0.2, batch_first=True)
         self.fc = nn.Linear(hidden_size, output_size)
 
-    def forward(self, x):
-        out, _ = self.lstm(x)
-        out = self.fc(out[:, -1, :])
+    def forward(self, x, lengths):
+        x_packed = pack_padded_sequence(x, lengths, batch_first=True, enforce_sorted=False)
+        out, _ = self.lstm(x_packed)
+        out = self.fc(out.data)
         return out
-
-# Create DataLoader
-icu_data = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
-data_loader = DataLoader(icu_data, batch_size=128, shuffle=True)
 
 # Define model, criterion and optimizer
 model = LSTM(input_size=13, hidden_size=50, output_size=1)
@@ -65,11 +76,10 @@ optimizer = Adam(model.parameters())
 
 # Train LSTM model
 for epoch in range(5):  
-  for i_batch, sample_batched in enumerate(data_loader):
-      inputs, labels = sample_batched
-      inputs = inputs.view(-1, 48, 13)
+  for i_batch, (data, labels, lengths) in enumerate(data_loader):  # include lengths 
+      data = data.view(-1, data.size(1), 13)
       optimizer.zero_grad()
-      outputs = model(inputs)
+      outputs = model(data, lengths)  # include lengths
       loss = criterion(outputs.squeeze(), labels)
       loss.backward()
       optimizer.step()
