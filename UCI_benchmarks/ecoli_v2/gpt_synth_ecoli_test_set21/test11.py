@@ -28,19 +28,13 @@ y = ecoli.iloc[:, -1]
 # replace strings with numbers in y
 np.unique( y)
 len(list(np.unique( y)))
-y = y.replace(list(np.unique(y)), [0,1,2,3,4,5,6,7])
+y = y.replace(list(np.unique(y)), list(range(1, len(np.unique(y))+1))) # Corrected to ensure that we have 8 classes ranging from 1 to 8
 X=X.to_numpy()
 y=y.to_numpy()
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
-X_train=X_train.tolist()
-X_test=X_test.tolist()
 # Scale the features 
 sc = StandardScaler()
 X_train = sc.fit_transform(X_train)
-print(X_train.shape)
-print(y_train.shape)
-print(X_train[0:5])
-print(y_train[0:5])
 #</PrepData>
 
 #<Train>
@@ -69,5 +63,5 @@ def predict_label(sample):
     
     # Return the probabilities in expected output format
     return list(probabilities[0])
-    ### End your code   
+    ### End your code  
 #</Predict>
