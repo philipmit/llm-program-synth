@@ -23,16 +23,13 @@ from sklearn.metrics import roc_auc_score
 from sklearn.preprocessing import LabelBinarizer, StandardScaler
 ecoli = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', delim_whitespace=True, header=None)
 ecoli.columns = ['Sequence Name', 'mcg', 'gvh', 'lip', 'chg', 'aac', 'alm1', 'alm2', 'class']
-X = ecoli.iloc[:, 1:-1]
+X = np.array(ecoli.iloc[:, 1:-1])
 y = ecoli.iloc[:, -1]
 # Encode the labels
 label_binarizer = LabelBinarizer()
 y = label_binarizer.fit_transform(y)
-X=X.to_numpy()
-y=y.to_numpy()
+X,X,y,y = X.tolist(), X.tolist(), y.tolist(), y.tolist()
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
-X_train=X_train.tolist()
-X_test=X_test.tolist()
 # Scale the features 
 sc = StandardScaler()
 X_train = sc.fit_transform(X_train)
