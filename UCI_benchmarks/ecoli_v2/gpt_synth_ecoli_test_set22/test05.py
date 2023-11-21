@@ -46,18 +46,6 @@ print(y_train[0:5])
 #<Train>
 ######## Train the model using the training data, X_train and y_train
 ### Start your code
-
-### End your code
-#</Train>
-
-#<Predict>
-######## Define the predict_labels function that can be used to make new predictions using the trained model above given one sample from X_test
-### Start your code
-
-### End your code
-#</Predict>
-
-#<Train>
 # Import necessary packages
 from sklearn.linear_model import LogisticRegression
 from sklearn.multiclass import OneVsRestClassifier
@@ -68,14 +56,14 @@ ovr = OneVsRestClassifier(lr)
 
 # Train the Model using the training data 
 ovr.fit(X_train, y_train)
+### End your code
 #</Train>
+
 #<Predict>
 ######## Define the predict_labels function that can be used to make new predictions using the trained model above given one sample from X_test
 def predict_label(input_sample):
-    # Reshaping the input_sample to 2D array as the model expects this shape
+    # Reshapeing the input_sample to 2D array as the model expects this shape
     input_sample = np.array(input_sample).reshape(1, -1)
     # Compute and return the probabilities
-    return ovr.predict_proba(input_sample)
-
-### End your code
+    return ovr.predict_proba(input_sample).tolist()[0]
 #</Predict>
