@@ -2,7 +2,8 @@
 ######## Load and preview the dataset and datatypes
 # Import necessary libraries
 import pandas as pd
-df = pd.read_csv('/path/to/ecoli.data', header=None)
+# Read file
+df = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', header=None)
 # Preview dataset and datatypes
 print(df.shape)
 print(df.head())
@@ -18,24 +19,24 @@ print(df.isnull().sum())
 # Import necessary packages
 import numpy as np
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler, LabelEncoder
-
-ecoli = pd.read_csv('/path/to/ecoli.data', delim_whitespace=True, header=None)
+from sklearn.metrics import roc_auc_score
+from sklearn.preprocessing import StandardScaler
+ecoli = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', delim_whitespace=True, header=None)
 ecoli.columns = ['Sequence Name', 'mcg', 'gvh', 'lip', 'chg', 'aac', 'alm1', 'alm2', 'class']
 X = ecoli.iloc[:, 1:-1]  
 y = ecoli.iloc[:, -1]  
-
 # replace strings with numbers in y
-le = LabelEncoder()
-y = le.fit_transform(y)
-
+np.unique( y)
+len(list(np.unique( y)))
+y = y.replace(list(np.unique(y)), [0,1,2,3,4,5,6,7])
+X=X.to_numpy()
+y=y.to_numpy()
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
-
+X_train=X_train.tolist()
+X_test=X_test.tolist()
 # Scale the features 
 sc = StandardScaler()
 X_train = sc.fit_transform(X_train)
-X_test = sc.transform(X_test)
-
 print(X_train.shape)
 print(y_train.shape)
 print(X_train[0:5])
@@ -47,17 +48,15 @@ print(y_train[0:5])
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import LabelBinarizer
 
-# convert y_train to a binary matrix of shape (n_samples, n_classes) 
-lb = LabelBinarizer()
-y_train_bin = lb.fit_transform(y_train)
-
 # Initialize the model
 LR = LogisticRegression(random_state=0, multi_class='ovr', solver='lbfgs')
 
+# Convert y_train to a binary matrix of shape (n_samples, n_classes) 
+lb = LabelBinarizer()
+y_train_bin = lb.fit_transform(y_train)
+
 # Fit the model to the data
 LR.fit(X_train, y_train_bin)
-
-### End your code
 #</Train>
 
 #<Predict>
@@ -68,6 +67,5 @@ def predict_label(sample):
     sample = np.array(sample).reshape(1, -1)
     # predict the class label for the sample
     pred = LR.predict_proba(sample)
-    
     return lb.inverse_transform(pred)
 #</Predict>
