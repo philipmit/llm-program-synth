@@ -38,7 +38,7 @@ class ICUData(Dataset):
         length = min(max_length, scaled_data.shape[0])
         pad_data[-length:] = scaled_data[:length]
         label = self.labels[idx]
-        return torch.tensor(pad_data, dtype=torch.float32), length, torch.tensor(label, dtype=torch.float32)
+        return torch.tensor(pad_data, dtype=torch.float32), torch.tensor(length, dtype=torch.int32), torch.tensor(label, dtype=torch.float32)
 #</PrepData>
 
 #<Train>
@@ -57,6 +57,8 @@ class LSTM(nn.Module):
         self.lstm = nn.LSTM(input_size, hidden_size, num_layers=2, dropout=0.2, batch_first=True)
         self.fc = nn.Linear(hidden_size, output_size)
     def forward(self, x, lengths):
+        # Convert lengths to tensor
+        lengths = torch.tensor(lengths, dtype=torch.long)
         pack = pack_padded_sequence(x, lengths, batch_first=True, enforce_sorted=False)
         out_pack, (ht, ct) = self.lstm(pack)
         out = self.fc(ht[-1])
@@ -76,9 +78,9 @@ num_epochs = 25
 # Train LSTM
 for epoch in range(num_epochs):
     for i, (inputs, lengths, labels) in enumerate(dataloader):
-        inputs = inputs
-        lengths = lengths
-        labels = labels
+        inputs = inputs.to(torch.float32)
+        lengths = lengths.tolist()
+        labels = labels.to(torch.float32)
 
         optimizer.zero_grad()
         outputs = model(inputs, lengths)
