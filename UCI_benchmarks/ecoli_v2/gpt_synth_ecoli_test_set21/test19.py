@@ -76,3 +76,14 @@ def predict_label(sample_x):
     probabilities = logreg.predict_proba([sample_x]) # predicting the probabilities for all 8 classes
     return probabilities[0] # return probabilities for the sample
 #</Predict></PrevData>
+#<Test>
+######## Sample a test instance from X_test to test the predict_label function
+sample_x = X_test[0]
+
+# Use the predict_label function to predict the label probabilities of the sample test instance
+probabilities = predict_label(sample_x)
+
+# Print the predicted label probabilities
+print('Predicted label probabilities:', probabilities)
+print('Sum of probabilities:', sum(probabilities))
+#</Test></PrepData>
