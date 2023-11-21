@@ -46,21 +46,6 @@ print(y_train[0:5])
 #<Train>
 ######## Train the model using the training data, X_train and y_train
 ### Start your code
-
-### End your code
-#</Train>
-
-#<Predict>
-######## Define the predict_labels function that can be used to make new predictions using the trained model above given one sample from X_test
-### Start your code
-
-### End your code
-#</Predict>
-
-
-#<Train>
-######## Train the model using the training data, X_train and y_train
-### Start your code
 from sklearn.linear_model import LogisticRegression
 
 # Initialize the model
@@ -70,6 +55,7 @@ LR = LogisticRegression(random_state=0, multi_class='multinomial', solver='newto
 LR.fit(X_train, y_train)
 ### End your code
 #</Train>
+
 #<Predict>
 ######## Define the predict_labels function that can be used to make new predictions using the trained model above given one sample from X_test
 ### Start your code
@@ -80,6 +66,8 @@ def predict_label(sample):
     sample = sc.transform(sample)
     # predict the class label for the sample
     pred = LR.predict_proba(sample)
+    # Convert the predicted probabilities to a 1D array for compatibility
+    pred = pred.flatten()
     return pred
 ### End your code
 #</Predict>
