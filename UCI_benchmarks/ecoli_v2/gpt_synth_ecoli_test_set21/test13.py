@@ -27,7 +27,11 @@ y = ecoli.iloc[:, -1]
 # replace strings with numbers in y
 le = LabelEncoder()
 y = le.fit_transform(y)
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
+# ensure that target variable becomes binary
+y_bin = np.zeros((y.shape[0], len(np.unique(y))))
+for i, y_val in enumerate(y):
+    y_bin[i, y_val] = 1
+X_train, X_test, y_train, y_test = train_test_split(X, y_bin, test_size=0.5, random_state=42)
 # Scale the features 
 sc = StandardScaler()
 X_train = sc.fit_transform(X_train)
@@ -58,7 +62,7 @@ def predict_label(sample):
     # reshape sample to be 2D as model expects input to be in 2D
     sample = np.array(sample).reshape(1, -1)
     # predict the class label for the sample
-    pred = LR.predict_proba(sample)
+    pred = LR.pred_proba(sample)
     return pred[0]
 ### End your code
 #</Predict>
