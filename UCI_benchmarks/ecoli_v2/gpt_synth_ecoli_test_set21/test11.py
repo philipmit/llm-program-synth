@@ -3,7 +3,7 @@
 # Import necessary libraries
 import pandas as pd
 
-# Load the Ecoli dataset
+# Read file
 ecoli = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', delim_whitespace=True, header=None)
 
 # Rename columns
@@ -36,42 +36,38 @@ y = le.fit_transform(y)
 # Split the dataset into training (50%) and test sets (50%) with random_state=42
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
 
-# We'll keep a copy of the unscaled X_test to use when making predictions
-unscaled_X_test = X_test.copy()
+# We have to remember to transform the test set as well to make sure our prediction function works correctly
+X_test = sc.transform(X_test)
 
-# Scale the training set
+# Scale the inputs in the training set
 sc = StandardScaler()
 X_train = sc.fit_transform(X_train)
-
-# Scale the test set using the same scaler
-X_test = sc.transform(X_test)
 #</PrepData>
 
 #<Train>
 ######## Train the model using the training data
-# Import the LogisticRegression function from sklearn
 from sklearn.linear_model import LogisticRegression
 
-# Initialize the logistic regression model
-lr = LogisticRegression(max_iter=500, multi_class='ovr', solver='liblinear', random_state=42)
+# Create logistic regression
+# As the target has multiple labels, we have to set multi_class parameter to 'ovr' which stands for 'one vs rest'
+log_reg = LogisticRegression(multi_class='ovr', max_iter=500, random_state=42)
 
-# Fit the model on the training data
-lr.fit(X_train, y_train)
+# Train the model using the training data
+log_reg.fit(X_train, y_train)
 #</Train>
 
 #<Predict>
 ######## The predict_label function will use the trained logistic regression model to predict the label of a new sample
 def predict_label(sample):
-    # Sample is expected to be a list of 7 decimal values
-    # Reshape the sample to (1,-1) and standardize it using the same scaler as for the training set
-    sample = sc.transform(sample.reshape(1,-1))
+    # Convert the sample to a numpy array and reshape it to (1,-1)
+    sample = np.array(sample).reshape(1,-1)
+    
+    # Standardize the sample
+    sample = sc.transform(sample)
     
     # Use the trained model to predict the probabilities
-    probabilities = lr.predict_proba(sample)
+    pred_prob = log_reg.predict_proba(sample)
     
-    # Since the output is a 2D array with shape (1,8) we need to take the first element to get the (8,) shape
-    probabilities = probabilities[0]
-    
-    # Return the probabilities as a list
-    return probabilities.tolist()
+    # Convert numpy array to list and return
+    return pred_prob[0].tolist()
 #</Predict>
