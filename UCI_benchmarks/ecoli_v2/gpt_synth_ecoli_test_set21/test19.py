@@ -50,3 +50,13 @@ ovr = LogisticRegression(max_iter=5000)
 # Train the model
 ovr.fit(X_train, y_train)
 #</Train>
+#<Predict>
+######## Define the predict_labels function that can be used to make new predictions using the trained model above given one sample from X_test
+def predict_label(sample):
+    sample = np.array(sample).reshape(1, -1)
+    sample = sc.transform(sample)
+    probabilities = ovr.predict_proba(sample)
+    return probabilities[0].tolist()
+### Test the function with a sample from X_test
+print(predict_label(X_test[0]))
+#</Predict>
