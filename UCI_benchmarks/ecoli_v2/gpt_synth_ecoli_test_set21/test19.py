@@ -42,3 +42,11 @@ X_train = sc.fit_transform(X_train)
 #print(X_train[0:5])
 #print(y_train[0:5])
 #</PrepData>
+#<Train>
+######## Train the model using the training data, X_train and y_train
+from sklearn.linear_model import LogisticRegression
+#One-vs-the-rest logistic regression model
+ovr = LogisticRegression(max_iter=5000)
+# Train the model
+ovr.fit(X_train, y_train)
+#</Train>
