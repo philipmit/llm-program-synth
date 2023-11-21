@@ -21,14 +21,16 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import roc_auc_score
 from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import OneHotEncoder
 ecoli = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', delim_whitespace=True, header=None)
 ecoli.columns = ['Sequence Name', 'mcg', 'gvh', 'lip', 'chg', 'aac', 'alm1', 'alm2', 'class']
 X = ecoli.iloc[:, 1:-1]  
 y = ecoli.iloc[:, -1]  
 # replace strings with numbers in y
-from sklearn.preprocessing import LabelEncoder
 le = LabelEncoder()
 y = le.fit_transform(y)
+encoder = OneHotEncoder()
+y = encoder.fit_transform(y.reshape(-1,1)).toarray()
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
 # Scale the features 
 sc = StandardScaler()
@@ -43,11 +45,11 @@ print(y_train[0:5])
 #<Train>
 ######## Train the model using the training data, X_train and y_train
 # Import necessary modules
-from sklearn.linear_model import LogisticRegression
+from sklearn.multiclass import OneVsRestClassifier
 
 ### Start your code
 # Create a logistic regression model
-clf = LogisticRegression(random_state=0, max_iter=200, multi_class='ovr')
+clf = OneVsRestClassifier(LogisticRegression(random_state=0, max_iter=200))
 
 # Train the logistic regression model
 clf.fit(X_train, y_train)
