@@ -52,3 +52,13 @@ logreg = LogisticRegression()
 logreg.fit(X_train, y_train)
 ### End your code
 #</Train>
+#<Predict>
+######## Define the predict_labels function that can be used to make new predictions using the trained model above given one sample from X_test
+def predict_label(sample):
+    ### Start your code
+    sample = np.array(sample).reshape(1, -1)
+    sample = sc.transform(sample)
+    proba = logreg.predict_proba(sample)
+    return proba
+    ### End your code
+#</Predict>
