@@ -70,3 +70,16 @@ LR = LogisticRegression(random_state=0, multi_class='multinomial', solver='newto
 LR.fit(X_train, y_train)
 ### End your code
 #</Train>
+#<Predict>
+######## Define the predict_labels function that can be used to make new predictions using the trained model above given one sample from X_test
+### Start your code
+def predict_label(sample):
+    # reshape sample to be 2D as model expects input to be in 2D
+    sample = np.array(sample).reshape(1, -1)
+    # scale the sample
+    sample = sc.transform(sample)
+    # predict the class label for the sample
+    pred = LR.predict_proba(sample)
+    return pred
+### End your code
+#</Predict>
