@@ -1,7 +1,7 @@
 #<PrevData>
 ######## Load and preview the dataset and datatypes
 import pandas as pd
-df = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', header=None)
+df = pd.read_csv('./ecoli.data', header=None, delim_whitespace=True)
 print(df.shape)
 print(df.head())
 print(df.info())
@@ -18,10 +18,9 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import LabelBinarizer
 
-ecoli = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', delim_whitespace=True, header=None)
-ecoli.columns = ['Sequence Name', 'mcg', 'gvh', 'lip', 'chg', 'aac', 'alm1', 'alm2', 'class']
-X = ecoli.iloc[:, 1:-1]  
-y = ecoli.iloc[:, -1] 
+df.columns = ['Sequence Name', 'mcg', 'gvh', 'lip', 'chg', 'aac', 'alm1', 'alm2', 'class']
+X = df.iloc[:, 1:-1]  
+y = df.iloc[:, -1] 
 
 # The Logistic Regression model needs to train on all unique labels in order to predict all of them.
 # To ensure this, stratify the split.
@@ -48,20 +47,25 @@ print(X_train[0:5])
 
 #<Train>
 ######## Train the model using the training data, X_train and y_train
-### Start your code
+# we do one-versus-rest
+from sklearn.multiclass import OneVsRestClassifier
 from sklearn.linear_model import LogisticRegression
-logreg = LogisticRegression(multi_class='multinomial', solver='saga', max_iter=10000)
-logreg.fit(X_train, y_train)
-### End your code
+
+# Define a Logistic Regression model
+logreg = LogisticRegression(solver='saga',max_iter=10000)
+
+# Define the one-versus-rest classifier
+ovr = OneVsRestClassifier(logreg)
+ovr.fit(X_train, y_train)
 #</Train>
 
 #<Predict>
 ######## Define the predict_labels function that can be used to make new predictions using the trained model above given one sample from X_test
 def predict_label(sample):
-    ### Start your code
+    # Reshape and scale the sample
     sample = np.array(sample).reshape(1, -1)
     sample = sc.transform(sample)
-    proba = logreg.predict_proba(sample)
-    return proba[0].tolist()
-    ### End your code
+
+    # Return the predicted probabilities
+    return ovr.predict_proba(sample)[0].tolist()
 #</Predict>
