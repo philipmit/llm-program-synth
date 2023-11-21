@@ -71,3 +71,16 @@ log_reg.fit(X_train, y_train)
 print('Model accuracy score on training set: {0:0.4f}'. format(log_reg.score(X_train, y_train)))
 ### End your code
 #</Train>
+#<Predict>
+######## Define the predict_labels function that can be used to make new predictions using the trained model given one sample from X_test
+def predict_label(sample):
+    sample = np.array(sample).reshape(1,-1)
+    sample = sc.transform(sample)
+    pred = log_reg.predict_proba(sample)
+    return pred
+
+# Let's test the function with a random sample from X_test
+random_sample = X_test[10]
+predicted_label = predict_label(random_sample)
+print("Predicted label probabilities for the input sample is :", predicted_label)
+#</Predict>
