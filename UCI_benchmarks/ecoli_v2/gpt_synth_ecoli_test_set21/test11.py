@@ -21,7 +21,7 @@ print(ecoli.isnull().sum())
 # Import necessary libraries
 import numpy as np
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import LabelEncoder, OneHotEncoder
 from sklearn.preprocessing import StandardScaler
 
 # Define features and target
@@ -31,6 +31,10 @@ y = ecoli.iloc[:, -1].values  # the target column
 # Perform label encoding for the target to convert string class labels to integers
 le = LabelEncoder()
 y = le.fit_transform(y)
+
+# Perform one hot encoding on the target to convert it to a binary vector representation, which is required in multiclass classification
+onehot_encoder = OneHotEncoder(sparse=False)
+y = onehot_encoder.fit_transform(y.reshape(-1,1)) 
 
 # Split the dataset into training (50%) and test sets (50%) with random_state=42
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
