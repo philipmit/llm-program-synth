@@ -31,6 +31,9 @@ len(list(np.unique( y)))
 y = y.replace(list(np.unique(y)), [0,1,2,3,4,5,6,7])
 X=X.to_numpy()
 y=y.to_numpy()
+# Using one-hot encoding for the target variables
+from tensorflow.keras.utils import to_categorical
+y = to_categorical(y)
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
 X_train=X_train.tolist()
 X_test=X_test.tolist()
@@ -42,6 +45,7 @@ print(y_train.shape)
 print(X_train[0:5])
 print(y_train[0:5])
 #</PrepData>
+
 
 #<Train>
 ######## Train the model using the training data, X_train and y_train
