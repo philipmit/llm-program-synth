@@ -28,11 +28,11 @@ class ICUData(Dataset):
         file_path = os.path.join(self.data_path, self.file_names[idx])
         data = pd.read_csv(file_path)
         data = data.drop(['Hours','Glascow coma scale eye opening','Glascow coma scale motor response','Glascow coma scale total','Glascow coma scale verbal response'], axis=1)  
-        data = data.fillna(0)  
-        data = data.select_dtypes(include=[np.number]) 
-        max_length = 100  # Define a static max length for LSTM sequence
-        zero_padding = np.zeros((max_length, data.shape[1]))  # Generate padding of (max_length)x(number of features)
-        zero_padding[:len(data)] = data.values  # Add the original data into the padding
+        data = data.fillna(0)
+        data = data.select_dtypes(include=[np.number])
+        max_length = min(100, len(data))  # Define a static max length for LSTM sequence
+        zero_padding = np.zeros((max_length, data.shape[1]))  # Genera te padding of (max_length)x(number of features)
+        zero_padding[:len(data[:max_length])] = data.values[:max_length]  # Add the original data into the padding
         label = self.labels[idx]
         return torch.tensor(zero_padding, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
 #</PrepData>
@@ -50,13 +50,13 @@ class LSTM(nn.Module):
     def __init__(self, input_size, hidden_size, output_size):
         super(LSTM, self).__init__()
         self.hidden_size = hidden_size
-        self.lstm = nn.LSTM(input_size, hidden_size, batch_first=True)
+        self.lstm = nn.LSTM(input_size, hidden_size, num_layers=2, dropout=0.2, batch_first=True)
         self.fc = nn.Linear(hidden_size, output_size)
     def forward(self, x):
-        h_0 = Variable(torch.zeros(1, x.size(0), self.hidden_size)) # Initial hidden state
-        c_0 = Variable(torch.zeros(1, x.size(0), self.hidden_size)) # Initial cell state
+        h_0 = Variable(torch.zeros(2, x.size(0), self.hidden_size)) # Initial hidden state
+        c_0 = Variable(torch.zeros(2, x.size(0), self.hidden_size)) # Initial cell state
         ula, (h_out, _) = self.lstm(x, (h_0, c_0))  
-        y_pred = self.fc(h_out.view(-1, self.hidden_size)) # Prediction
+        y_pred = self.fc(h_out[-1]) # Prediction
         return y_pred.view(-1)
 
 # Initialize model, data, and training parameters
