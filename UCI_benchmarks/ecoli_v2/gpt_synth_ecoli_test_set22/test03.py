@@ -1,3 +1,20 @@
+#<LoadData>
+# Import necessary libraries
+import pandas as pd
+
+# Read file
+df = pd.read_csv('ecoli.csv', header=None)
+
+# Print dataset and datatypes
+print(df.shape)
+print(df.head())
+print(df.info())
+print(df.dtypes)
+for col in df.applymap(type).columns:
+    print(col, df.applymap(type)[col].unique())
+print(df.isnull().sum())
+#</LoadData>
+
 #<PrepData>
 ######## Prepare the dataset for training
 # Import necessary packages
