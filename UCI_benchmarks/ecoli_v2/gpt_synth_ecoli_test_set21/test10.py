@@ -3,7 +3,7 @@
 # Import necessary libraries
 import pandas as pd
 # Read file
-df = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', header=None)
+df = pd.read_csv('ecoli.data', header=None, delim_whitespace=True)
 # Preview dataset and datatypes
 print(df.shape)
 print(df.head())
@@ -21,10 +21,9 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import roc_auc_score
 from sklearn.preprocessing import StandardScaler
-ecoli = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', delim_whitespace=True, header=None)
-ecoli.columns = ['Sequence Name', 'mcg', 'gvh', 'lip', 'chg', 'aac', 'alm1', 'alm2', 'class']
-X = ecoli.iloc[:, 1:-1]  
-y = ecoli.iloc[:, -1]  
+df.columns = ['Sequence Name', 'mcg', 'gvh', 'lip', 'chg', 'aac', 'alm1', 'alm2', 'class']
+X = df.iloc[:, 1:-1]  
+y = df.iloc[:, -1]  
 # replace strings with numbers in y
 np.unique( y)
 len(list(np.unique( y)))
@@ -45,34 +44,17 @@ print(y_train[0:5])
 
 #<Train>
 ######## Train the model using the training data, X_train and y_train
-### Start your code
-
-### End your code
+# Import the necessary packages
+from sklearn.linear_model import LogisticRegression
+# Create an instance of Logistic Regression Classifier and fit the data
+log_reg = LogisticRegression(solver='lbfgs', multi_class='auto', max_iter=5000)
+log_reg.fit(X_train, y_train)
+# Check model accuracy
+print('Model accuracy score on training set: {0:0.4f}'. format(log_reg.score(X_train, y_train)))
 #</Train>
 
 #<Predict>
 ######## Define the predict_labels function that can be used to make new predictions using the trained model above given one sample from X_test
-### Start your code
-
-### End your code
-#</Predict>
-
-
-#<Train>
-######## Train the model using the training data, X_train and y_train
-from sklearn.linear_model import LogisticRegression
-
-# Create an instance of Logistic Regression Classifier and fit the data
-log_reg = LogisticRegression(solver='lbfgs', multi_class='auto', max_iter=5000)
-
-log_reg.fit(X_train, y_train)
-
-# Check model accuracy
-print('Model accuracy score on training set: {0:0.4f}'. format(log_reg.score(X_train, y_train)))
-### End your code
-#</Train>
-#<Predict>
-######## Define the predict_labels function that can be used to make new predictions using the trained model given one sample from X_test
 def predict_label(sample):
     sample = np.array(sample).reshape(1,-1)
     sample = sc.transform(sample)
