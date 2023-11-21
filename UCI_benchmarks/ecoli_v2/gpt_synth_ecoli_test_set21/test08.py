@@ -67,3 +67,16 @@ clf = LogisticRegression(random_state=0, max_iter=200)
 clf.fit(X_train, y_train)
 ### End your code
 #</Train>
+#<Predict>
+######## Define the predict_labels function that can be used to make new predictions using the trained model above given one sample from X_test
+from sklearn.preprocessing import StandardScaler
+sc = StandardScaler()
+
+# Define the function
+def predict_label(x):
+    x = sc.transform([x])  # Scale the features
+    y_pred = clf.predict_proba(x)  # Predict the labels
+    return y_pred
+
+### End your code
+#</Predict>
