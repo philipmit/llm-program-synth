@@ -68,3 +68,20 @@ log_reg = LogisticRegression(random_state=42, max_iter=500)
 # Fit the model with training data
 log_reg.fit(X_train, y_train)
 #</Train>
+#<Predict>
+######## Define the predict_labels function that can be used to make new predictions using the trained model above given one sample from X_test
+def predict_label(sample):
+    ### Start your code
+    # Reshape the sample to 2D array since sklearn requires it in this form
+    sample = np.array(sample).reshape(1, -1)
+    
+    # Apply standard scaler transformation
+    sample = sc.transform(sample)
+    
+    # Use the trained model to predict
+    probabilities = log_reg.predict_proba(sample)
+    
+    # Output the probabilities
+    return probabilities
+    ### End your code   
+#</Predict>
