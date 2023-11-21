@@ -58,6 +58,6 @@ def predict_label(sample):
     # reshape sample to be 2D as model expects the input to be in 2D
     sample = np.array(sample).reshape(1, -1)
     # predict the class label for the sample
-    pred = LR.predict_proba(sample)
+    pred = LR.predict_proba(sample)[0]
     return pred
 #</Predict>
