@@ -28,11 +28,11 @@ y = ecoli.iloc[:, -1]
 # Encode the labels
 label_binarizer = LabelBinarizer()
 y = label_binarizer.fit_transform(y)
-X,X,y,y = X.tolist(), X.tolist(), y.tolist(), y.tolist()
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
 # Scale the features 
-sc = StandardScaler()
-X_train = sc.fit_transform(X_train)
+scaler = StandardScaler()
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
 print(X_train.shape)
 print(y_train.shape)
 print(X_train[0:5])
@@ -45,7 +45,7 @@ from sklearn.linear_model import LogisticRegression
 # Initialize the model
 LR = LogisticRegression(random_state=0, multi_class='ovr', max_iter=1000)
 # Fit the model to the data
-LR.fit(X_train, y_train)
+LR.fit(X_train, y_train.ravel())
 #</Train>
 
 #<Predict>
@@ -54,7 +54,7 @@ def predict_label(sample):
     # reshape sample to be 2D as model expects the input to be in 2D
     sample = np.array(sample).reshape(1, -1)
     # scaling the sample
-    sample = sc.transform(sample)
+    sample = scaler.transform(sample)
     # predict the class label for the sample
     pred = LR.predict_proba(sample)
     return pred
