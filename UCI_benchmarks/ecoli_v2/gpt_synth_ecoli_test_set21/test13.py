@@ -20,20 +20,18 @@ print(df.isnull().sum())
 import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import roc_auc_score
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, LabelEncoder
+
 ecoli = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', delim_whitespace=True, header=None)
 ecoli.columns = ['Sequence Name', 'mcg', 'gvh', 'lip', 'chg', 'aac', 'alm1', 'alm2', 'class']
 X = ecoli.iloc[:, 1:-1]  
 y = ecoli.iloc[:, -1]  
 # replace strings with numbers in y
-np.unique( y)
-len(list(np.unique( y)))
-y = y.replace(list(np.unique(y)), [0,1,2,3,4,5,6,7])
+le = LabelEncoder()
+y = le.fit_transform(y)
 X=X.to_numpy()
 y=y.to_numpy()
-# Using one-hot encoding for the target variables
-from tensorflow.keras.utils import to_categorical
-y = to_categorical(y)
+
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
 X_train=X_train.tolist()
 X_test=X_test.tolist()
@@ -46,14 +44,13 @@ print(X_train[0:5])
 print(y_train[0:5])
 #</PrepData>
 
-
 #<Train>
 ######## Train the model using the training data, X_train and y_train
 ### Start your code
 from sklearn.linear_model import LogisticRegression
 
 # Initialize the model
-LR = LogisticRegression(random_state=0, multi_class='multinomial', solver='newton-cg')
+LR = LogisticRegression(random_state=0, multi_class='auto', solver='lbfgs')
 
 # Fit the model to the data
 LR.fit(X_train, y_train)
@@ -70,8 +67,6 @@ def predict_label(sample):
     sample = sc.transform(sample)
     # predict the class label for the sample
     pred = LR.predict_proba(sample)
-    # Convert the predicted probabilities to a 1D array for compatibility
-    pred = pred.flatten()
-    return pred
+    return pred[0]
 ### End your code
 #</Predict>
