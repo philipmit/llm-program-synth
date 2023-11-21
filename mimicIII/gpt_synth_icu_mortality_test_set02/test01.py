@@ -57,4 +57,11 @@ for epoch in range(num_epochs):
     if (epoch+1) % 10 == 0:
         print ('Epoch [{}/{}], Loss: {:.4f}'.format(epoch+1, num_epochs, loss.item()))
 
-print("Training finished")</Train>
+print("Training finished")
+
+# Define the prediction function
+def predict_label(patient_data):
+    patient_data = torch.tensor(patient_data.values, dtype=torch.float32).unsqueeze(0)
+    output = torch.sigmoid(model(patient_data)).item()
+    return output
+# Here we assume that `patient_data` is a pandas dataframe for a single patient (excluding the 'Hours' column).</Train>
