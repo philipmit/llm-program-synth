@@ -1,51 +1,3 @@
-#<PrevData>
-######## Load and preview the dataset and datatypes
-# Import necessary libraries
-import os
-import pandas as pd
-import numpy as np
-import torch
-import warnings
-warnings.filterwarnings("ignore")
-from torch.utils.data import Dataset
-
-# File paths
-TRAIN_DATA_PATH = "/data/sls/scratch/pschro/p2/data/benchmark_output2/in-hospital-mortality/train/"
-LABEL_FILE = "/data/sls/scratch/pschro/p2/data/benchmark_output2/in-hospital-mortality/train/listfile.csv"
-
-# Define the Dataset
-class ICUData(Dataset):
-    def __init__(self, data_path, label_file):
-        self.data_path = data_path
-        label_data = pd.read_csv(label_file)
-        self.file_names = label_data['stay']
-        self.labels = torch.tensor(label_data['y_true'].values, dtype=torch.float32)
-    def __len__(self):
-        return len(self.file_names)
-    def __getitem__(self, idx):
-        file_path = os.path.join(self.data_path, self.file_names[idx])
-        data = pd.read_csv(file_path)
-        data = data.drop(['Hours'], axis=1)  
-        data = data.fillna(0)  
-        data = data.select_dtypes(include=[np.number]) 
-        label = self.labels[idx]
-        return torch.tensor(data.values, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
-#</PrevData>
-
-
-#<Train>
-######## Train the model using the training data, X_train and y_train
-### Start your code
-
-### End your code
-#</Train>
-
-#<Predict>
-######## Define the predict_labels function that can be used to make new predictions using the trained model above given one sample from X_test
-### Start your code
-
-### End your code
-#</Predict>
 <Train>
 # Import necessary libraries
 from torch.nn import LSTM
@@ -93,6 +45,7 @@ train_loader = DataLoader(dataset=icu_data, batch_size=batch_size, shuffle=True)
 # Training
 for epoch in range(num_epochs):
     for i, (sequences, labels) in enumerate(train_loader):
+        sequences = sequences.squeeze(1)  # Remove unnecessary dimension from time-series data
         # Forward pass
         outputs = model(sequences)
         loss = criterion(outputs.view(-1), labels)
