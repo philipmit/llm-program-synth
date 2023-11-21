@@ -29,8 +29,6 @@ y = ecoli.iloc[:, -1]
 from sklearn.preprocessing import LabelEncoder
 le = LabelEncoder()
 y = le.fit_transform(y)
-X=X.to_numpy()
-y=y.to_numpy()
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
 # Scale the features 
 sc = StandardScaler()
@@ -43,7 +41,7 @@ print(y_train[0:5])
 #</PrepData>
 
 #<Train>
-######## Train the model using the training data, X_train, and y_train
+######## Train the model using the training data, X_train and y_train
 # Import necessary modules
 from sklearn.linear_model import LogisticRegression
 
@@ -62,7 +60,6 @@ clf.fit(X_train, y_train)
 ### Start your code
 def predict_label(sample):
     sample = sample.reshape(1, -1)  # Reshape the sample to 2D array
-    sample=sc.transform(sample) # Scale the sample
     probabilities = clf.predict_proba(sample)  # Predict the probabilistic outputs
     return probabilities[0]  # Return the first (and only) prediction
 ### End your code
