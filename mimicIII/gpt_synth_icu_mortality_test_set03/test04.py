@@ -23,7 +23,7 @@ class ICUData(Dataset):
         label_data = pd.read_csv(label_file)
         self.file_names = label_data['stay']
         self.labels = torch.tensor(label_data['y_true'].values, dtype=torch.float32)
-        self.scaler = MinMaxScaler(feature_range=(0, 1))
+        self.scaler = MinMaxScaler(feature_range=(0, 1)) 
     def __len__(self):
         return len(self.file_names)
     def __getitem__(self, idx):
@@ -33,9 +33,9 @@ class ICUData(Dataset):
         data = data.fillna(0)
         data = data.select_dtypes(include=[np.number])
         scaled_data = self.scaler.fit_transform(data)
-        max_length = 100  
+        max_length = 100  # arbitrary maximum length for our sequence data
         pad_data = np.zeros((max_length, data.shape[1]))  
-        length = min(max_length, scaled_data.shape[0])
+        length = min(max_length, scaled_data.shape[0])  
         pad_data[-length:] = scaled_data[:length]
         label = self.labels[idx]
         return torch.tensor(pad_data, dtype=torch.float32), length, torch.tensor(label, dtype=torch.float32)
@@ -78,8 +78,8 @@ num_epochs = 25
 # Train LSTM
 for epoch in range(num_epochs):
     for i, (inputs, lengths, labels) in enumerate(dataloader):
-        inputs = inputs.to(torch.float32)
-        labels = labels.to(torch.float32)
+        inputs = inputs.to(*[torch.float32]*len(inputs))
+        labels = labels.to(*[torch.float32]*len(labels))
 
         optimizer.zero_grad()
         outputs = model(inputs, lengths.tolist())
