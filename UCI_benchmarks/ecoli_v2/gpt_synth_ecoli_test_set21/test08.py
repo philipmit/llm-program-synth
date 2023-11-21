@@ -21,23 +21,21 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import roc_auc_score
 from sklearn.preprocessing import StandardScaler
-
 ecoli = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', delim_whitespace=True, header=None)
 ecoli.columns = ['Sequence Name', 'mcg', 'gvh', 'lip', 'chg', 'aac', 'alm1', 'alm2', 'class']
 X = ecoli.iloc[:, 1:-1]  
 y = ecoli.iloc[:, -1]  
 # replace strings with numbers in y
-y = y.replace(list(np.unique(y)), [0,1,2,3,4,5,6,7])
+from sklearn.preprocessing import LabelEncoder
+le = LabelEncoder()
+y = le.fit_transform(y)
 X=X.to_numpy()
 y=y.to_numpy()
-
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
-
-# Create StandardScaler model and fit it to Train data
+# Scale the features 
 sc = StandardScaler()
 X_train = sc.fit_transform(X_train)
 X_test = sc.transform(X_test) # save scaled features for later use in the predict_label function
-
 print(X_train.shape)
 print(y_train.shape)
 print(X_train[0:5])
@@ -68,5 +66,4 @@ def predict_label(sample):
     probabilities = clf.predict_proba(sample)  # Predict the probabilistic outputs
     return probabilities[0]  # Return the first (and only) prediction
 ### End your code
-
 #</Predict>
