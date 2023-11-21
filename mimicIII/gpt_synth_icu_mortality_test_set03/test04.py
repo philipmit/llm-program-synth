@@ -30,9 +30,13 @@ class ICUData(Dataset):
         data = data.drop(['Hours','Glascow coma scale eye opening','Glascow coma scale motor response','Glascow coma scale total','Glascow coma scale verbal response'], axis=1)  
         data = data.fillna(0)  
         data = data.select_dtypes(include=[np.number]) 
+        max_length = 100  # Define a static max length for LSTM sequence
+        zero_padding = np.zeros((max_length, data.shape[1]))  # Generate padding of (max_length)x(number of features)
+        zero_padding[:len(data)] = data.values  # Add the original data into the padding
         label = self.labels[idx]
-        return torch.tensor(data.values, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
+        return torch.tensor(zero_padding, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
 #</PrepData>
+
 #<Train>
 ######## Prepare to train the LSTM model
 # Import necessary libraries
