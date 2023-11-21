@@ -1,3 +1,8 @@
+The error indicates that the sequences in the batch have different lengths. LSTM requires the sequences to have the same length in a batch. We can resolve this by padding the sequences to the same length in each batch. 
+
+Below is a corrected version of the previous code with sequence padding included:
+
+```python
 # Import necessary libraries
 import os
 import pandas as pd
@@ -8,6 +13,7 @@ from torch.nn import LSTM
 from torch.optim import Adam
 from torch.nn import BCEWithLogitsLoss
 import torch.nn as nn
+from torch.nn.utils.rnn import pad_sequence
 from torch.utils.data import DataLoader, Dataset
 
 warnings.filterwarnings("ignore")
@@ -34,6 +40,14 @@ class ICUData(Dataset):
         label = self.labels[idx]
         return torch.tensor(data.values, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
 
+# Custom collation function to handle varied sequence lengths
+def pad_collate(batch):
+    sequences, labels = zip(*batch)
+    lengths = torch.tensor([len(seq) for seq in sequences])
+    sequences_pad = pad_sequence(sequences, batch_first=True)
+    labels = torch.tensor(labels)
+    return sequences_pad, lengths, labels
+
 # Parameters for LSTM
 input_size = 14  # since we have 14 signals
 hidden_size = 64  # size of hidden state
@@ -50,11 +64,9 @@ class LSTMModel(nn.Module):
         self.num_layers = num_layers
         self.lstm = LSTM(input_size, hidden_size, num_layers, batch_first=True)
         self.fc = nn.Linear(hidden_size, 1)
-
     def forward(self, x):
         h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device)
         c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device)
-        
         out, _ = self.lstm(x, (h0, c0))
         out = self.fc(out[:, -1, :])
         return out
@@ -68,11 +80,11 @@ optimizer = Adam(model.parameters(), lr=learning_rate)
 
 # Data loading
 icu_data = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
-train_loader = DataLoader(dataset=icu_data, batch_size=batch_size, shuffle=True)
+train_loader = DataLoader(dataset=icu_data, batch_size=batch_size, shuffle=True, collate_fn=pad_collate)
 
 # Training
 for epoch in range(num_epochs):
-    for i, (sequences, labels) in enumerate(train_loader):
+    for i, (sequences, lengths, labels) in enumerate(train_loader):
         sequences = sequences.squeeze(1)  # Remove unnecessary dimension from time-series data
         
         # Forward pass
@@ -94,4 +106,5 @@ def predict_label(patient_data):
     patient_data = torch.tensor(patient_data.values, dtype=torch.float32).unsqueeze(0)
     output = torch.sigmoid(model(patient_data)).item()
     return output
-# Here we assume that `patient_data` is a pandas dataframe for a single patient (excluding the 'Hours' column).</Train>
+# Here we assume that `patient_data` is a pandas dataframe for a single patient (excluding the 'Hours' column).
+```</Train>
