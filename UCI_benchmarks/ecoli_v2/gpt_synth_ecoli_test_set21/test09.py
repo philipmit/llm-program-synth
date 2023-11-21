@@ -71,3 +71,19 @@ lr.fit(X_train, y_train)
 
 ### End your code
 #</Train>
+#<Predict>
+######## Define the predict_label function that can be used to make new predictions using the trained model above given one sample from X_test
+def predict_label(sample):
+    '''
+    Function to predict the probability of each label.
+    It takes a sample as input, transforms it using the same scaler used in training 
+    then uses the logistic regression model to predict the probabilities of the each class
+    '''
+    # Transforms the input sample
+    sample = sc.transform(np.array(sample).reshape(1,-1))
+    # Use the logistic regression model to predict the probability of each class
+    probs = lr.predict_proba(sample)
+    return probs
+
+### End your code
+#</Predict>
