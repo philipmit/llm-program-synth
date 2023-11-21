@@ -65,3 +65,11 @@ from sklearn.linear_model import LogisticRegression
 LR_model = LogisticRegression(multi_class='multinomial',solver ='newton-cg')
 LR_model.fit(X_train, y_train)
 #</Train>
+#<Predict>
+### Define the predict_labels function that can be used to make new predictions using the trained model above given one sample from X_test
+def predict_label(sample):
+    # label prediction
+    y_pred_prob = LR_model.predict_proba([sample])[0]
+    return y_pred_prob
+### End your code
+#</Predict>
