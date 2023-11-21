@@ -19,8 +19,8 @@ from sklearn.preprocessing import StandardScaler
 ecoli = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', delim_whitespace=True, header=None)
 ecoli.columns = ['Sequence Name', 'mcg', 'gvh', 'lip', 'chg', 'aac', 'alm1', 'alm2', 'class']
 X = ecoli.iloc[:, 1:-1]  
-y = ecoli.iloc[:, -1]  
-np.unique( y)
+y = ecoli.iloc[:, -1]
+np.unique(y)
 len(list(np.unique( y)))
 y = y.replace(list(np.unique(y)), [0,1,2,3,4,5,6,7])
 X=X.to_numpy()
@@ -38,7 +38,7 @@ print(y_train[0:5])
 ######## Train the model using the training data, X_train and y_train
 ### Start your code
 from sklearn.linear_model import LogisticRegression
-logreg = LogisticRegression()
+logreg = LogisticRegression(multi_class='multinomial', solver='saga', max_iter=10000)
 logreg.fit(X_train, y_train)
 ### End your code
 #</Train>
