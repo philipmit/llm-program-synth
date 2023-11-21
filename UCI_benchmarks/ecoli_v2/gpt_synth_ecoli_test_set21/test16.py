@@ -66,3 +66,14 @@ lr = LogisticRegression(solver='lbfgs', multi_class='multinomial', max_iter=1000
 # Fit the model
 lr.fit(X_train,y_train)
 #</Train>
+#<Predict>
+######## Define the predict_labels function that can be used to make new predictions using the trained model above given one sample from X_test
+def predict_label(sample):
+    # Reshape the sample to 2D array as the model expects it this way
+    sample = np.array(sample).reshape(1, -1)
+  
+    # Use the fitted model to make predictions on the sample
+    return lr.predict_proba(sample)
+
+### End your code
+#</Predict>
