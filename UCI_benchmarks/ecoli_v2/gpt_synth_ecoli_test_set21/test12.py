@@ -1,10 +1,7 @@
 #<PrevData>
 ######## Load and preview the dataset and datatypes
-# Import necessary libraries
 import pandas as pd
-# Read file
 df = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', header=None)
-# Preview dataset and datatypes
 print(df.shape)
 print(df.head())
 print(df.info())
@@ -16,26 +13,19 @@ print(df.isnull().sum())
 
 #<PrepData>
 ######## Prepare the dataset for training
-# Import necessary packages
 import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
-# load dataset
 ecoli = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', delim_whitespace=True, header=None)
-# assign column names
 ecoli.columns = ['Sequence Name', 'mcg', 'gvh', 'lip', 'chg', 'aac', 'alm1', 'alm2', 'class']
-# divide data into X and y
 X = ecoli.iloc[:, 1:-1]  
 y = ecoli.iloc[:, -1]  
-# replace strings with numbers in y
 np.unique( y)
 len(list(np.unique( y)))
 y = y.replace(list(np.unique(y)), [0,1,2,3,4,5,6,7])
 X=X.to_numpy()
 y=y.to_numpy()
-# Splitting the data
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
-# Scaling the features 
 sc = StandardScaler()
 X_train = sc.fit_transform(X_train)
 print(X_train.shape)
@@ -52,6 +42,7 @@ logreg = LogisticRegression()
 logreg.fit(X_train, y_train)
 ### End your code
 #</Train>
+
 #<Predict>
 ######## Define the predict_labels function that can be used to make new predictions using the trained model above given one sample from X_test
 def predict_label(sample):
@@ -59,6 +50,6 @@ def predict_label(sample):
     sample = np.array(sample).reshape(1, -1)
     sample = sc.transform(sample)
     proba = logreg.predict_proba(sample)
-    return proba
+    return proba[0].tolist()
     ### End your code
 #</Predict>
