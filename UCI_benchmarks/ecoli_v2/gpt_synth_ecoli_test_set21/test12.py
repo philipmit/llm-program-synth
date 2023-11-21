@@ -24,7 +24,7 @@ y = df.iloc[:, -1]
 
 # The Logistic Regression model needs to train on all unique labels in order to predict all of them.
 # To ensure this, stratify the split.
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42, stratify=y)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42, stratify=y)
 
 # replace strings with numbers in y using LabelBinarizer
 lb = LabelBinarizer()
@@ -34,9 +34,6 @@ y_test_lb = lb.transform(y_test)
 # The shape of y_train and y_test should be (-1, 8), because there are 8 unique labels.
 print(y_train_lb.shape)
 print(y_test_lb.shape)
-
-X_train=X_train.to_numpy()
-X_test=X_test.to_numpy()
 
 # Scale the features 
 sc = StandardScaler()
