@@ -43,7 +43,6 @@ print(y_train[0:5])
 
 #<Train>
 ######## Train the model using the training data, X_train and y_train
-### Start your code
 from sklearn.linear_model import LogisticRegression
 
 # One vs rest logisitic regression
@@ -54,12 +53,10 @@ model.fit(X_train, y_train)
 predictions = model.predict(X_train)
 accuracy = np.mean(predictions == y_train)
 print('Training accuracy:', accuracy)
-### End your code
 #</Train>
 
 #<Predict>
 ######## Define the predict_labels function that can be used to make new predictions using the trained model above given one sample from X_test
-### Start your code
 def predict_label(sample):
     '''
     The function 'predict_label' predicts the label of a given sample using the trained logistic regression model.
@@ -74,5 +71,4 @@ def predict_label(sample):
 
 sample = X_test[0]
 print("Predicted probabilities for sample test data: ", predict_label(sample))
-### End your code
 #</Predict>
