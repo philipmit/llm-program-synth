@@ -28,7 +28,7 @@ y = ecoli.iloc[:, -1]
 # replace strings with numbers in y
 np.unique( y)
 len(list(np.unique( y)))
-y = y.replace(list(np.unique(y)), list(range(1, len(np.unique(y))+1))) # Corrected to ensure that we have 8 classes ranging from 1 to 8
+y = y.replace(list(np.unique(y)), list(range(8))) # Ensure that we have 8 classes ranging from 0 to 7
 X=X.to_numpy()
 y=y.to_numpy()
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
@@ -41,8 +41,8 @@ X_train = sc.fit_transform(X_train)
 # Import necessary packages
 from sklearn.linear_model import LogisticRegression
 
-# Initialize Logistic regression model
-log_reg = LogisticRegression(random_state=42, max_iter=500)
+# Initialize Logistic regression model with multi_class set to 'multinomial' and  solver set to 'lbfgs' to manage multiclass dataset
+log_reg = LogisticRegression(random_state=42, max_iter=500, multi_class='multinomial', solver='lbfgs')
 
 # Fit the model with training data
 log_reg.fit(X_train, y_train)
@@ -62,6 +62,6 @@ def predict_label(sample):
     probabilities = log_reg.predict_proba(sample)
     
     # Return the probabilities in expected output format
-    return list(probabilities[0])
-    ### End your code  
+    return list(probabilities[0]) 
+    ### End your code 
 #</Predict>
