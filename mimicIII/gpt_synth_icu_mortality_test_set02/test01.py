@@ -1,4 +1,3 @@
-<Train>
 # Import necessary libraries
 from torch.nn import LSTM
 from torch.optim import Adam
@@ -24,7 +23,7 @@ class LSTMModel(nn.Module):
         self.fc = nn.Linear(hidden_size, 1)
 
     def forward(self, x):
-        h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device) 
+        h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device)
         c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device)
         
         out, _ = self.lstm(x, (h0, c0))
@@ -57,6 +56,5 @@ for epoch in range(num_epochs):
 
     if (epoch+1) % 10 == 0:
         print ('Epoch [{}/{}], Loss: {:.4f}'.format(epoch+1, num_epochs, loss.item()))
-        
-print("Training finished")
-</Train>
+
+print("Training finished")</Train>
