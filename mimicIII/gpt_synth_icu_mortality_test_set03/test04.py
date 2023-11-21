@@ -78,8 +78,7 @@ num_epochs = 25
 # Train LSTM
 for epoch in range(num_epochs):
     for i, (inputs, lengths, labels) in enumerate(dataloader):
-        inputs = inputs.to(*[torch.float32]*len(inputs))
-        labels = labels.to(*[torch.float32]*len(labels))
+        labels = labels.float()
 
         optimizer.zero_grad()
         outputs = model(inputs, lengths.tolist())
