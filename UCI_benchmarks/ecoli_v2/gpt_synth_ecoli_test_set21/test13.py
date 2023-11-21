@@ -46,26 +46,18 @@ print(y_train[0:5])
 #<Train>
 ######## Train the model using the training data, X_train and y_train
 from sklearn.linear_model import LogisticRegression
-from sklearn.preprocessing import LabelBinarizer
-
 # Initialize the model
 LR = LogisticRegression(random_state=0, multi_class='ovr', solver='lbfgs')
-
-# Convert y_train to a binary matrix of shape (n_samples, n_classes) 
-lb = LabelBinarizer()
-y_train_bin = lb.fit_transform(y_train)
-
 # Fit the model to the data
-LR.fit(X_train, y_train_bin)
+LR.fit(X_train, y_train)
 #</Train>
 
 #<Predict>
 ######## Define the predict_labels function that can be used to make new predictions using the trained model above given one sample from X_test
-
 def predict_label(sample):
     # reshape sample to be 2D as model expects the input to be in 2D
     sample = np.array(sample).reshape(1, -1)
     # predict the class label for the sample
     pred = LR.predict_proba(sample)
-    return lb.inverse_transform(pred)
+    return pred
 #</Predict>
