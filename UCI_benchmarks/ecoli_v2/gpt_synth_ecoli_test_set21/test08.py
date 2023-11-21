@@ -27,10 +27,7 @@ ecoli.columns = ['Sequence Name', 'mcg', 'gvh', 'lip', 'chg', 'aac', 'alm1', 'al
 X = ecoli.iloc[:, 1:-1]  
 y = ecoli.iloc[:, -1]  
 # replace strings with numbers in y
-np.unique( y)
-len(list(np.unique( y)))
 y = y.replace(list(np.unique(y)), [0,1,2,3,4,5,6,7])
-
 X=X.to_numpy()
 y=y.to_numpy()
 
@@ -48,13 +45,13 @@ print(y_train[0:5])
 #</PrepData>
 
 #<Train>
-######## Train the model using the training data, X_train and y_train
+######## Train the model using the training data, X_train, and y_train
 # Import necessary modules
 from sklearn.linear_model import LogisticRegression
 
 ### Start your code
 # Create a logistic regression model
-clf = LogisticRegression(random_state=0, max_iter=200)
+clf = LogisticRegression(random_state=0, max_iter=200, multi_class='ovr')
 
 # Train the logistic regression model
 clf.fit(X_train, y_train)
@@ -64,12 +61,12 @@ clf.fit(X_train, y_train)
 #<Predict>
 ######## Define the predict_labels function that can be used to make new predictions using the trained model above given one sample from X_test
 
-
-# Define the function
-def predict_label(x):
-    x = sc.transform([x])  # Scale the features
-    y_pred = clf.predict_proba(x)  # Predict the labels
-    return y_pred
-
+### Start your code
+def predict_label(sample):
+    sample = sample.reshape(1, -1)  # Reshape the sample to 2D array
+    sample=sc.transform(sample) # Scale the sample
+    probabilities = clf.predict_proba(sample)  # Predict the probabilistic outputs
+    return probabilities[0]  # Return the first (and only) prediction
 ### End your code
+
 #</Predict>
