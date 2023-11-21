@@ -1,11 +1,40 @@
 # Import necessary libraries
+import os
+import pandas as pd
+import numpy as np
+import torch
+import warnings
 from torch.nn import LSTM
 from torch.optim import Adam
 from torch.nn import BCEWithLogitsLoss
 import torch.nn as nn
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, Dataset
 
-# Parameters for LSTM and DataLoader
+warnings.filterwarnings("ignore")
+
+# File paths
+TRAIN_DATA_PATH = "/data/sls/scratch/pschro/p2/data/benchmark_output2/in-hospital-mortality/train/"
+LABEL_FILE = "/data/sls/scratch/pschro/p2/data/benchmark_output2/in-hospital-mortality/train/listfile.csv"
+
+# Define the Dataset
+class ICUData(Dataset):
+    def __init__(self, data_path, label_file):
+        self.data_path = data_path
+        label_data = pd.read_csv(label_file)
+        self.file_names = label_data['stay']
+        self.labels = torch.tensor(label_data['y_true'].values, dtype=torch.float32)
+    def __len__(self):
+        return len(self.file_names)
+    def __getitem__(self, idx):
+        file_path = os.path.join(self.data_path, self.file_names[idx])
+        data = pd.read_csv(file_path)
+        data = data.drop(['Hours'], axis=1)  
+        data = data.fillna(0)  
+        data = data.select_dtypes(include=[np.number]) 
+        label = self.labels[idx]
+        return torch.tensor(data.values, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
+
+# Parameters for LSTM
 input_size = 14  # since we have 14 signals
 hidden_size = 64  # size of hidden state
 num_layers = 1  # number of stacked LSTM layers
@@ -45,6 +74,7 @@ train_loader = DataLoader(dataset=icu_data, batch_size=batch_size, shuffle=True)
 for epoch in range(num_epochs):
     for i, (sequences, labels) in enumerate(train_loader):
         sequences = sequences.squeeze(1)  # Remove unnecessary dimension from time-series data
+        
         # Forward pass
         outputs = model(sequences)
         loss = criterion(outputs.view(-1), labels)
