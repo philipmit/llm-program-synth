@@ -73,3 +73,17 @@ multilr = OneVsRestClassifier(logreg)
 # Fit the model
 multilr.fit(X_train, y_train)
 #</Train>
+#<Predict>
+######## Define the predict_labels function that can be used to make new predictions using the trained model above given one sample from X_test
+def predict_label(sample):
+    sample = np.array(sample).reshape(1,-1)
+    sample = sc.transform(sample) #scale the features first with the same scaler used in training
+
+    # Use the predict_proba method of the model to predict all class probabilities
+    pred = multilr.predict_proba(sample)
+
+    return pred[0] # since we are predicting for one sample, we just need to return the first element which is a list of 8 probabilities
+
+# Test the function with a random sample
+print(predict_label(X_test[0]))
+#</Predict>
