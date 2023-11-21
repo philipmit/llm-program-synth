@@ -38,7 +38,7 @@ class ICUData(Dataset):
         length = min(max_length, scaled_data.shape[0])  
         pad_data[-length:] = scaled_data[:length]
         label = self.labels[idx]
-        return torch.tensor(pad_data, dtype=torch.float32), length, torch.tensor(label, dtype=torch.float32)
+        return torch.tensor(pad_data, dtype=torch.float32), length, torch.tensor(label, dtype=torch.float32)  
 #</PrepData>
 
 #<Train>
