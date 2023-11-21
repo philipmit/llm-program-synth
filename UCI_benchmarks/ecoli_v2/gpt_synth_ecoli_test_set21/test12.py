@@ -28,12 +28,12 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_
 
 # replace strings with numbers in y using LabelBinarizer
 lb = LabelBinarizer()
-y_train = lb.fit_transform(y_train)
-y_test = lb.transform(y_test)
+y_train_lb = lb.fit_transform(y_train)
+y_test_lb = lb.transform(y_test)
 
 # The shape of y_train and y_test should be (-1, 8), because there are 8 unique labels.
-print(y_train.shape)
-print(y_test.shape)
+print(y_train_lb.shape)
+print(y_test_lb.shape)
 
 X_train=X_train.to_numpy()
 X_test=X_test.to_numpy()
@@ -56,7 +56,7 @@ logreg = LogisticRegression(solver='saga',max_iter=10000)
 
 # Define the one-versus-rest classifier
 ovr = OneVsRestClassifier(logreg)
-ovr.fit(X_train, y_train)
+ovr.fit(X_train, y_train_lb)
 #</Train>
 
 #<Predict>
