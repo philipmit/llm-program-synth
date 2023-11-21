@@ -44,21 +44,6 @@ print(y_train[0:5])
 #</PrepData>
 
 #<Train>
-######## Train the model using the training data, X_train and y_train
-### Start your code
-
-### End your code
-#</Train>
-
-#<Predict>
-######## Define the predict_labels function that can be used to make new predictions using the trained model above given one sample from X_test
-### Start your code
-
-### End your code
-#</Predict>
-
-
-#<Train>
 # Import necessary packages
 from sklearn.linear_model import LogisticRegression
 
@@ -68,6 +53,7 @@ log_reg = LogisticRegression(random_state=42, max_iter=500)
 # Fit the model with training data
 log_reg.fit(X_train, y_train)
 #</Train>
+
 #<Predict>
 ######## Define the predict_labels function that can be used to make new predictions using the trained model above given one sample from X_test
 def predict_label(sample):
@@ -81,7 +67,7 @@ def predict_label(sample):
     # Use the trained model to predict
     probabilities = log_reg.predict_proba(sample)
     
-    # Output the probabilities
-    return probabilities
+    # Return the probabilities in expected output format
+    return list(probabilities[0])
     ### End your code   
 #</Predict>
