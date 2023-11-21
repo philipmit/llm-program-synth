@@ -1,5 +1,4 @@
 #<PrevData>
-######## Prepare to load and preview the dataset and datatypes
 # Import necessary libraries
 import os
 import pandas as pd
@@ -7,8 +6,9 @@ import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 import torch
 import warnings
-warnings.filterwarnings("ignore")
 from torch.utils.data import Dataset
+
+warnings.filterwarnings("ignore")
 #</PrevData>
 
 #<PrepData>
@@ -22,23 +22,32 @@ class ICUData(Dataset):
         self.data_path = data_path
         label_data = pd.read_csv(label_file)
         self.file_names = label_data['stay']
-        self.labels = torch.tensor(label_data['y_true'].values, dtype=torch.float32)
-        self.scaler = MinMaxScaler(feature_range=(0, 1)) 
+        self.labels = label_data['y_true'].values
+        self.scaler = MinMaxScaler(feature_range=(0, 1))
+
     def __len__(self):
         return len(self.file_names)
+
     def __getitem__(self, idx):
         file_path = os.path.join(self.data_path, self.file_names[idx])
         data = pd.read_csv(file_path)
-        data = data.drop(['Hours','Glascow coma scale eye opening','Glascow coma scale motor response','Glascow coma scale total','Glascow coma scale verbal response'], axis=1)
+        data = data.drop(['Hours',
+                          'Glascow coma scale eye opening',
+                          'Glascow coma scale motor response',
+                          'Glascow coma scale total',
+                          'Glascow coma scale verbal response'], axis=1)
+
         data = data.fillna(0)
         data = data.select_dtypes(include=[np.number])
         scaled_data = self.scaler.fit_transform(data)
+
         max_length = 100  # arbitrary maximum length for our sequence data
-        pad_data = np.zeros((max_length, data.shape[1]))  
-        length = min(max_length, scaled_data.shape[0])  
+        pad_data = np.zeros((max_length, data.shape[1]))
+        length = min(max_length, scaled_data.shape[0])
         pad_data[-length:] = scaled_data[:length]
         label = self.labels[idx]
-        return torch.tensor(pad_data, dtype=torch.float32), length, torch.tensor(label, dtype=torch.float32)  
+
+        return torch.tensor(pad_data, dtype=torch.float32), length, torch.tensor(label, dtype=torch.float32)
 #</PrepData>
 
 #<Train>
@@ -56,11 +65,12 @@ class LSTM(nn.Module):
         self.hidden_size = hidden_size
         self.lstm = nn.LSTM(input_size, hidden_size, num_layers=2, dropout=0.2, batch_first=True)
         self.fc = nn.Linear(hidden_size, output_size)
+
     def forward(self, x, lengths):
         # Convert lengths to tensor
         lengths = torch.tensor(lengths, dtype=torch.long)
         pack = pack_padded_sequence(x, lengths, batch_first=True, enforce_sorted=False)
-        out_pack, (ht, ct) = self.lstm(pack)
+        out_pack, (ht, _) = self.lstm(pack)
         out = self.fc(ht[-1])
         return out.view(-1)
 
@@ -77,13 +87,19 @@ num_epochs = 25
 
 # Train LSTM
 for epoch in range(num_epochs):
-    for i, (inputs, lengths, labels) in enumerate(dataloader):
+    for i, batch in enumerate(dataloader):
+        inputs, lengths, labels = batch
         labels = labels.float()
 
         optimizer.zero_grad()
+
+        # Forward pass
         outputs = model(inputs, lengths.tolist())
         loss = criterion(outputs, labels)
+
+        # Backward and optimize
         loss.backward()
         optimizer.step()
+
     print('Epoch: '+str(epoch+1)+'/'+str(num_epochs)+', Loss: '+str(loss.item()))  
 #</Train>
