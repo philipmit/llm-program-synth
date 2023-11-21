@@ -1,3 +1,19 @@
+#<PrevData>
+######## Load and preview the dataset and datatypes
+# Import necessary libraries
+import pandas as pd
+# Read file
+df = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', header=None)
+# Preview dataset and datatypes
+print(df.shape)
+print(df.head())
+print(df.info())
+print(df.dtypes)
+for col in df.applymap(type).columns:
+    print(col, df.applymap(type)[col].unique())
+print(df.isnull().sum())
+#</PrevData>
+
 #<PrepData>
 ######## Prepare the dataset for training
 # Import necessary packages
@@ -13,8 +29,6 @@ y = ecoli.iloc[:, -1]
 # replace strings with numbers in y
 le = LabelEncoder()
 y = le.fit_transform(y)
-X = X.to_numpy()
-y = y.to_numpy()
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
 # Scale the features 
 sc = StandardScaler()
@@ -39,5 +53,5 @@ def predict_label(sample):
     sample = np.array(sample).reshape(1, -1)
   
     # Use the fitted model to make predictions on the sample
-    return lr.predict_proba(sample)[0] # Modified this line to return a 1D array instead of a 2D array
+    return lr.predict_proba(sample)[0] # Returns a 1D array instead of a 2D array
 #</Predict>
