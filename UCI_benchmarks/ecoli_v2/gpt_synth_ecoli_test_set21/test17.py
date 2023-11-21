@@ -45,21 +45,6 @@ print(y_train[0:5])
 
 #<Train>
 ######## Train the model using the training data, X_train and y_train
-### Start your code
-
-### End your code
-#</Train>
-
-#<Predict>
-######## Define the predict_labels function that can be used to make new predictions using the trained model above given one sample from X_test
-### Start your code
-
-### End your code
-#</Predict>
-
-
-#<Train>
-######## Train the model using the training data, X_train and y_train
 # Import necessary packages
 from sklearn.linear_model import LogisticRegression
 from sklearn.multiclass import OneVsRestClassifier
@@ -74,7 +59,7 @@ multilr = OneVsRestClassifier(logreg)
 multilr.fit(X_train, y_train)
 #</Train>
 #<Predict>
-######## Define the predict_labels function that can be used to make new predictions using the trained model above given one sample from X_test
+######## Define the predict_label function that can be used to make new predictions using the trained model above given one sample from X_test
 def predict_label(sample):
     sample = np.array(sample).reshape(1,-1)
     sample = sc.transform(sample) #scale the features first with the same scaler used in training
