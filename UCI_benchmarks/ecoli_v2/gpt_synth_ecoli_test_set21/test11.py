@@ -2,66 +2,73 @@
 ######## Load and preview the dataset and datatypes
 # Import necessary libraries
 import pandas as pd
-# Read file
-df = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', header=None)
-# Preview dataset and datatypes
-print(df.shape)
-print(df.head())
-print(df.info())
-print(df.dtypes)
-for col in df.applymap(type).columns:
-    print(col, df.applymap(type)[col].unique())
-print(df.isnull().sum())
+
+# Load the Ecoli dataset
+ecoli = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', delim_whitespace=True, header=None)
+
+# Rename columns
+ecoli.columns = ['Sequence Name', 'mcg', 'gvh', 'lip', 'chg', 'aac', 'alm1', 'alm2', 'class']
+
+# Print the shape of the dataset and the first few rows
+print(ecoli.shape)
+print(ecoli.head())
+print(ecoli.dtypes)
+print(ecoli.isnull().sum())
 #</PrevData>
 
 #<PrepData>
 ######## Prepare the dataset for training
-# Import necessary packages
+# Import necessary libraries
 import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import roc_auc_score
+from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import StandardScaler
-ecoli = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', delim_whitespace=True, header=None)
-ecoli.columns = ['Sequence Name', 'mcg', 'gvh', 'lip', 'chg', 'aac', 'alm1', 'alm2', 'class']
-X = ecoli.iloc[:, 1:-1]  
-y = ecoli.iloc[:, -1]  
-# replace strings with numbers in y
-np.unique( y)
-len(list(np.unique( y)))
-y = y.replace(list(np.unique(y)), list(range(8))) # Ensure that we have 8 classes ranging from 0 to 7
-X=X.to_numpy()
-y=y.to_numpy()
+
+# Define features and target
+X = ecoli.iloc[:, 1:-1].values  # exclude the Sequence Name and target column
+y = ecoli.iloc[:, -1].values  # the target column
+
+# Perform label encoding for the target to convert string class labels to integers
+le = LabelEncoder()
+y = le.fit_transform(y)
+
+# Split the dataset into training (50%) and test sets (50%) with random_state=42
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
-# Scale the features 
+
+# Scale the inputs
 sc = StandardScaler()
 X_train = sc.fit_transform(X_train)
 #</PrepData>
 
 #<Train>
-# Import necessary packages
+######## Train the model using the training data
+# Import the LogisticRegression function from sklearn
 from sklearn.linear_model import LogisticRegression
 
-# Initialize Logistic regression model with multi_class set to 'multinomial' and  solver set to 'lbfgs' to manage multiclass dataset
-log_reg = LogisticRegression(random_state=42, max_iter=500, multi_class='multinomial', solver='lbfgs')
+# Initialize the logistic regression model
+lr = LogisticRegression(max_iter=500, multi_class='ovr', solver='liblinear', random_state=42)
 
-# Fit the model with training data
-log_reg.fit(X_train, y_train)
+# Fit the model on the training data
+lr.fit(X_train, y_train)
 #</Train>
 
 #<Predict>
-######## Define the predict_labels function that can be used to make new predictions using the trained model above given one sample from X_test
+######## The predict_label function will use the trained logistic regression model to predict the label of a new sample
 def predict_label(sample):
-    ### Start your code
-    # Reshape the sample to 2D array since sklearn requires it in this form
-    sample = np.array(sample).reshape(1, -1)
+    # Sample is expected to be a list of 7 decimal values
+    # Convert the sample to a numpy array and reshape it to (1,-1)
+    sample = np.array(sample).reshape(1,-1)
     
-    # Apply standard scaler transformation
+    # Standardize the sample using the scalar object created during training
     sample = sc.transform(sample)
     
-    # Use the trained model to predict
-    probabilities = log_reg.predict_proba(sample)
+    # Use the trained model to predict the probabilities
+    probabilities = lr.predict_proba(sample)
     
-    # Return the probabilities in expected output format
-    return list(probabilities[0]) 
-    ### End your code 
+    # Since the output is a 2D array with shape (1,8) we need to grab the first element to make it shape (8,)
+    probabilities = probabilities[0]
+    
+    # Return the probabilities as a list
+    return probabilities.tolist()
 #</Predict>
