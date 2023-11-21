@@ -73,3 +73,22 @@ accuracy = np.mean(predictions == y_train)
 print('Training accuracy:', accuracy)
 ### End your code
 #</Train>
+#<Predict>
+######## Define the predict_labels function that can be used to make new predictions using the trained model above given one sample from X_test
+### Start your code
+def predict_label(sample):
+    '''
+    The function 'predict_label' predicts the label of a given sample using the trained logistic regression model.
+    The predicted label is returned as a list of probabilities for each label.
+    '''
+    # reshape the sample for prediction
+    sample = np.reshape(sample, (1,-1))
+    # Predicting the probabilities of each class
+    predicted_probabilities = model.predict_proba(sample)
+    # return the predicted probabilities
+    return predicted_probabilities[0]
+
+sample = X_test[0]
+print("Predicted probabilities for sample test data: ", predict_label(sample))
+### End your code
+#</Predict>
