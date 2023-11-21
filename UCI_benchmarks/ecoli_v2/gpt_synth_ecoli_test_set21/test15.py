@@ -26,8 +26,6 @@ df.columns = ['Sequence Name', 'mcg', 'gvh', 'lip', 'chg', 'aac', 'alm1', 'alm2'
 X = df.iloc[:, 1:-1]  
 y = df.iloc[:, -1]  
 # replace strings with numbers in y
-np.unique( y)
-len(list(np.unique( y)))
 y = y.replace(list(np.unique(y)), [0,1,2,3,4,5,6,7])
 X=X.to_numpy()
 y=y.to_numpy()
