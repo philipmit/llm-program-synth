@@ -21,7 +21,6 @@ print(ecoli.isnull().sum())
 # Import necessary libraries
 import numpy as np
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import roc_auc_score
 from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import StandardScaler
 
@@ -36,12 +35,10 @@ y = le.fit_transform(y)
 # Split the dataset into training (50%) and test sets (50%) with random_state=42
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
 
-# We have to remember to transform the test set as well to make sure our prediction function works correctly
-X_test = sc.transform(X_test)
-
-# Scale the inputs in the training set
+# Scale the inputs in the training set and transform the test set as well
 sc = StandardScaler()
 X_train = sc.fit_transform(X_train)
+X_test = sc.transform(X_test)
 #</PrepData>
 
 #<Train>
@@ -49,8 +46,8 @@ X_train = sc.fit_transform(X_train)
 from sklearn.linear_model import LogisticRegression
 
 # Create logistic regression
-# As the target has multiple labels, we have to set multi_class parameter to 'ovr' which stands for 'one vs rest'
-log_reg = LogisticRegression(multi_class='ovr', max_iter=500, random_state=42)
+# As the target has 8 unique classes, we have to set multi_class parameter to 'multinomial' which allows us to handle multiclass data
+log_reg = LogisticRegression(multi_class='multinomial', max_iter=500, random_state=42)
 
 # Train the model using the training data
 log_reg.fit(X_train, y_train)
