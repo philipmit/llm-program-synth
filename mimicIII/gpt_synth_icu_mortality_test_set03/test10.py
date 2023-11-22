@@ -30,14 +30,12 @@ class ICUData(Dataset):
         data = data.fillna(0)  
         data = data.select_dtypes(include=[np.number]) 
         label = self.labels[idx]
-        return torch.tensor(data.values, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
+        return torch.tensor(data.values, dtype=torch.float32), label
 
 def pad_collate(batch):
     (xx, yy) = zip(*batch)
-    x_lens = [len(x) for x in xx]
-    y_lens = [len(y) for y in yy]
     xx_pad = pad_sequence(xx, batch_first=True, padding_value=0)
-    return xx_pad, torch.cat(yy, dim=0)
+    return xx_pad, torch.tensor(yy, dtype=torch.float32)
 #</PrevData>
 
 #<PrepData>
@@ -106,6 +104,7 @@ for epoch in range(num_epochs):
 def predict_label(one_sample):
     # Pass the one sample through the model to get the predicted probability of mortality in the ICU
     with torch.no_grad():
-        output = model(one_sample)
-        return torch.sigmoid(output.item())  
+        output = model(one_sample.unsqueeze(0))
+        prediction = torch.sigmoid(output).item()
+    return prediction
 #</Predict>
