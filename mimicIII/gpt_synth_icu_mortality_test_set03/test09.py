@@ -4,6 +4,7 @@
 import os
 import pandas as pd
 import numpy as np
+from torch.nn.utils.rnn import pad_sequence
 import torch
 import warnings
 warnings.filterwarnings("ignore")
@@ -32,46 +33,25 @@ class ICUData(Dataset):
         return torch.tensor(data.values, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
 #</PrepData>
 
-#<Evaluate>
-### Example of how predict_label is expected to function
-# val_dataset = ICUData(VAL_DATA_PATH, VAL_LABEL_FILE)
-# val_patient = val_dataset[0][0].unsqueeze(0)
-# prediction = predict_label(val_patient)
-# assert(isinstance(prediction,float))
-# print('**************************************')
-# print('Prediction: ' + str(prediction))
-# print('**************************************')
-# from sklearn.metrics import roc_auc_score
-# import warnings
-# warnings.filterwarnings("ignore")
-# prediction_label_list=[]
-# true_label_list=[]
-# for val_i in range(len(val_dataset)):
-#     val_patient = val_dataset[val_i][0].unsqueeze(0)
-#     prediction = predict_label(val_patient)
-#     true_label_list.append(int(val_dataset[val_i][1].item()))
-#     if prediction>0.5:
-#         prediction_label_list.append(1)
-#     else:
-#         prediction_label_list.append(0)
-# auc = roc_auc_score(true_label_list, prediction_label_list)
-# auc
-# print('**************************************')
-# print('VALIDATION AUC: ' + str(auc))
-# print('**************************************')
-# print('VALIDATION CODE EXECUTED SUCCESSFULLY')
-#</Evaluate>
 #<PrepData>
 ######## Prepare the dataset for training
 # Import necessary packages
 from torch.utils.data import DataLoader
-from sklearn.model_selection import train_test_split
 
 # Create datasets
 dataset_icu = ICUData(TRAIN_DATA_PATH, TRAIN_LABEL_FILE)
 
+# Create a collate function to handle variable length sequences
+def collate_fn(batch):
+    sorted_batch = sorted(batch, key=lambda x: x[0].shape[0], reverse=True)
+    sequences, labels = zip(*sorted_batch)
+    sequences_padded = pad_sequence(sequences, batch_first=True)
+    lengths = torch.LongTensor([len(x) for x in sequences])
+    labels = torch.stack(labels)
+    return sequences_padded, labels, lengths
+
 # Create dataloaders
-dataloader = DataLoader(dataset_icu, batch_size=32, shuffle=True, num_workers=4)
+dataloader = DataLoader(dataset_icu, batch_size=32, shuffle=True, num_workers=4, collate_fn=collate_fn)
 
 print('Number of samples in the dataset: ', len(dataset_icu))
 #</PrepData>
@@ -90,12 +70,12 @@ class LSTM(nn.Module):
         self.lstm = nn.LSTM(input_size, hidden_size, num_layers, batch_first=True)
         self.fc = nn.Linear(hidden_size, output_size)
 
-    def forward(self, x):
+    def forward(self, x, lengths):
+        packed_inp = nn.utils.rnn.pack_padded_sequence(x, lengths, batch_first=True, enforce_sorted=False)
         h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device) 
         c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device)
-        
-        out, _ = self.lstm(x, (h0, c0))  # out: tensor of shape (batch_size, seq_length, hidden_size)
-        
+        out, _ = self.lstm(packed_inp, (h0, c0))  
+        out, _ = nn.utils.rnn.pad_packed_sequence(out, batch_first=True)
         out = self.fc(out[:, -1, :])
         return out
     
@@ -119,13 +99,13 @@ optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 # Train the model
 total_step = len(dataloader)
 for epoch in range(num_epochs):
-    for i, (patients, labels) in enumerate(dataloader):
+    for i, (patients, labels,lengths) in enumerate(dataloader):
         if torch.cuda.is_available():
             patients = patients.cuda()
             labels = labels.cuda()
             
         # Forward pass
-        outputs = model(patients)
+        outputs = model(patients,lengths)
         loss = criterion(outputs, labels.unsqueeze(1))
 
         # Backward and optimize
@@ -147,6 +127,6 @@ def predict_label(one_sample):
         one_sample = one_sample.cuda()
     model.eval()
     with torch.no_grad():
-        prediction = model(one_sample)
+        prediction = model(one_sample, torch.tensor([one_sample.shape[1]]))
     return torch.sigmoid(prediction).item()
 #</Predict>
