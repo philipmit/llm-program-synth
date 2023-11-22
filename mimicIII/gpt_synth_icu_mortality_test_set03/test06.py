@@ -1,15 +1,3 @@
-#<PrevData>
-######## Prepare to load and preview the dataset and datatypes
-# Import necessary libraries
-import os
-import pandas as pd
-import numpy as np
-import torch
-import warnings
-warnings.filterwarnings("ignore")
-from torch.utils.data import Dataset
-#</PrevData>
-
 #<PrepData>
 # File paths
 TRAIN_DATA_PATH = "/data/sls/scratch/pschro/p2/data/benchmark_output2/in-hospital-mortality/train/"
@@ -31,10 +19,12 @@ class ICUData(Dataset):
         data = data.fillna(0)  
         data = data.select_dtypes(include=[np.number]) 
         data_numpy = data.to_numpy()
-        data_pad = np.pad(data_numpy, pad_width=((0, 2000-data_numpy.shape[0]), (0,0)), mode='constant', constant_values=0)
+        remaining_rows = 2000 - data_numpy.shape[0] if data_numpy.shape[0]<2000 else 0
+        data_pad = np.pad(data_numpy, pad_width=((0, remaining_rows), (0,0)), mode='constant', constant_values=0)
         label = self.labels[idx]
         return torch.tensor(data_pad, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
 #</PrepData>
+
 #<Train>
 ######## Prepare the Model
 # Import necessary PyTorch packages
@@ -95,7 +85,7 @@ for epoch in range(num_epochs):
         if (i+1) % 100 == 0:
             print ('Epoch [{}/{}], Step [{}/{}], Loss: {:.4f}' 
                    .format(epoch+1, num_epochs, i+1, total_step, loss.item()))
-#</Train>   
+#</Train>
 
 #<Predict>
 ######## Define a function that can be used to make new predictions given one raw sample of data
@@ -105,7 +95,8 @@ def predict_label(raw_data):
     raw_data = raw_data.fillna(0) 
     raw_data = raw_data.select_dtypes(include=[np.number])
     data_numpy = raw_data.to_numpy()
-    data_pad = np.pad(data_numpy, pad_width=((0, 2000-data_numpy.shape[0]), (0,0)), mode='constant', constant_values=0)
+    remaining_rows = 2000 - data_numpy.shape[0] if data_numpy.shape[0]<2000 else 0
+    data_pad = np.pad(data_numpy, pad_width=((0, remaining_rows), (0,0)), mode='constant', constant_values=0)
     raw_sample = torch.tensor(data_pad, dtype=torch.float32).unsqueeze(0).to(device)
     
     # Return the class probabilities
