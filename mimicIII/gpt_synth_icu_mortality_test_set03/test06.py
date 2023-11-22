@@ -1,5 +1,6 @@
 #<PrevData>
 ######## Prepare to load and preview the dataset and datatypes
+# Since an error message has been received, let's set a standard time course for each patient (e.g., 400 time points)
 # Import necessary libraries
 import os
 import pandas as pd
@@ -27,14 +28,19 @@ class ICUData(Dataset):
     def __getitem__(self, idx):
         file_path = os.path.join(self.data_path, self.file_names[idx])
         data = pd.read_csv(file_path)
-        data = data.drop(['Hours','Glascow coma scale eye opening','Glascow coma scale motor response','Glascow coma scale total','Glascow coma scale verbal response'], axis=1)  
+        data = data.drop(['Hours','Glascow coma scale eye opening','Glascow coma scale motor response','Glascow coma scale total','Glascow coma scale verbal response'], axis=1)
         data = data.fillna(0)
         data = data.select_dtypes(include=[np.number])
+        # Crop/pad as necessary to ensure each sample has a length of 400 points
         data_numpy = data.to_numpy()
-        remaining_rows = 2000 - data_numpy.shape[0] if data_numpy.shape[0] < 2000 else 0 #ensure padding is for less than 2000 rows
-        data_pad = np.pad(data_numpy, pad_width=((0, remaining_rows), (0, 0)), mode='constant', constant_values=0)
+        if data_numpy.shape[0] > 400:
+            data_numpy = data_numpy[:400]
+        elif data_numpy.shape[0] < 400:
+            zeros_to_pad = 400 - data_numpy.shape[0]
+            data_numpy = np.concatenate((data_numpy, np.zeros((zeros_to_pad, data_numpy.shape[1]))), axis=0)
         label = self.labels[idx]
-        return torch.tensor(data_pad, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
+        
+        return torch.tensor(data_numpy, dtype=torch.float32), label
 #</PrepData>
 
 #<Train>
@@ -44,6 +50,7 @@ import torch.nn as nn
 torch.manual_seed(42)
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 from torch.utils.data import DataLoader
+from torch.nn.utils.rnn import pad_sequence, pack_padded_sequence, pad_packed_sequence 
 
 # Define the LSTM Model
 class Model(nn.Module):
@@ -60,9 +67,10 @@ class Model(nn.Module):
         h0 = torch.zeros(1, x.size(0), self.hidden_size).to(device)
         # Initialize cell state with zeros
         c0 = torch.zeros(1, x.size(0), self.hidden_size).to(device) 
-        out, _ = self.lstm(x, (h0, c0))  
+        out, _ = self.lstm(x, (h0, c0))
         out = self.fc(out[:, -1, :])
         return out
+  
 
 # Hyperparameters
 input_size = 13  # number of features 
@@ -78,16 +86,18 @@ optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
 # Load the Dataset
 dataset = ICUData(TRAIN_DATA_PATH, LABEL_FILE)
-train_loader = DataLoader(dataset=dataset, batch_size=32, shuffle=True)
+train_loader = DataLoader(dataset=dataset, batch_size=32, shuffle=True, collate_fn=lambda x: x)
+
 
 # Train the Model
 total_step = len(train_loader)
 for epoch in range(num_epochs):
-    for i, (x, labels) in enumerate(train_loader):
-        x = x.to(device)
-        labels = labels.to(device)
+    for i, batch in enumerate(train_loader):
+        inputs = [item[0] for item in batch]
+        labels = torch.tensor([item[1] for item in batch], dtype=torch.float32).to(device)
+        inputs = torch.stack(inputs).to(device)
         # Forward pass
-        outputs = model(x)
+        outputs = model(inputs)
         loss = criterion(outputs, labels.unsqueeze(-1)) 
         # Backward and optimize
         optimizer.zero_grad()
@@ -105,11 +115,16 @@ def predict_label(raw_data):
     # Process raw data
     raw_data = raw_data.drop(['Hours','Glascow coma scale eye opening','Glascow coma scale motor response','Glascow coma scale total','Glascow coma scale verbal response'], axis=1) 
     raw_data = raw_data.fillna(0)
-    raw_data = raw_data.select_dtypes(include=[np.number])    
+    raw_data = raw_data.select_dtypes(include=[np.number])
+    # Crop/pad as necessary to ensure each sample has a length of 400 points
     data_numpy = raw_data.to_numpy()
-    remaining_rows = 2000 - data_numpy.shape[0] if data_numpy.shape[0] < 2000 else 0 #ensure padding is for less than 2000 rows
-    data_pad = np.pad(data_numpy, pad_width=((0, remaining_rows), (0, 0)), mode='constant', constant_values=0)
-    raw_sample = torch.tensor(data_pad, dtype=torch.float32).unsqueeze(0).to(device)
+    if data_numpy.shape[0] > 400:
+        data_numpy = data_numpy[:400]
+    elif data_numpy.shape[0] < 400:
+        zeros_to_pad = 400 - data_numpy.shape[0]
+        data_numpy = np.concatenate((data_numpy, np.zeros((zeros_to_pad, data_numpy.shape[1]))), axis=0)
+            
+    raw_sample = torch.tensor(data_numpy, dtype=torch.float32).unsqueeze(0).to(device)
     
     # Return the class probabilities
     model.eval()
