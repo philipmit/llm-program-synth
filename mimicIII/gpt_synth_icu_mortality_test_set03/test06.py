@@ -30,8 +30,10 @@ class ICUData(Dataset):
         data = data.drop(['Hours','Glascow coma scale eye opening','Glascow coma scale motor response','Glascow coma scale total','Glascow coma scale verbal response'], axis=1)  
         data = data.fillna(0)  
         data = data.select_dtypes(include=[np.number]) 
+        data_numpy = data.to_numpy()
+        data_pad = np.pad(data_numpy, pad_width=((0, 2000-data_numpy.shape[0]), (0,0)), mode='constant', constant_values=0)
         label = self.labels[idx]
-        return torch.tensor(data.values, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
+        return torch.tensor(data_pad, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
 #</PrepData>
 #<Train>
 ######## Prepare the Model
@@ -102,7 +104,9 @@ def predict_label(raw_data):
     raw_data = raw_data.drop(['Hours','Glascow coma scale eye opening','Glascow coma scale motor response','Glascow coma scale total','Glascow coma scale verbal response'], axis=1) 
     raw_data = raw_data.fillna(0) 
     raw_data = raw_data.select_dtypes(include=[np.number])
-    raw_sample = torch.tensor(raw_data.values, dtype=torch.float32).unsqueeze(0).to(device)
+    data_numpy = raw_data.to_numpy()
+    data_pad = np.pad(data_numpy, pad_width=((0, 2000-data_numpy.shape[0]), (0,0)), mode='constant', constant_values=0)
+    raw_sample = torch.tensor(data_pad, dtype=torch.float32).unsqueeze(0).to(device)
     
     # Return the class probabilities
     model.eval()
