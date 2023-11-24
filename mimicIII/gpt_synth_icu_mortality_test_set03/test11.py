@@ -33,7 +33,7 @@ class ICUData(Dataset):
                           'Glascow coma scale verbal response'], axis=1)
         data = data.fillna(0)
         data = data.select_dtypes(include=[np.number])
-
+        
         # Convert each patient's time series data into a fixed length
         fixed_length = 48  
         if len(data) < fixed_length:
@@ -48,7 +48,7 @@ class ICUData(Dataset):
 #</PrevData>
 
 #<PrepData>
-######## Prepare the dataset for training
+######## Prepare the dataset for normalizing, splitting into training and validation sets.
 # Import necessary packages
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
@@ -56,24 +56,28 @@ from sklearn.preprocessing import StandardScaler
 # Create a dataset
 dataset = ICUData(TRAIN_DATA_PATH, TRAIN_LABEL_FILE)
 
-# Split the dataset into training and validation sets
+# Get lengths of train and validation datasets
 train_size = int(0.8 * len(dataset))
 val_size = len(dataset) - train_size
-train_dataset, val_dataset = torch.utils.data.random_split(dataset, [train_size, val_size])
+
+# Create data indices for training and validation splits
+indices = list(range(len(dataset)))
+np.random.shuffle(indices)
+train_indices, val_indices = indices[:train_size], indices[train_size:]
 
 # Data normalization
 scaler = StandardScaler()
-for i in range(len(train_dataset)):
-  train_dataset[i] = (scaler.fit_transform(train_dataset[i][0].numpy()), train_dataset[i][1])
-for i in range(len(val_dataset)):
-  val_dataset[i] = (scaler.transform(val_dataset[i][0].numpy()), val_dataset[i][1])
+
+# Create PyTorch data samplers
+from torch.utils.data.sampler import SubsetRandomSampler
+train_sampler = SubsetRandomSampler(train_indices)
+val_sampler = SubsetRandomSampler(val_indices)
 #</PrepData>
 
 #<TrainTestSplit>
-# DataLoader for easy mini-batch return in training
 # Increase the batch size to 200 from 100 for faster convergence
-train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=200, shuffle=True)
-val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=200, shuffle=False)
+train_loader = torch.utils.data.DataLoader(dataset, batch_size=200, sampler=train_sampler)
+val_loader = torch.utils.data.DataLoader(dataset, batch_size=200, sampler=val_sampler)
 #</TrainTestSplit>
 
 #<Train>
@@ -81,8 +85,7 @@ val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=200, shuffle=Fa
 # Import necessary packages
 import torch.nn as nn
 
-# Define our LSTM model
-# Number of hidden layers increased from 3 to 4 for a deeper model
+# Define LSTM model
 class LSTM(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers, num_classes):
         super(LSTM, self).__init__()
@@ -92,25 +95,19 @@ class LSTM(nn.Module):
         self.fc = nn.Linear(hidden_size, num_classes)
 
     def forward(self, x):
-        # Initialize hidden and cell states 
         h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device) 
         c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device)
-        # Forward propagate LSTM
         out, _ = self.lstm(x, (h0, c0)) 
-        # Decode the hidden state of the last time step
         out = self.fc(out[:, -1, :])
         return out
 
-# Initialize our model, loss function and optimizer
+# Initialize the model, loss function and optimizer
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+input_size = len(dataset[0][0][0])
+hidden_size = 256
+num_layers = 4
+num_classes = 1
 
-# The LSTM input size should be the number of columns, i.e., the number of features, not the number of rows.
-input_size = len(dataset[0][0][0])  
-hidden_size = 256  # You can adjust this number, increased from 128 for complex model
-num_layers = 4     # You can adjust this number, increase from 3 for complex model
-num_classes = 1    # We are predicting 1 label - ICU mortality
-
-# Learning rate reduced from 0.001 to 0.0005
 model = LSTM(input_size, hidden_size, num_layers, num_classes).to(device)
 criterion = nn.BCEWithLogitsLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=0.0005)
@@ -119,17 +116,13 @@ optimizer = torch.optim.Adam(model.parameters(), lr=0.0005)
 def train(model, num_epochs):
     for epoch in range(num_epochs):
         for i, (input_data, labels) in enumerate(train_loader):
-            model.train()
             input_data = input_data.to(device)
             labels = labels.to(device).view(-1,1)
-            # Forward pass
+            optimizer.zero_grad()
             outputs = model(input_data)
             loss = criterion(outputs, labels)
-            # Backward and optimize
-            optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-
         print('Epoch [{}/{}], Loss: {:.4f}'.format(epoch+1, num_epochs, loss.item()))
 
 train(model, 50) #increase the number of epochs from 20 to 50
@@ -139,7 +132,6 @@ train(model, 50) #increase the number of epochs from 20 to 50
 model.eval()
 correct = 0
 for i, (input_data, labels) in enumerate(val_loader):
-    model.train()
     input_data = input_data.to(device)
     labels = labels.to(device).view(-1,1)
 
@@ -148,14 +140,14 @@ for i, (input_data, labels) in enumerate(val_loader):
     predicted = (torch.sigmoid(outputs.data) > 0.5).float()
     correct += (predicted == labels.data).sum()
 
-print('Accuracy of the model on the validation set: {:.2f} %'.format(100 * correct / len(val_dataset)))
+print('Accuracy of the model on the validation set: {:.2f} %'.format(100 * correct / len(val_indices)))
 #</Evaluate>
 
 #<Predict>
 ######## Define a function that can be used to make new predictions given one raw sample of data
 model.eval() 
 def predict_label(patient):
-    patient = scaler.transform(patient.numpy()) #perform the same normalization as on the training data
+    patient = scaler.transform(patient.numpy()) #perform the same normalization as on the training set
     patient = torch.tensor(patient, dtype=torch.float32).unsqueeze(0).to(device)
     prediction = model(patient) # This will output the raw logits
     prediction_prob = torch.sigmoid(prediction)
