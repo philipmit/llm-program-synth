@@ -1,7 +1,3 @@
-The error message indicates that the different sequences (patients' time series measurements) are not of the same length, and hence can't be stacked into a single tensor using torch.utils.data.DataLoader. To solve this, you could either truncate or pad the sequences so they all have the same length.
-
-Here is the corrected code:
-
 #<PrevData>
 ######## Prepare to load and preview the dataset and datatypes
 # Import necessary libraries
@@ -51,12 +47,8 @@ input_dim = icu_data[0][0].shape[1]
 
 #<Train>
 ######## Define a LSTM model to predict ICU mortality, and then train it
-import torch
 import torch.nn as nn
 import torch.optim as optim
-from torch.optim import lr_scheduler
-from torch.nn.utils.rnn import pad_sequence
-from torch.utils.data import DataLoader, BatchSampler, SequentialSampler
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -77,35 +69,29 @@ class LSTM(nn.Module):
         out = self.sigmoid(out)
         return out
 
-model = LSTM(input_dim= input_dim, hidden_dim=32, output_dim=1).to(device)
+model = LSTM(input_dim= input_dim, hidden_dim=64, output_dim=1).to(device)
 
-# Define Loss, Optimizer, Learning Rate Scheduler
+# Define Loss, Optimizer
 loss_fn = nn.BCELoss()
 optimizer = optim.Adam(model.parameters(), lr=0.01)
-exp_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
 
 # Train the model
-def train_model(dataloader, model, loss_fn, optimizer, num_epochs):
+def train_model(model, optimizer, loss_fn, num_epochs):
     for epoch in range(num_epochs):
         print('Epoch {}/{}'.format(epoch, num_epochs - 1))
         print('-' * 10)
         running_loss = 0.0
-        exp_lr_scheduler.step()
         model.train()
-
         for inputs, labels in dataloader:
             inputs = inputs.to(device)
             labels = labels.to(device)
-
             # Zero the gradients
             optimizer.zero_grad()
             outputs = model(inputs)
             loss = loss_fn(outputs, labels)
             loss.backward()
             optimizer.step()
-
             running_loss += loss.item() * inputs.size(0)
-
         epoch_loss = running_loss / len(dataloader)
         print('Train Loss: {:.4f}'.format(epoch_loss))
     return model
@@ -122,7 +108,7 @@ def collate_fn(batch):
 dataloader = DataLoader(icu_data, batch_size=32, shuffle=True, num_workers=4, collate_fn=collate_fn)
 
 # Call the function to train the model
-model = train_model(dataloader, model, loss_fn, optimizer, num_epochs=10)
+model = train_model(model, optimizer, loss_fn, num_epochs=10)
 #</Train>
 
 #<Predict>
