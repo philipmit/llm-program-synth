@@ -28,13 +28,13 @@ class ICUData(Dataset):
         data = pd.read_csv(file_path)
         data = data.drop(['Hours','Glascow coma scale eye opening','Glascow coma scale motor response','Glascow coma scale total','Glascow coma scale verbal response'], axis=1)  
         data = data.fillna(method='ffill').fillna(method='bfill').fillna(0)
-        data = data.select_dtypes(include=[np.number]) 
+        data = data.select_dtypes(include=[np.number]).values # Convert DataFrame into np.ndarray to avoid 'ValueError: could not determine the shape of object type 'DataFrame''
         label = self.labels[idx]
         # Truncate or zero-pad the time-series data
-        if len(data) > self.seq_len:
-            data = data.iloc[:self.seq_len, :]
-        elif len(data) < self.seq_len:
-            data = np.pad(data.values, ((0, self.seq_len - len(data)), (0, 0)), 'constant')
+        if data.shape[0] > self.seq_len:
+            data = data[:self.seq_len, :]
+        elif data.shape[0] < self.seq_len:
+            data = np.pad(data, ((0, self.seq_len - data.shape[0]), (0, 0)), 'constant')
         return torch.tensor(data, dtype=torch.float32), label
 #</PrevData>
 
