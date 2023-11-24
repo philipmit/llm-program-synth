@@ -20,47 +20,31 @@ class ICUData(Dataset):
         label_data = pd.read_csv(label_file)
         self.file_names = label_data['stay']
         self.labels = torch.tensor(label_data['y_true'].values, dtype=torch.float32)
+
     def __len__(self):
         return len(self.file_names)
+
     def __getitem__(self, idx):
         file_path = os.path.join(self.data_path, self.file_names[idx])
         data = pd.read_csv(file_path)
-        data = data.drop(['Hours','Glascow coma scale eye opening','Glascow coma scale motor response','Glascow coma scale total','Glascow coma scale verbal response'], axis=1)  
-        data = data.fillna(0)  
-        data = data.select_dtypes(include=[np.number]) 
+        data = data.drop(['Hours','Glascow coma scale eye opening',
+                          'Glascow coma scale motor response',
+                          'Glascow coma scale total',
+                          'Glascow coma scale verbal response'], axis=1)
+        data = data.fillna(0)
+        data = data.select_dtypes(include=[np.number])
+
+        # Convert each patient's time series data into a fixed length
+        fixed_length = 48  # you may need to adjust this according to your actual situations
+        if len(data) < fixed_length:
+            data = np.pad(data, ((fixed_length-len(data),0),(0,0)), 'constant', constant_values=0)
+        elif len(data) > fixed_length:
+            data = data[:fixed_length]
+
         label = self.labels[idx]
-        return torch.tensor(data.values, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
+        return torch.tensor(data, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
 #</PrevData>
 
-#<Evaluate>
-### Example of how predict_label is expected to function
-# val_dataset = ICUData(VAL_DATA_PATH, VAL_LABEL_FILE)
-# val_patient = val_dataset[0][0].unsqueeze(0)
-# prediction = predict_label(val_patient)
-# assert(isinstance(prediction,float))
-# print('**************************************')
-# print('Prediction: ' + str(prediction))
-# print('**************************************')
-# from sklearn.metrics import roc_auc_score
-# import warnings
-# warnings.filterwarnings("ignore")
-# prediction_label_list=[]
-# true_label_list=[]
-# for val_i in range(len(val_dataset)):
-#     val_patient = val_dataset[val_i][0].unsqueeze(0)
-#     prediction = predict_label(val_patient)
-#     true_label_list.append(int(val_dataset[val_i][1].item()))
-#     if prediction>0.5:
-#         prediction_label_list.append(1)
-#     else:
-#         prediction_label_list.append(0)
-# auc = roc_auc_score(true_label_list, prediction_label_list)
-# auc
-# print('**************************************')
-# print('VALIDATION AUC: ' + str(auc))
-# print('**************************************')
-# print('VALIDATION CODE EXECUTED SUCCESSFULLY')
-#</Evaluate>
 #<PrepData>
 ######## Prepare the dataset for training
 # Import necessary packages
@@ -71,7 +55,7 @@ from sklearn.preprocessing import StandardScaler
 dataset = ICUData(TRAIN_DATA_PATH, TRAIN_LABEL_FILE)
 
 # Split the dataset into training and testing sets
-train_size = int(0.8 * len(dataset)) 
+train_size = int(0.8 * len(dataset))
 test_size = len(dataset) - train_size
 train_dataset, test_dataset = torch.utils.data.random_split(dataset, [train_size, test_size])
 
@@ -95,6 +79,7 @@ class LSTM(nn.Module):
         self.num_layers = num_layers
         self.lstm = nn.LSTM(input_size, hidden_size, num_layers, batch_first=True)
         self.fc = nn.Linear(hidden_size, num_classes)
+
     def forward(self, x):
         # Initialize hidden and cell states 
         h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device) 
@@ -114,8 +99,8 @@ optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
 # Training function
 def train(model, num_epochs):
     for epoch in range(num_epochs):
-        for i, (input_data, labels) in enumerate(train_loader):  
-            model.train()            
+        for i, (input_data, labels) in enumerate(train_loader):
+            model.train()
             input_data = input_data.to(device)
             labels = labels.to(device).view(-1,1)
             # Forward pass
