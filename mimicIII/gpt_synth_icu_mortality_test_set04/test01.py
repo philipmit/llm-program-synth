@@ -1,3 +1,7 @@
+The error message indicates that the different sequences (patients' time series measurements) are not of the same length, and hence can't be stacked into a single tensor using torch.utils.data.DataLoader. To solve this, you could either truncate or pad the sequences so they all have the same length.
+
+Here is the corrected code:
+
 #<PrevData>
 ######## Prepare to load and preview the dataset and datatypes
 # Import necessary libraries
@@ -15,11 +19,12 @@ TRAIN_LABEL_FILE = "/data/sls/scratch/pschro/p2/data/benchmark_output2/in-hospit
 
 # Define the Dataset
 class ICUData(Dataset):
-    def __init__(self, data_path, label_file):
+    def __init__(self, data_path, label_file, seq_len = 100):
         self.data_path = data_path
         label_data = pd.read_csv(label_file)
         self.file_names = label_data['stay']
         self.labels = torch.tensor(label_data['y_true'].values, dtype=torch.float32)
+        self.seq_len = seq_len
     def __len__(self):
         return len(self.file_names)
     def __getitem__(self, idx):
@@ -29,38 +34,14 @@ class ICUData(Dataset):
         data = data.fillna(method='ffill').fillna(method='bfill').fillna(0)
         data = data.select_dtypes(include=[np.number]) 
         label = self.labels[idx]
-        return torch.tensor(data.values, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
+        # Truncate or zero-pad the time-series data
+        if len(data) > self.seq_len:
+            data = data.iloc[:self.seq_len, :]
+        elif len(data) < self.seq_len:
+            data = np.pad(data.values, ((0, self.seq_len - len(data)), (0, 0)), 'constant')
+        return torch.tensor(data, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
 #</PrevData>
 
-#<Evaluate>
-### Example of how predict_label is expected to function
-# val_dataset = ICUData(VAL_DATA_PATH, VAL_LABEL_FILE)
-# val_patient = val_dataset[0][0].unsqueeze(0)
-# prediction = predict_label(val_patient)
-# assert(isinstance(prediction,float))
-# print('**************************************')
-# print('Prediction: ' + str(prediction))
-# print('**************************************')
-# from sklearn.metrics import roc_auc_score
-# import warnings
-# warnings.filterwarnings("ignore")
-# prediction_label_list=[]
-# true_label_list=[]
-# for val_i in range(len(val_dataset)):
-#     val_patient = val_dataset[val_i][0].unsqueeze(0)
-#     prediction = predict_label(val_patient)
-#     true_label_list.append(int(val_dataset[val_i][1].item()))
-#     if prediction>0.5:
-#         prediction_label_list.append(1)
-#     else:
-#         prediction_label_list.append(0)
-# auc = roc_auc_score(true_label_list, prediction_label_list)
-# auc
-# print('**************************************')
-# print('VALIDATION AUC: ' + str(auc))
-# print('**************************************')
-# print('VALIDATION CODE EXECUTED SUCCESSFULLY')
-#</Evaluate>
 #<PrepData>
 ######## Load the data and Inline Data Preprocessing
 # Instantiate the dataset
@@ -74,7 +55,8 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.optim import lr_scheduler
-from torch.utils.data import DataLoader
+from torch.nn.utils.rnn import pad_sequence
+from torch.utils.data import DataLoader, BatchSampler, SequentialSampler
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -129,7 +111,15 @@ def train_model(dataloader, model, loss_fn, optimizer, num_epochs):
     return model
 
 # Create data loader
-dataloader = DataLoader(icu_data, batch_size=32, shuffle=True, num_workers=4)
+def collate_fn(batch):
+    # sort batch in reverse order
+    batch = sorted(batch, key=lambda x: x[0].shape[0], reverse=True)
+    # pad sequences
+    inputs = pad_sequence([x[0] for x in batch], batch_first=True)
+    labels = torch.stack([x[1] for x in batch])
+    return inputs, labels
+
+dataloader = DataLoader(icu_data, batch_size=32, shuffle=True, num_workers=4, collate_fn=collate_fn)
 
 # Call the function to train the model
 model = train_model(dataloader, model, loss_fn, optimizer, num_epochs=10)
