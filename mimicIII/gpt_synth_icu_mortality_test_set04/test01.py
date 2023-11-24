@@ -35,7 +35,7 @@ class ICUData(Dataset):
             data = data.iloc[:self.seq_len, :]
         elif len(data) < self.seq_len:
             data = np.pad(data.values, ((0, self.seq_len - len(data)), (0, 0)), 'constant')
-        return torch.tensor(data, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
+        return torch.tensor(data, dtype=torch.float32), label
 #</PrevData>
 
 #<PrepData>
@@ -88,7 +88,7 @@ def train_model(model, optimizer, loss_fn, num_epochs):
             # Zero the gradients
             optimizer.zero_grad()
             outputs = model(inputs)
-            loss = loss_fn(outputs, labels)
+            loss = loss_fn(outputs.view(-1), labels)
             loss.backward()
             optimizer.step()
             running_loss += loss.item() * inputs.size(0)
@@ -97,6 +97,8 @@ def train_model(model, optimizer, loss_fn, num_epochs):
     return model
 
 # Create data loader
+from torch.nn.utils.rnn import pad_sequence
+from torch.utils.data import DataLoader
 def collate_fn(batch):
     # sort batch in reverse order
     batch = sorted(batch, key=lambda x: x[0].shape[0], reverse=True)
@@ -105,7 +107,7 @@ def collate_fn(batch):
     labels = torch.stack([x[1] for x in batch])
     return inputs, labels
 
-dataloader = DataLoader(icu_data, batch_size=32, shuffle=True, num_workers=4, collate_fn=collate_fn)
+dataloader = DataLoader(icu_data, batch_size=32, shuffle=True, collate_fn=collate_fn)
 
 # Call the function to train the model
 model = train_model(model, optimizer, loss_fn, num_epochs=10)
