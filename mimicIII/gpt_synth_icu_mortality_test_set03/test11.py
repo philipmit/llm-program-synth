@@ -37,9 +37,9 @@ class ICUData(Dataset):
         # Convert each patient's time series data into a fixed length
         fixed_length = 48  # you may need to adjust this according to your actual situations
         if len(data) < fixed_length:
-            data = np.pad(data, ((fixed_length-len(data),0),(0,0)), 'constant', constant_values=0)
+            data = np.pad(data.values, ((fixed_length-len(data),0),(0,0)), 'constant', constant_values=0)
         elif len(data) > fixed_length:
-            data = data[:fixed_length]
+            data = data.values[:fixed_length]
 
         label = self.labels[idx]
         return torch.tensor(data, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
