@@ -119,6 +119,6 @@ def predict_label(patient_data):
     patient_data = patient_data.to(device)
     model.eval()
     with torch.no_grad():
-        outputs = model(patient_data)
+        outputs = model(patient_data.unsqueeze(0))
     return outputs.item()  
 #</Predict>
