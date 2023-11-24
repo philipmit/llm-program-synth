@@ -64,8 +64,9 @@ train_dataset, val_dataset = torch.utils.data.random_split(dataset, [train_size,
 
 #<TrainTestSplit>
 # DataLoader for easy mini-batch return in training
-train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=50, shuffle=True)
-val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=50, shuffle=False)
+# Increase the batch size to 100 from 50
+train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=100, shuffle=True)
+val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=100, shuffle=False)
 #</TrainTestSplit>
 
 #<Train>
@@ -74,6 +75,7 @@ val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=50, shuffle=Fal
 import torch.nn as nn
 
 # Define our LSTM model
+# Number of hidden layers increased from 2 to 3
 class LSTM(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers, num_classes):
         super(LSTM, self).__init__()
@@ -98,14 +100,16 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # The error was here: The LSTM input size should be the number of columns, i.e., the number of features, not the number of rows. In our case, it's the number of features in our CSV file, not the length of the timeseries (48).
 input_size = len(dataset[0][0][0])  # Use "len(dataset[0][0][0])" to get the number of features
 hidden_size = 128  # You can adjust this number
-num_layers = 2     # You can adjust this number
+num_layers = 3     # You can adjust this number
 num_classes = 1    # We are predicting 1 label - ICU mortality
 
+# Learning rate reduced from 0.01 to 0.001
 model = LSTM(input_size, hidden_size, num_layers, num_classes).to(device)
 criterion = nn.BCEWithLogitsLoss()
-optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
+optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
 # Training function
+# Number of train epochs increased from undefined to 20
 def train(model, num_epochs):
     for epoch in range(num_epochs):
         for i, (input_data, labels) in enumerate(train_loader):
@@ -119,8 +123,10 @@ def train(model, num_epochs):
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-            
+
         print('Epoch [{}/{}], Loss: {:.4f}'.format(epoch+1, num_epochs, loss.item()))
+
+train(model, 20)
 #</Train>
 
 #<Evaluate>
