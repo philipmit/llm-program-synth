@@ -56,21 +56,21 @@ from sklearn.preprocessing import StandardScaler
 # Create a dataset
 dataset = ICUData(TRAIN_DATA_PATH, TRAIN_LABEL_FILE)
 
-# Split the dataset into training and testing sets
+# Split the dataset into training and validation sets
 train_size = int(0.8 * len(dataset))
-test_size = len(dataset) - train_size
-train_dataset, test_dataset = torch.utils.data.random_split(dataset, [train_size, test_size])
-
-# Setting the batch_size to the whole dataset size as LSTM sequences should have all time steps to learn
-batch_size = len(train_dataset)
-
-# Data Loader for easy mini-batch return in training, the image batch shape will be (batch_size, 1, 48, 1)
-train_loader = torch.utils.data.DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True)
+val_size = len(dataset) - train_size
+train_dataset, val_dataset = torch.utils.data.random_split(dataset, [train_size, val_size])
 #</PrepData>
+
+#<TrainTestSplit>
+# DataLoader for easy mini-batch return in training
+train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=50, shuffle=True)
+val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=50, shuffle=False)
+#</TrainTestSplit>
 
 #<Train>
 ######## Create the LSTM model and train it
-
+# Import necessary packages
 import torch.nn as nn
 
 # Define our LSTM model
@@ -119,17 +119,29 @@ def train(model, num_epochs):
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-        if (epoch+1) % 10 == 0:
-            print(f'Epoch: {epoch+1}/{num_epochs}, Loss: {loss.item()}')
-
-# Train the LSTM model
-train(model, num_epochs=50)
+            
+        print('Epoch [{}/{}], Loss: {:.4f}'.format(epoch+1, num_epochs, loss.item()))
 #</Train>
+
+#<Evaluate>
+model.eval()
+correct = 0
+for i, (input_data, labels) in enumerate(val_loader):
+    model.train()
+    input_data = input_data.to(device)
+    labels = labels.to(device).view(-1,1)
+
+    # Forward pass
+    outputs = model(input_data)
+    predicted = (torch.sigmoid(outputs.data) > 0.5).float()
+    correct += (predicted == labels.data).sum()
+
+print('Accuracy of the model on the validation set: {:.2f} %'.format(100 * correct / len(val_dataset)))
+#</Evaluate>
 
 #<Predict>
 ######## Define a function that can be used to make new predictions given one raw sample of data
 model.eval()  # This is important to evaluate the model
-
 def predict_label(patient):
     patient = patient.to(device)
     prediction = model(patient.unsqueeze(0)) # This will output the raw logits
