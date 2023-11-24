@@ -40,6 +40,8 @@ class ICUData(Dataset):
             data = np.pad(data.values, ((fixed_length-len(data),0),(0,0)), 'constant', constant_values=0)
         elif len(data) > fixed_length:
             data = data.values[:fixed_length]
+        else:
+            data = data.values
 
         label = self.labels[idx]
         return torch.tensor(data, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
@@ -85,12 +87,12 @@ class LSTM(nn.Module):
         h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device) 
         c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device)
         # Forward propagate LSTM
-        out, _ = self.lstm(x, (h0, c0))
+        out, _ = self.lstm(x, (h0, c0)) 
         # Decode the hidden state of the last time step
         out = self.fc(out[:, -1, :])
         return out
 
-# Initialize our model, loss fuction and optimizer
+# Initialize our model, loss function and optimizer
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model = LSTM(48, 128, 2, 1).to(device)
 criterion = nn.BCEWithLogitsLoss()
@@ -113,7 +115,7 @@ def train(model, num_epochs):
         if (epoch+1) % 10 == 0:
             print(f'Epoch: {epoch+1}/{num_epochs}, Loss: {loss.item()}')
 
-# Train the model
+# Train the LSTM model
 train(model, num_epochs=50)
 #</Train>
 
@@ -123,7 +125,7 @@ model.eval()  # This is important to evaluate the model
 
 def predict_label(patient):
     patient = patient.to(device)
-    prediction = model(patient) # This will output the raw logits
+    prediction = model(patient.unsqueeze(0)) # This will output the raw logits
     # Convert the raw logits to probability using the sigmoid function
     prediction_prob = torch.sigmoid(prediction)
     return prediction_prob.item()
