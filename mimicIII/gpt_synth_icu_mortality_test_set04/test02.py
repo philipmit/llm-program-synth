@@ -5,7 +5,7 @@ import os
 import pandas as pd
 import numpy as np
 import torch
-from torch.utils.data import Dataset
+from torch.utils.data import DataLoader, Dataset
 
 # File paths
 TRAIN_DATA_PATH = "/data/sls/scratch/pschro/p2/data/benchmark_output2/in-hospital-mortality/train/"
@@ -27,9 +27,9 @@ class ICUData(Dataset):
         data = data.drop(['Hours','Glascow coma scale eye opening','Glascow coma scale motor response','Glascow coma scale total','Glascow coma scale verbal response'], axis=1)  
         data = data.fillna(method='ffill').fillna(method='bfill')
         data = data.fillna(self.replacement_values)
-        data = data.select_dtypes(include=[np.number]) 
+        data = data.select_dtypes(include=[np.number])
         label = self.labels[idx]
-        return torch.tensor(data.values, dtype=torch.float32), label
+        return torch.tensor(data.values, dtype=torch.float32), label.unsqueeze(-1)  # Modify this line to include the feature dimension
 #</PrevData>
 
 #<Train>
@@ -53,10 +53,10 @@ class LSTM(nn.Module):
         return out
 
 # Load training data
-train_data = ICUData(TRAIN_DATA_PATH, TRAIN_LABEL_FILE)
+train_data = DataLoader(ICUData(TRAIN_DATA_PATH, TRAIN_LABEL_FILE), batch_size=32, shuffle=True)
 
 # Instantiate the model with input dimension equal to the number of features in the training data
-model = LSTM(input_dim=train_data[0][0].shape[1], hidden_dim=32, output_dim=1, num_layers=2)
+model = LSTM(input_dim=13, hidden_dim=32, output_dim=1, num_layers=2)
 criterion = torch.nn.BCEWithLogitsLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=0.1)
 
@@ -65,10 +65,9 @@ num_epochs = 100
 for epoch in range(num_epochs):
     for i, (data, labels) in enumerate(train_data):
         model.train()
-        data = data.unsqueeze(0) # add extra dimension for batch
         optimizer.zero_grad()
         outputs = model(data)
-        loss = criterion(outputs, labels.unsqueeze(0)) # add extra dimension for batch
+        loss = criterion(outputs, labels)
         loss.backward()
         optimizer.step()
 #</Train>
@@ -78,8 +77,9 @@ for epoch in range(num_epochs):
 def predict_label(patient_data):
     # Switch to evaluation mode
     model.eval()
-    # Add an extra dimension for batch and Pass data through model
-    outputs = model(patient_data.unsqueeze(0))
+    # Pass data through model
+    with torch.no_grad():
+        outputs = model(patient_data.unsqueeze(0))
     # Return the predicted probability of patient's mortality
     return torch.sigmoid(outputs).item()
 #</Predict>
