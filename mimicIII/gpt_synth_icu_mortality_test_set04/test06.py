@@ -76,12 +76,12 @@ class LSTM(nn.Module):
         batch_size = input.size(0)
         seq_len = input.size(1)
         hidden = self.init_hidden(batch_size)
-        lstm_out, _ = self.lstm(input.view(batch_size, seq_len, n_features), hidden)
+        lstm_out, _ = self.lstm(input.view(batch_size, seq_len, self.input_dim), hidden)
         y_pred = torch.sigmoid(self.linear(lstm_out[:,-1,:]))
         return y_pred
 
 train_dataset = ICUData(TRAIN_DATA_PATH, TRAIN_LABEL_FILE)
-train_loader = DataLoader(dataset=train_dataset, batch_size=BATCH_SIZE, shuffle=True)
+train_loader = DataLoader(dataset=train_dataset, batch_size=BATCH_SIZE, shuffle=True, collate_fn= lambda x: pad_sequence(x, batch_first=True))
 
 n_features = 12  # number of features considering the input columns mentioned
 n_hidden = 64
