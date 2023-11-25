@@ -8,7 +8,6 @@ import torch
 import warnings
 warnings.filterwarnings("ignore")
 from torch.utils.data import Dataset, DataLoader
-from torch import auto
 from torch.nn import Module, LSTM, Linear
 from torch.optim import Adam
 
@@ -53,8 +52,8 @@ class LSTMClassifier(Module):
         self.fc = Linear(hidden_dim, output_dim)
     
     def forward(self, x):
-        h0 = auto.new_zeros(self.layer_dim, x.size(0), self.hidden_dim).requires_grad_()
-        c0 = auto.new_zeros(self.layer_dim, x.size(0), self.hidden_dim).requires_grad_()
+        h0 = torch.zeros(self.layer_dim, x.size(0), self.hidden_dim).requires_grad_().to(x.device)
+        c0 = torch.zeros(self.layer_dim, x.size(0), self.hidden_dim).requires_grad_().to(x.device)
         out, (hn, cn) = self.rnn(x, (h0.detach(), c0.detach()))
         out = self.fc(out[:, -1, :]) 
         return out
@@ -89,7 +88,7 @@ def evaluate_model(model, dataloader, device):
 # Load ICU dataset
 icu_data = ICUData(TRAIN_DATA_PATH, TRAIN_LABEL_FILE)
 train_loader = DataLoader(dataset=icu_data, batch_size=32, shuffle=True)
-  
+
 # Initialize model, criterion, optimizer and device
 input_dim = 13 # number of features
 hidden_dim = 32
