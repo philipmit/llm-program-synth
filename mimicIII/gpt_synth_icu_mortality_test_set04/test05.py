@@ -70,7 +70,7 @@ train_indices, val_indices = indices[split:], indices[:split]
 batch_size = 32
 # Train sampler and data loader
 train_sampler = SubsetRandomSampler(train_indices)
-train_loader = DataLoader(train_dataset, batch_size=batch_size, sampler=train_sampler, collate_fn=collate_fn)
+train_loader = DataLoader(train_dataset, batch_size=batch_size, sampler=train_sampler, collate_fn=collate_fn,)
 # Validation sampler and data loader
 valid_sampler = SubsetRandomSampler(val_indices)
 valid_loader = DataLoader(train_dataset, batch_size=batch_size, sampler=valid_sampler, collate_fn=collate_fn)
@@ -81,25 +81,26 @@ valid_loader = DataLoader(train_dataset, batch_size=batch_size, sampler=valid_sa
 # Determine if GPU is available
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
+# Import necessary packages
+from torch import nn, optim
+
 # LSTM Model Definition
 class LSTM(nn.Module):
     def __init__(self, input_dim, hidden_dim, n_layers, output_dim):
         super().__init__()
         self.hidden_dim = hidden_dim
         self.n_layers = n_layers
-        self.lstm = nn.LSTM(input_dim, hidden_dim, n_layers, dropout=0.2, batch_first=True)
+        self.lstm = nn.LSTM(input_dim, hidden_dim, n_layers, batch_first=True) 
         self.fc = nn.Linear(hidden_dim, output_dim)
         self.sigmoid = nn.Sigmoid()
 
     def forward(self, x):
-        h0 = self.init_hidden(x.size(0))
-        c0 = self.init_hidden(x.size(0))
-        out, _ = self.lstm(x, (h0, c0))
-        out = out[:, -1, :]
-        return self.sigmoid(self.fc(out))
-
-    def init_hidden(self, batch_size):
-        return torch.zeros(self.n_layers, batch_size, self.hidden_dim).to(device)
+        h0 = torch.zeros(self.n_layers, x.size(0), self.hidden_dim).to(device)
+        c0 = torch.zeros(self.n_layers, x.size(0), self.hidden_dim).to(device)
+        out, _ = self.lstm(x, (h0, c0)) 
+        out = out[:, -1, :] 
+        out = self.fc(out) 
+        return self.sigmoid(out)
 
 # LSTM Parameters
 input_dim = len(train_dataset[0][0][0])  # Number of input features
@@ -159,7 +160,7 @@ for epoch in range(n_epochs):
 #<Predict>
 ######## Define a function that can be used to make new predictions
 def predict_label(single_patient_data):
-    single_patient_data = single_patient_data.to(device)
+    single_patient_data = single_patient_data.unsqueeze(0).to(device) 
     model.eval()
     with torch.no_grad():
         prediction = model(single_patient_data)
