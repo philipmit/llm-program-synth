@@ -36,8 +36,9 @@ class ICUData(Dataset):
         data = data.fillna(method='ffill').fillna(method='bfill').fillna(self.replacement_values)
         # Extract the numerical data 
         data = data.select_dtypes(include=[np.number])
+        data_length = len(data)  # get the number of rows for reshaping
         label = self.labels[idx]
-        return torch.tensor(data.values, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
+        return torch.tensor(data.values, dtype=torch.float32), torch.tensor(label, dtype=torch.float32), data_length  # return length of data
 #</PrevData>
 
 #<PrepData>
@@ -92,8 +93,8 @@ loss_function = nn.BCELoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
 for epoch in range(n_epochs):
-    for i, (input_data, labels) in enumerate(train_loader):
-        input_data = input_data.to(device)
+    for i, (input_data, labels, data_length) in enumerate(train_loader):  # include data_length
+        input_data = input_data.view(-1, data_length[0], n_features).to(device)  # reshape according to the data_length
         labels = labels.to(device)
         model.zero_grad()
         y_pred = model(input_data)
@@ -109,10 +110,10 @@ print("Training completed.")
 #</Train>
 
 #<Predict>
-def predict_label(one_patient):
+def predict_label(one_patient, length):
     model.eval()
     with torch.no_grad():
-        one_patient = one_patient.to(device)
+        one_patient = one_patient.view(-1, length, n_features).to(device)  # reshape based on length
         prediction = model(one_patient)  
         return prediction.item()  
 #</Predict>
