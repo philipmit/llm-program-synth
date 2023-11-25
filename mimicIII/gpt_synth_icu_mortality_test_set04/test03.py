@@ -1,4 +1,4 @@
-#<PrepData>
+#<PrevData>
 ######## Prepare to load and preview the dataset and datatypes
 # Import necessary libraries
 import os
@@ -15,29 +15,36 @@ TRAIN_LABEL_FILE = "/data/sls/scratch/pschro/p2/data/benchmark_output2/in-hospit
 
 # Define the Dataset
 class ICUData(Dataset):
-    def __init__(self, data_path, label_file):
+    def __init__(self, data_path, label_file, sequence_length=100): # Add sequence_length parameter
         self.data_path = data_path
         label_data = pd.read_csv(label_file)
         self.file_names = label_data['stay']
         self.labels = torch.tensor(label_data['y_true'].values, dtype=torch.float32)
         self.replacement_values={'Capillary refill rate': 0.0, 'Diastolic blood pressure': 59.0 , 'Fraction inspired oxygen': 0.21, 'Glucose': 128.0, 'Heart Rate': 86, 'Height': 170.0, 'Mean blood pressure': 77.0, 'Oxygen saturation': 98.0, 'Respiratory rate': 19, 'Systolic blood pressure': 118.0, 'Temperature': 36.6, 'Weight': 81.0, 'pH': 7.4}
+        self.sequence_length = sequence_length # Add sequence_length
     def __len__(self):
         return len(self.file_names)
     def __getitem__(self, idx):
         file_path = os.path.join(self.data_path, self.file_names[idx])
         data = pd.read_csv(file_path)
-        data = data.drop(['Hours','Glascow coma scale eye opening','Glascow coma scale motor response','Glascow coma scale total','Glascow coma scale verbal response'], axis=1)  
+        data = data.drop(['Hours','Glascow coma scale eye opening','Glascow coma scale motor response','Glascow coma scale total','Glascow coma scale verbal response'], axis=1)
         data = data.fillna(method='ffill').fillna(method='bfill')
         data = data.fillna(self.replacement_values)
-        data = data.select_dtypes(include=[np.number]) 
+        data = data.select_dtypes(include=[np.number])
+
+        # Pad or truncate the sequence to sequence_length
+        if data.shape[0] > self.sequence_length:
+            data = data[:self.sequence_length]
+        elif data.shape[0] < self.sequence_length:
+            padding = pd.DataFrame(np.zeros((self.sequence_length - data.shape[0], data.shape[1])), columns=data.columns)
+            data = pd.concat([data, padding])
         label = self.labels[idx]
         return torch.tensor(data.values, dtype=torch.float32), label
-#</PrepData>
+#</PrevData>
 
 #<PrepData2>
 ######## Prepare the training data
 from torch.utils.data import DataLoader
-from sklearn.model_selection import train_test_split
 
 # Initialize dataset
 data = ICUData(TRAIN_DATA_PATH, TRAIN_LABEL_FILE)
@@ -50,7 +57,6 @@ loader = DataLoader(data, batch_size=batch_size, shuffle=True)
 
 #<Train>
 ######## Define the LSTM model and train it
-
 import torch.nn as nn
 
 # Define LSTM model
@@ -95,7 +101,7 @@ print('Model trained successfully!')
 def predict_label(single_sample):
     model.eval()
     with torch.no_grad():
-        output = model(single_sample)
+        output = model(single_sample.unsqueeze(0)) # Add a new dimension for batch size
         output = torch.sigmoid(output)
         return output.item()
 #</Predict>
