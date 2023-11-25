@@ -21,6 +21,7 @@ class ICUData(Dataset):
         self.file_names = label_data['stay']
         self.labels = torch.tensor(label_data['y_true'].values, dtype=torch.float32)
         self.replacement_values={'Capillary refill rate': 0.0, 'Diastolic blood pressure': 59.0 , 'Fraction inspired oxygen': 0.21, 'Glucose': 128.0, 'Heart Rate': 86, 'Height': 170.0, 'Mean blood pressure': 77.0, 'Oxygen saturation': 98.0, 'Respiratory rate': 19, 'Systolic blood pressure': 118.0, 'Temperature': 36.6, 'Weight': 81.0, 'pH': 7.4}
+        self.max_len = 48  # Maximum sequence length 
     def __len__(self):
         return len(self.file_names)
     def __getitem__(self, idx):
@@ -30,39 +31,14 @@ class ICUData(Dataset):
         data = data.fillna(method='ffill').fillna(method='bfill')
         data = data.fillna(self.replacement_values)
         data = data.select_dtypes(include=[np.number]) 
+        # Pad sequences
+        data_len = len(data)
+        if data_len < self.max_len:
+            data = np.pad(data, ((0, self.max_len - data_len), (0, 0)), "constant", constant_values=0)
         label = self.labels[idx]
-        return torch.tensor(data.values, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
+        return torch.tensor(data[:self.max_len], dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
 #</PrevData>
 
-#<Evaluate>
-### Example of how predict_label is expected to function
-# val_dataset = ICUData(VAL_DATA_PATH, VAL_LABEL_FILE)
-# val_patient = val_dataset[0][0].unsqueeze(0)
-# prediction = predict_label(val_patient)
-# assert(isinstance(prediction,float))
-# print('**************************************')
-# print('Prediction: ' + str(prediction))
-# print('**************************************')
-# from sklearn.metrics import roc_auc_score
-# import warnings
-# warnings.filterwarnings("ignore")
-# prediction_label_list=[]
-# true_label_list=[]
-# for val_i in range(len(val_dataset)):
-#     val_patient = val_dataset[val_i][0].unsqueeze(0)
-#     prediction = predict_label(val_patient)
-#     true_label_list.append(int(val_dataset[val_i][1].item()))
-#     if prediction>0.5:
-#         prediction_label_list.append(1)
-#     else:
-#         prediction_label_list.append(0)
-# auc = roc_auc_score(true_label_list, prediction_label_list)
-# auc
-# print('**************************************')
-# print('VALIDATION AUC: ' + str(auc))
-# print('**************************************')
-# print('VALIDATION CODE EXECUTED SUCCESSFULLY')
-#</Evaluate>
 #<PrepData>
 ######## Prepare the dataset for training
 import torch.utils.data
@@ -81,14 +57,6 @@ train_dataset, val_dataset = torch.utils.data.random_split(train_dataset, [train
 
 train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=32, num_workers=0, shuffle=True)
 val_dataloader = torch.utils.data.DataLoader(val_dataset, batch_size=32, num_workers=0, shuffle=True)
-
-# A function to encapsulate the data padding operation
-def pad_batch(batch):
-    data = [item[0] for item in batch]
-    data = nn.utils.rnn.pad_sequence(data, batch_first=True)
-    labels = [item[1] for item in batch]
-    labels = torch.tensor(labels)
-    return data, labels
 #</PrepData>
 
 #<Train>
@@ -122,7 +90,7 @@ num_epochs = 10
 # Epoch loop
 for epoch in range(num_epochs):
     for i, batch in enumerate(train_dataloader):
-        data, labels = pad_batch(batch)
+        data, labels = batch
         data, labels = data.to(device), labels.to(device)
         optimizer.zero_grad()
         outputs = model(data)
