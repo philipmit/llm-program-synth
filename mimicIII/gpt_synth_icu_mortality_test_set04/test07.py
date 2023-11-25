@@ -11,7 +11,7 @@ from torch.utils.data import Dataset, DataLoader
 from torch.nn import Module, LSTM, Linear
 from torch.optim import Adam
 from sklearn.preprocessing import MinMaxScaler
-from torch.nn.utils.rnn import pad_sequence
+from sklearn.metrics import roc_auc_score
 
 # File paths
 TRAIN_DATA_PATH = "/data/sls/scratch/pschro/p2/data/benchmark_output2/in-hospital-mortality/train/"
@@ -38,15 +38,9 @@ class ICUData(Dataset):
         label = self.labels[idx]
         return torch.tensor(data, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
 
-# Custom collate_fn to handle variable sequence lengths in batches
-def collate_fn(batch):
-    data = [item[0] for item in batch]
-    target = [item[1] for item in batch]
-    return pad_sequence(data, batch_first=True), torch.tensor(target, dtype=torch.float32)
-
 # Load ICU dataset
 icu_data = ICUData(TRAIN_DATA_PATH, TRAIN_LABEL_FILE)
-train_loader = DataLoader(dataset=icu_data, batch_size=32, shuffle=True, collate_fn=collate_fn)
+train_loader = DataLoader(dataset=icu_data, batch_size=32, shuffle=True)
 #</PrevData>
 
 #<TrainData>
@@ -58,31 +52,31 @@ class LSTMClassifier(Module):
         self.layer_dim = layer_dim
         self.rnn = LSTM(input_dim, hidden_dim, layer_dim, batch_first=True)
         self.fc = Linear(hidden_dim, output_dim)
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    
+
     def forward(self, x):
-        h0 = torch.zeros(self.layer_dim, x.size(0), self.hidden_dim).to(self.device)
-        c0 = torch.zeros(self.layer_dim, x.size(0), self.hidden_dim).to(self.device)
-        out, (hn, cn) = self.rnn(x, (h0, c0))
+        h0 = torch.zeros(self.layer_dim, x.size(0), self.hidden_dim).to(x.device)
+        c0 = torch.zeros(self.layer_dim, x.size(0), self.hidden_dim).to(x.device)
+        out, (hn, cn) = self.rnn(x, (h0.detach(), c0.detach()))
         out = self.fc(out[:, -1, :]) 
         return out
 
 # Training function
-def train_model(model, dataloader, criterion, optimizer, device):
+def train_model(model, dataloader, criterion, optimizer):
     model.train()
     total_loss = 0
-    for batch_idx, (data, target) in enumerate(dataloader):
-        data, target = data.to(device), target.to(device)
+    for index, (data, target) in enumerate(dataloader):
         optimizer.zero_grad()
+        data, target = data.to(device), target.to(device)
         output = model(data)
         loss = criterion(output, target.view(-1,1))
         loss.backward()
         optimizer.step()
-        total_loss += loss.data.item()
-    return total_loss / len(dataloader.dataset)
+        total_loss += loss.item()
+    avg_loss = total_loss / len(dataloader.dataset)
+    return avg_loss
 
 # Evaluation function
-def evaluate_model(model, dataloader, device):
+def evaluate_model(model, dataloader):
     model.eval()
     y_true = []
     y_pred = []
@@ -90,46 +84,48 @@ def evaluate_model(model, dataloader, device):
         for data, target in dataloader:
             data, target = data.to(device), target.to(device)
             output = model(data)
-            predicted = torch.sigmoid(output).data > 0.5
-            predicted = predicted.float()
+            output = torch.sigmoid(output).data
             y_true.extend(target.data.cpu().numpy())
-            y_pred.extend(predicted.data.cpu().numpy())
-    return roc_auc_score(y_true, y_pred)
+            y_pred.extend(output.cpu().numpy())
+    auroc = roc_auc_score(y_true, y_pred)
+    return auroc
 
 # Initialize model, criterion, optimizer and device
 input_dim = 13 # number of ICU features
 hidden_dim = 32 # hidden layer dimension
 layer_dim = 1 # one layer LSTM
 output_dim = 1 # output dimension
+num_epochs = 10
+
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model = LSTMClassifier(input_dim, hidden_dim, layer_dim, output_dim)
 model = model.to(device)
 
 criterion = torch.nn.BCEWithLogitsLoss()
 optimizer = Adam(model.parameters(), lr=0.01)
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # Train LSTM model
-num_epochs = 10
 best_auroc = 0
+best_state = model.state_dict() # save the initial state
 for epoch in range(num_epochs):
-    train_loss = train_model(model, train_loader, criterion, optimizer, device)
-    auroc = evaluate_model(model, train_loader, device)
+    avg_loss = train_model(model, train_loader, criterion, optimizer)
+    auroc = evaluate_model(model, train_loader)
     if auroc > best_auroc:
         best_auroc = auroc
         best_state = model.state_dict() # save the best model
-    print("Epoch: {} Train Loss: {} Auroc: {}".format(epoch, train_loss, auroc))
+    print("Epoch: {} Avg Loss: {} AUROC: {}".format(epoch, avg_loss, auroc))
 
-model.load_state_dict(best_state) # load the best model
+model.load_state_dict(best_state) # load the best state
 print("Training is done. Best model is loaded.")
 #</TrainData>
 
 #<Predict>
-# Define the predict function 
+# Define the predict function
 def predict_label(data_single_patient):
     model.eval()
     with torch.no_grad():
-        data_single_patient = data_single_patient.to(device) 
+        data_single_patient = data_single_patient.to(device).unsqueeze(0)
         output = model(data_single_patient)
-        prediction = torch.sigmoid(output).data > 0.5
-    return float(prediction)
+        prediction = torch.sigmoid(output).data
+    return prediction.item()
 #</Predict>
