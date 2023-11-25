@@ -36,7 +36,7 @@ class ICUData(Dataset):
         data = data.fillna(self.replacement_values)
         data = self.scaler.fit_transform(data.select_dtypes(include=[np.number])) 
         label = self.labels[idx]
-        return torch.tensor(data, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
+        return torch.tensor(data, dtype=torch.float32).unsqueeze(0), torch.tensor(label, dtype=torch.float32)
 
 # Load ICU dataset
 icu_data = ICUData(TRAIN_DATA_PATH, TRAIN_LABEL_FILE)
@@ -123,7 +123,6 @@ print("Training is done. Best model is loaded.")
 # Define the predict function
 def predict_label(data_single_patient):
     model.eval()
-    data_single_patient = data_single_patient.unsqueeze(0)
     with torch.no_grad():
         data_single_patient = data_single_patient.to(device)
         output = model(data_single_patient)
