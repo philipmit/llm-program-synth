@@ -54,8 +54,8 @@ class LSTMClassifier(Module):
         self.fc = Linear(hidden_dim, output_dim)
 
     def forward(self, x):
-        h0 = torch.zeros(self.layer_dim, x.size(0), self.hidden_dim).to(x.device)
-        c0 = torch.zeros(self.layer_dim, x.size(0), self.hidden_dim).to(x.device)
+        h0 = torch.zeros(self.layer_dim, x.size(0), self.hidden_dim).requires_grad_().to(x.device)
+        c0 = torch.zeros(self.layer_dim, x.size(0), self.hidden_dim).requires_grad_().to(x.device)
         out, (hn, cn) = self.rnn(x, (h0.detach(), c0.detach()))
         out = self.fc(out[:, -1, :]) 
         return out
@@ -123,9 +123,10 @@ print("Training is done. Best model is loaded.")
 # Define the predict function
 def predict_label(data_single_patient):
     model.eval()
+    data_single_patient = data_single_patient.unsqueeze(0)
     with torch.no_grad():
-        data_single_patient = data_single_patient.to(device).unsqueeze(0)
+        data_single_patient = data_single_patient.to(device)
         output = model(data_single_patient)
-        prediction = torch.sigmoid(output).data
+        prediction = torch.sigmoid(output).cpu().data
     return prediction.item()
 #</Predict>
