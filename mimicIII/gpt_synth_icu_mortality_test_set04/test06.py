@@ -1,8 +1,3 @@
-The error suggests that the input size provided to the LSTM model is different from what it expected. It seems to originate from the data preparation step in the LSTM forward function. The issue might be related to the reshaping of the input sequence before inputting it into the model.
-
-To correct this, let's modify the dimensions when preparing the input for the LSTM model.
-
-```python
 #<PrevData>
 ######## Prepare to load and preview the dataset and datatypes
 # Import necessary libraries
@@ -43,54 +38,83 @@ class ICUData(Dataset):
         data = data.select_dtypes(include=[np.number])
         data = data.values.transpose()  
         label = self.labels[idx]
-        return torch.tensor(data, dtype=torch.float32).permute(1,0), torch.tensor(label, dtype=torch.float32) # Permute the tensor
+        return torch.tensor(data, dtype=torch.float32).permute(1,0), torch.tensor(label, dtype=torch.float32)  # Permute the tensor
 #</PrevData>
 
 #<PrepData>
-# Follow the same preparation steps as provided before and ensure to set the batch size to be equal to the number of time steps in each sequence. 
-# Also ensure to reshape the LSTM input to (sequence length (number of time steps per sample), batch size, number of features)
+# Prepare the data as shown above - call this method when preparing the train dataloader
 #</PrepData>
-#...
+
 #<Train>
-#...
-######## Train the model using the training data
-# Import necessary libraries
-from torch.utils.data import DataLoader
-# Define DataLoader
-train_dataloader = DataLoader(train_dataset, batch_size=1, shuffle=True)
+# Use the above method to define data loading for LSTM
+import torch
+from torch.utils.data import Dataset, DataLoader
+from torch.autograd import Variable
+from torch import nn
 
-model.train()
-# Loop over epochs
-for epoch in range(num_epochs):
-    for seq, labels in train_dataloader:
-        seq, labels = seq.to(device), labels.to(device)
-        optimizer.zero_grad()
-        model.hidden_cell = (torch.zeros(num_layers, seq.size(0), model.hidden_layer_size).to(device),
-                             torch.zeros(num_layers, seq.size(0), model.hidden_layer_size).to(device)) # Adjust the batch size dynamically based on the sequence size
-        
-        y_pred = model(seq)
-        loss = loss_function(y_pred, labels)
-        loss.backward()
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+BATCH_SIZE = 1
+
+class LSTM(nn.Module):
+    def __init__(self, input_dim, hidden_dim, batch_size, output_dim=1, num_layers=2):
+        super(LSTM, self).__init__()
+        self.input_dim = input_dim
+        self.hidden_dim = hidden_dim
+        self.batch_size = batch_size
+        self.num_layers = num_layers
+
+        self.lstm = nn.LSTM(self.input_dim, self.hidden_dim, self.num_layers)
+
+        self.linear = nn.Linear(self.hidden_dim, output_dim)
+
+    def init_hidden(self):
+        return (torch.zeros(self.num_layers, self.batch_size, self.hidden_dim),
+                torch.zeros(self.num_layers, self.batch_size, self.hidden_dim))
+
+    def forward(self, input):
+        lstm_out, self.hidden = self.lstm(input.view(len(input), self.batch_size, -1))
+        y_pred = self.linear(lstm_out[-1].view(self.batch_size, -1))
+        return y_pred.view(-1)
+
+train_dataset = ICUData(TRAIN_DATA_PATH, TRAIN_LABEL_FILE)
+train_loader = DataLoader(dataset=train_dataset, batch_size=BATCH_SIZE, shuffle=True)
+
+n_features = 12  # number of features considering the input columns mentioned
+n_hidden = 64
+n_layers = 2
+n_epochs = 10
+
+model = LSTM(n_features, n_hidden, BATCH_SIZE, output_dim=1, num_layers=2)
+model.to(device)
+
+loss_function = nn.BCEWithLogitsLoss()
+optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+
+for epoch in range(n_epochs):
+    for i, (input_data, labels) in enumerate(train_loader):
+        input_data = input_data.to(device)
+        labels = labels.to(device)
+        model.zero_grad()
+        model.hidden_cell = model.init_hidden()
+
+        y_pred = model(input_data)
+
+        single_loss = loss_function(y_pred, labels)
+        single_loss.backward()
         optimizer.step()
-        
-    if epoch % 10 == 0:
-        print(f'Epoch: {epoch + 1} Loss: {loss.item()}')
 
-print('Model trained.')
+        if i % 100 == 0:
+            print(f'epoch: {epoch:3} loss: {single_loss.item():10.8f}')
+
+print("Training completed.")
 #</Train>
-#...
+
 #<Predict>
-#...
-# Make sure to adjust the batch size when predicting as well
-def predict_label(patient):
+def predict_label(one_patient):
     model.eval()
     with torch.no_grad():
-        # Get number of time steps for the patient data
-        time_steps = patient.size(0)
-        # Adjust hidden state accordingly 
-        model.hidden_cell = (torch.zeros(num_layers, time_steps, model.hidden_layer_size).to(device),
-                             torch.zeros(num_layers, time_steps, model.hidden_layer_size).to(device)) 
-        patient = patient.to(device)
-        prediction = model(patient)
-        return torch.sigmoid(prediction).item() 
+        one_patient = one_patient.to(device)
+        model.hidden_cell = model.init_hidden()  
+        prediction = model(one_patient)  
+        return torch.sigmoid(prediction).item()  
 #</Predict>
