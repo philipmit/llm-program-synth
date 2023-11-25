@@ -37,7 +37,7 @@ class ICUData(Dataset):
         # Extract the numerical data 
         data = data.select_dtypes(include=[np.number])
         label = self.labels[idx]
-        return torch.tensor(data.values, dtype=torch.float32).unsqueeze(0), torch.tensor(label, dtype=torch.float32)
+        return torch.tensor(data.values, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
 #</PrevData>
 
 #<PrepData>
@@ -71,8 +71,9 @@ class LSTM(nn.Module):
 
     def forward(self, input):
         batch_size = input.size(0)
+        input_length = input.size(1)
         hidden = self.init_hidden(batch_size)
-        lstm_out, _ = self.lstm(input.view(input.size(1), batch_size, self.input_dim), hidden)
+        lstm_out, _ = self.lstm(input.view(input_length, batch_size, self.input_dim), hidden)
         y_pred = torch.sigmoid(self.linear(lstm_out[-1]))
         return y_pred
 
