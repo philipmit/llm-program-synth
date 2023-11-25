@@ -124,7 +124,7 @@ print("Training is done. Best model is loaded.")
 def predict_label(data_single_patient):
     model.eval()
     with torch.no_grad():
-        data_single_patient = data_single_patient.unsqueeze(0).to(device)
+        data_single_patient = data_single_patient.to(device)
         output = model(data_single_patient)
         prediction = torch.sigmoid(output).cpu().data[0][0]
     return prediction.item()
