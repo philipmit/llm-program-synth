@@ -10,6 +10,8 @@ warnings.filterwarnings("ignore")
 from torch.utils.data import Dataset, DataLoader
 from torch.nn import Module, LSTM, Linear
 from torch.optim import Adam
+from sklearn.preprocessing import MinMaxScaler
+from torch.nn.utils.rnn import pad_sequence
 
 # File paths
 TRAIN_DATA_PATH = "/data/sls/scratch/pschro/p2/data/benchmark_output2/in-hospital-mortality/train/"
@@ -23,25 +25,31 @@ class ICUData(Dataset):
         self.file_names = label_data['stay']
         self.labels = torch.tensor(label_data['y_true'].values, dtype=torch.float32)
         self.replacement_values={'Capillary refill rate': 0.0, 'Diastolic blood pressure': 59.0 , 'Fraction inspired oxygen': 0.21, 'Glucose': 128.0, 'Heart Rate': 86, 'Height': 170.0, 'Mean blood pressure': 77.0, 'Oxygen saturation': 98.0, 'Respiratory rate': 19, 'Systolic blood pressure': 118.0, 'Temperature': 36.6, 'Weight': 81.0, 'pH': 7.4}
-    
+        self.scaler = MinMaxScaler(feature_range=(0, 1))
     def __len__(self):
         return len(self.file_names)
-    
     def __getitem__(self, idx):
         file_path = os.path.join(self.data_path, self.file_names[idx])
         data = pd.read_csv(file_path)
         data = data.drop(['Hours','Glascow coma scale eye opening','Glascow coma scale motor response','Glascow coma scale total','Glascow coma scale verbal response'], axis=1)  
         data = data.fillna(method='ffill').fillna(method='bfill')
         data = data.fillna(self.replacement_values)
-        data = data.select_dtypes(include=[np.number]) 
+        data = self.scaler.fit_transform(data.select_dtypes(include=[np.number])) 
         label = self.labels[idx]
-        return torch.tensor(data.values, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
+        return torch.tensor(data, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
+
+# Custom collate_fn to handle variable sequence lengths in batches
+def collate_fn(batch):
+    data = [item[0] for item in batch]
+    target = [item[1] for item in batch]
+    return pad_sequence(data, batch_first=True), torch.tensor(target, dtype=torch.float32)
+
+# Load ICU dataset
+icu_data = ICUData(TRAIN_DATA_PATH, TRAIN_LABEL_FILE)
+train_loader = DataLoader(dataset=icu_data, batch_size=32, shuffle=True, collate_fn=collate_fn)
 #</PrevData>
 
 #<TrainData>
-# Import the necessary libraries
-from sklearn.metrics import classification_report, roc_auc_score
-
 # Define the model 
 class LSTMClassifier(Module):
     def __init__(self, input_dim, hidden_dim, layer_dim, output_dim):
@@ -50,14 +58,16 @@ class LSTMClassifier(Module):
         self.layer_dim = layer_dim
         self.rnn = LSTM(input_dim, hidden_dim, layer_dim, batch_first=True)
         self.fc = Linear(hidden_dim, output_dim)
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     
     def forward(self, x):
-        h0 = torch.zeros(self.layer_dim, x.size(0), self.hidden_dim).requires_grad_().to(x.device)
-        c0 = torch.zeros(self.layer_dim, x.size(0), self.hidden_dim).requires_grad_().to(x.device)
-        out, (hn, cn) = self.rnn(x, (h0.detach(), c0.detach()))
+        h0 = torch.zeros(self.layer_dim, x.size(0), self.hidden_dim).to(self.device)
+        c0 = torch.zeros(self.layer_dim, x.size(0), self.hidden_dim).to(self.device)
+        out, (hn, cn) = self.rnn(x, (h0, c0))
         out = self.fc(out[:, -1, :]) 
         return out
 
+# Training function
 def train_model(model, dataloader, criterion, optimizer, device):
     model.train()
     total_loss = 0
@@ -65,12 +75,13 @@ def train_model(model, dataloader, criterion, optimizer, device):
         data, target = data.to(device), target.to(device)
         optimizer.zero_grad()
         output = model(data)
-        loss = criterion(output, target)
+        loss = criterion(output, target.view(-1,1))
         loss.backward()
         optimizer.step()
         total_loss += loss.data.item()
     return total_loss / len(dataloader.dataset)
 
+# Evaluation function
 def evaluate_model(model, dataloader, device):
     model.eval()
     y_true = []
@@ -85,16 +96,14 @@ def evaluate_model(model, dataloader, device):
             y_pred.extend(predicted.data.cpu().numpy())
     return roc_auc_score(y_true, y_pred)
 
-# Load ICU dataset
-icu_data = ICUData(TRAIN_DATA_PATH, TRAIN_LABEL_FILE)
-train_loader = DataLoader(dataset=icu_data, batch_size=32, shuffle=True)
-
 # Initialize model, criterion, optimizer and device
-input_dim = 13 # number of features
-hidden_dim = 32
-layer_dim = 1 # only one layer
-output_dim = 1
+input_dim = 13 # number of ICU features
+hidden_dim = 32 # hidden layer dimension
+layer_dim = 1 # one layer LSTM
+output_dim = 1 # output dimension
 model = LSTMClassifier(input_dim, hidden_dim, layer_dim, output_dim)
+model = model.to(device)
+
 criterion = torch.nn.BCEWithLogitsLoss()
 optimizer = Adam(model.parameters(), lr=0.01)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
