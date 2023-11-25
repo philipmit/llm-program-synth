@@ -1,69 +1,4 @@
 #<PrevData>
-######## Prepare to load and preview the dataset and datatypes
-# Import necessary libraries
-import os
-import pandas as pd
-import numpy as np
-import torch
-import warnings
-warnings.filterwarnings("ignore")
-from torch.utils.data import Dataset
-
-# File paths
-TRAIN_DATA_PATH = "/data/sls/scratch/pschro/p2/data/benchmark_output2/in-hospital-mortality/train/"
-TRAIN_LABEL_FILE = "/data/sls/scratch/pschro/p2/data/benchmark_output2/in-hospital-mortality/train/listfile.csv"
-
-# Define the Dataset
-class ICUData(Dataset):
-    def __init__(self, data_path, label_file):
-        self.data_path = data_path
-        label_data = pd.read_csv(label_file)
-        self.file_names = label_data['stay']
-        self.labels = torch.tensor(label_data['y_true'].values, dtype=torch.float32)
-        self.replacement_values={'Capillary refill rate': 0.0, 'Diastolic blood pressure': 59.0 , 'Fraction inspired oxygen': 0.21, 'Glucose': 128.0, 'Heart Rate': 86, 'Height': 170.0, 'Mean blood pressure': 77.0, 'Oxygen saturation': 98.0, 'Respiratory rate': 19, 'Systolic blood pressure': 118.0, 'Temperature': 36.6, 'Weight': 81.0, 'pH': 7.4}
-    def __len__(self):
-        return len(self.file_names)
-    def __getitem__(self, idx):
-        file_path = os.path.join(self.data_path, self.file_names[idx])
-        data = pd.read_csv(file_path)
-        data = data.drop(['Hours','Glascow coma scale eye opening','Glascow coma scale motor response','Glascow coma scale total','Glascow coma scale verbal response'], axis=1)  
-        data = data.fillna(method='ffill').fillna(method='bfill')
-        data = data.fillna(self.replacement_values)
-        data = data.select_dtypes(include=[np.number]) 
-        label = self.labels[idx]
-        return torch.tensor(data.values, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
-#</PrevData>
-
-#<Evaluate>
-### Example of how predict_label is expected to function
-# val_dataset = ICUData(VAL_DATA_PATH, VAL_LABEL_FILE)
-# val_patient = val_dataset[0][0].unsqueeze(0)
-# prediction = predict_label(val_patient)
-# assert(isinstance(prediction,float))
-# print('**************************************')
-# print('Prediction: ' + str(prediction))
-# print('**************************************')
-# from sklearn.metrics import roc_auc_score
-# import warnings
-# warnings.filterwarnings("ignore")
-# prediction_label_list=[]
-# true_label_list=[]
-# for val_i in range(len(val_dataset)):
-#     val_patient = val_dataset[val_i][0].unsqueeze(0)
-#     prediction = predict_label(val_patient)
-#     true_label_list.append(int(val_dataset[val_i][1].item()))
-#     if prediction>0.5:
-#         prediction_label_list.append(1)
-#     else:
-#         prediction_label_list.append(0)
-# auc = roc_auc_score(true_label_list, prediction_label_list)
-# auc
-# print('**************************************')
-# print('VALIDATION AUC: ' + str(auc))
-# print('**************************************')
-# print('VALIDATION CODE EXECUTED SUCCESSFULLY')
-#</Evaluate>
-#<PrevData>
 # Import necessary libraries
 import os
 import pandas as pd
@@ -188,8 +123,7 @@ print("Training is done. Best model is loaded.")
 def predict_label(data_single_patient): 
     model.eval()
     with torch.no_grad():
-        data_single_patient = data_single_patient.to(device)
-        data_single_patient = data_single_patient.unsqueeze(0) if data_single_patient.dim() == 2 else data_single_patient
+        data_single_patient = data_single_patient.unsqueeze(0).to(device) if len(data_single_patient.shape)<3 else data_single_patient.to(device)
         output = model(data_single_patient)
         prediction = torch.sigmoid(output).cpu().data[0][0]
     return prediction.item()
