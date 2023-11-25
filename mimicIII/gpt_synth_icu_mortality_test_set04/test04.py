@@ -5,6 +5,7 @@ import os
 import pandas as pd
 import numpy as np
 import torch
+import torch.nn.functional as F
 import warnings
 warnings.filterwarnings("ignore")
 from torch.utils.data import Dataset
@@ -30,39 +31,11 @@ class ICUData(Dataset):
         data = data.fillna(method='ffill').fillna(method='bfill')
         data = data.fillna(self.replacement_values)
         data = data.select_dtypes(include=[np.number]) 
+        data = F.pad(input=torch.Tensor(data.values), pad=(0, 0, 0, 250 - len(data)), mode='constant', value=0)
         label = self.labels[idx]
-        return torch.tensor(data.values, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
+        return data, torch.tensor(label, dtype=torch.float32)
 #</PrevData>
 
-#<Evaluate>
-### Example of how predict_label is expected to function
-# val_dataset = ICUData(VAL_DATA_PATH, VAL_LABEL_FILE)
-# val_patient = val_dataset[0][0].unsqueeze(0)
-# prediction = predict_label(val_patient)
-# assert(isinstance(prediction,float))
-# print('**************************************')
-# print('Prediction: ' + str(prediction))
-# print('**************************************')
-# from sklearn.metrics import roc_auc_score
-# import warnings
-# warnings.filterwarnings("ignore")
-# prediction_label_list=[]
-# true_label_list=[]
-# for val_i in range(len(val_dataset)):
-#     val_patient = val_dataset[val_i][0].unsqueeze(0)
-#     prediction = predict_label(val_patient)
-#     true_label_list.append(int(val_dataset[val_i][1].item()))
-#     if prediction>0.5:
-#         prediction_label_list.append(1)
-#     else:
-#         prediction_label_list.append(0)
-# auc = roc_auc_score(true_label_list, prediction_label_list)
-# auc
-# print('**************************************')
-# print('VALIDATION AUC: ' + str(auc))
-# print('**************************************')
-# print('VALIDATION CODE EXECUTED SUCCESSFULLY')
-#</Evaluate>
 #<PrepData>
 ######## Prepare the dataset for training
 from torch.utils.data import DataLoader
