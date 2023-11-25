@@ -5,10 +5,8 @@ import os
 import pandas as pd
 import numpy as np
 import torch
-import warnings
 from torchvision import transforms
 from torch.nn.utils.rnn import pad_sequence
-warnings.filterwarnings("ignore")
 from torch.utils.data import Dataset
 
 # File paths
@@ -39,7 +37,7 @@ def collate_fn(batch):
     data, labels = zip(*batch)  
     data = pad_sequence(data, batch_first=True, padding_value=0)
     labels = torch.stack(labels,0)
-    return data, labels
+    return data.squeeze(), labels
 #</PrevData>
 
 #<PrepData>
@@ -79,7 +77,7 @@ valid_loader = DataLoader(train_dataset, batch_size=batch_size, sampler=valid_sa
 #<Model>
 ######## Define LSTM Model
 # Determine if GPU is available
-device = 'cuda' if torch.cuda.is_available() else 'cpu'
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 # Import necessary packages
 from torch import nn, optim
@@ -97,9 +95,9 @@ class LSTM(nn.Module):
     def forward(self, x):
         h0 = torch.zeros(self.n_layers, x.size(0), self.hidden_dim).to(device)
         c0 = torch.zeros(self.n_layers, x.size(0), self.hidden_dim).to(device)
-        out, _ = self.lstm(x, (h0, c0)) 
-        out = out[:, -1, :] 
-        out = self.fc(out) 
+        x = x.unsqueeze(0)
+        out, (hn, cn) = self.lstm(x, (h0.detach(), c0.detach())) 
+        out = self.fc(out[:, -1, :]) 
         return self.sigmoid(out)
 
 # LSTM Parameters
