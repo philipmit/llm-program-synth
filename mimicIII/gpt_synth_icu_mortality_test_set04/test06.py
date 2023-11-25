@@ -8,6 +8,7 @@ import torch
 import warnings
 warnings.filterwarnings("ignore")
 from torch.utils.data import Dataset
+from torch.nn.utils.rnn import pad_sequence
 
 # File paths
 TRAIN_DATA_PATH = "/data/sls/scratch/pschro/p2/data/benchmark_output2/in-hospital-mortality/train/"
@@ -36,9 +37,8 @@ class ICUData(Dataset):
         data = data.fillna(method='ffill').fillna(method='bfill').fillna(self.replacement_values)
         # Extract the numerical data 
         data = data.select_dtypes(include=[np.number])
-        data_length = len(data)  # get the number of rows for reshaping
         label = self.labels[idx]
-        return torch.tensor(data.values, dtype=torch.float32), torch.tensor(label, dtype=torch.float32), data_length  # return length of data
+        return torch.tensor(data.values, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
 #</PrevData>
 
 #<PrepData>
@@ -51,6 +51,7 @@ import torch
 from torch.utils.data import Dataset, DataLoader
 from torch.autograd import Variable
 from torch import nn
+from torch.cuda.amp import autocast, GradScaler
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 BATCH_SIZE = 1
@@ -62,7 +63,7 @@ class LSTM(nn.Module):
         self.hidden_dim = hidden_dim
         self.num_layers = num_layers
 
-        self.lstm = nn.LSTM(self.input_dim, self.hidden_dim, self.num_layers)
+        self.lstm = nn.LSTM(self.input_dim, self.hidden_dim, self.num_layers, batch_first=True)
 
         self.linear = nn.Linear(self.hidden_dim, output_dim)
 
@@ -70,12 +71,13 @@ class LSTM(nn.Module):
         return (torch.zeros(self.num_layers, batch_size, self.hidden_dim).to(device),
                 torch.zeros(self.num_layers, batch_size, self.hidden_dim).to(device))
 
+    @autocast()
     def forward(self, input):
         batch_size = input.size(0)
-        input_length = input.size(1)
+        seq_len = input.size(1)
         hidden = self.init_hidden(batch_size)
-        lstm_out, _ = self.lstm(input.view(input_length, batch_size, self.input_dim), hidden)
-        y_pred = torch.sigmoid(self.linear(lstm_out[-1]))
+        lstm_out, _ = self.lstm(input.view(batch_size, seq_len, n_features), hidden)
+        y_pred = torch.sigmoid(self.linear(lstm_out[:,-1,:]))
         return y_pred
 
 train_dataset = ICUData(TRAIN_DATA_PATH, TRAIN_LABEL_FILE)
@@ -91,29 +93,40 @@ model.to(device)
 
 loss_function = nn.BCELoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+scaler = GradScaler()
 
 for epoch in range(n_epochs):
-    for i, (input_data, labels, data_length) in enumerate(train_loader):  # include data_length
-        input_data = input_data.view(-1, data_length[0], n_features).to(device)  # reshape according to the data_length
-        labels = labels.to(device)
-        model.zero_grad()
-        y_pred = model(input_data)
+    for i, (inputs, labels) in enumerate(train_loader):
+        inputs, labels = inputs.to(device), labels.to(device)
+        # Handles model.zero_grad() internally
+        optimizer.zero_grad()
 
-        single_loss = loss_function(y_pred, labels)
-        single_loss.backward()
-        optimizer.step()
+        # Runs the forward pass with autocasting
+        with autocast():
+            y_pred = model(inputs)
+            single_loss = loss_function(y_pred, labels)
+
+        # Scales loss.  Calls backward() on scaled loss to create scaled gradients.
+        scaler.scale(single_loss).backward()
+        # scaler.step() first unscales the gradients of the optimizer's assigned params.
+        # If these gradients do not contain infs or NaNs, optimizer.step() is then called,
+        # otherwise, optimizer.step() is skipped.
+        scaler.step(optimizer)
+        # Updates the scale for next iteration.
+        scaler.update()
 
         if i % 100 == 0:
-            print(f'epoch: {epoch:3} loss: {single_loss.item():10.8f}')
-
+            print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
+                epoch, i * BATCH_SIZE, len(train_loader.dataset),
+                100. * i / len(train_loader), single_loss.item()))
 print("Training completed.")
 #</Train>
 
 #<Predict>
-def predict_label(one_patient, length):
+def predict_label(one_patient):
     model.eval()
     with torch.no_grad():
-        one_patient = one_patient.view(-1, length, n_features).to(device)  # reshape based on length
-        prediction = model(one_patient)  
-        return prediction.item()  
+        one_patient = one_patient.unsqueeze(0).to(device)  # add an extra dimension for batch
+        prediction = model(one_patient)
+        return prediction.item()
 #</Predict>
