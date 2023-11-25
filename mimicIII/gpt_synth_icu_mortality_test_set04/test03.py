@@ -1,4 +1,4 @@
-#<PrevData>
+#<PrepData>
 ######## Prepare to load and preview the dataset and datatypes
 # Import necessary libraries
 import os
@@ -31,39 +31,10 @@ class ICUData(Dataset):
         data = data.fillna(self.replacement_values)
         data = data.select_dtypes(include=[np.number]) 
         label = self.labels[idx]
-        return torch.tensor(data.values, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
-#</PrevData>
+        return torch.tensor(data.values, dtype=torch.float32), label
+#</PrepData>
 
-#<Evaluate>
-### Example of how predict_label is expected to function
-# val_dataset = ICUData(VAL_DATA_PATH, VAL_LABEL_FILE)
-# val_patient = val_dataset[0][0].unsqueeze(0)
-# prediction = predict_label(val_patient)
-# assert(isinstance(prediction,float))
-# print('**************************************')
-# print('Prediction: ' + str(prediction))
-# print('**************************************')
-# from sklearn.metrics import roc_auc_score
-# import warnings
-# warnings.filterwarnings("ignore")
-# prediction_label_list=[]
-# true_label_list=[]
-# for val_i in range(len(val_dataset)):
-#     val_patient = val_dataset[val_i][0].unsqueeze(0)
-#     prediction = predict_label(val_patient)
-#     true_label_list.append(int(val_dataset[val_i][1].item()))
-#     if prediction>0.5:
-#         prediction_label_list.append(1)
-#     else:
-#         prediction_label_list.append(0)
-# auc = roc_auc_score(true_label_list, prediction_label_list)
-# auc
-# print('**************************************')
-# print('VALIDATION AUC: ' + str(auc))
-# print('**************************************')
-# print('VALIDATION CODE EXECUTED SUCCESSFULLY')
-#</Evaluate>
-#<PrepData>
+#<PrepData2>
 ######## Prepare the training data
 from torch.utils.data import DataLoader
 from sklearn.model_selection import train_test_split
@@ -75,7 +46,7 @@ print("Number of samples in the dataset:", len(data))
 # Data loader
 batch_size = 64
 loader = DataLoader(data, batch_size=batch_size, shuffle=True)
-#</PrepData>
+#</PrepData2>
 
 #<Train>
 ######## Define the LSTM model and train it
@@ -104,8 +75,9 @@ num_epochs = 100
 model.train()
 for epoch in range(num_epochs):
     for i, (inputs, labels) in enumerate(loader):
-       .outputs = model(inputs)
+        inputs = inputs.view(batch_size, -1, 13)
         labels = labels.view(-1, 1)
+        outputs = model(inputs)
 
         loss = criterion(outputs, labels)
         optimizer.zero_grad()
