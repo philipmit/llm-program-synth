@@ -36,9 +36,8 @@ class ICUData(Dataset):
         data = data.fillna(method='ffill').fillna(method='bfill').fillna(self.replacement_values)
         # Extract the numerical data 
         data = data.select_dtypes(include=[np.number])
-        data = data.values.transpose()  
         label = self.labels[idx]
-        return torch.tensor(data, dtype=torch.float32).permute(1,0), torch.tensor(label, dtype=torch.float32)  # Permute the tensor
+        return torch.tensor(data.values, dtype=torch.float32).unsqueeze(0), torch.tensor(label, dtype=torch.float32)
 #</PrevData>
 
 #<PrepData>
@@ -56,25 +55,26 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 BATCH_SIZE = 1
 
 class LSTM(nn.Module):
-    def __init__(self, input_dim, hidden_dim, batch_size, output_dim=1, num_layers=2):
+    def __init__(self, input_dim, hidden_dim, output_dim=1, num_layers=2):
         super(LSTM, self).__init__()
         self.input_dim = input_dim
         self.hidden_dim = hidden_dim
-        self.batch_size = batch_size
         self.num_layers = num_layers
 
         self.lstm = nn.LSTM(self.input_dim, self.hidden_dim, self.num_layers)
 
         self.linear = nn.Linear(self.hidden_dim, output_dim)
 
-    def init_hidden(self):
-        return (torch.zeros(self.num_layers, self.batch_size, self.hidden_dim),
-                torch.zeros(self.num_layers, self.batch_size, self.hidden_dim))
+    def init_hidden(self, batch_size):
+        return (torch.zeros(self.num_layers, batch_size, self.hidden_dim).to(device),
+                torch.zeros(self.num_layers, batch_size, self.hidden_dim).to(device))
 
     def forward(self, input):
-        lstm_out, self.hidden = self.lstm(input.view(len(input), self.batch_size, -1))
-        y_pred = self.linear(lstm_out[-1].view(self.batch_size, -1))
-        return y_pred.view(-1)
+        batch_size = input.size(0)
+        hidden = self.init_hidden(batch_size)
+        lstm_out, _ = self.lstm(input.view(input.size(1), batch_size, self.input_dim), hidden)
+        y_pred = torch.sigmoid(self.linear(lstm_out[-1]))
+        return y_pred
 
 train_dataset = ICUData(TRAIN_DATA_PATH, TRAIN_LABEL_FILE)
 train_loader = DataLoader(dataset=train_dataset, batch_size=BATCH_SIZE, shuffle=True)
@@ -84,10 +84,10 @@ n_hidden = 64
 n_layers = 2
 n_epochs = 10
 
-model = LSTM(n_features, n_hidden, BATCH_SIZE, output_dim=1, num_layers=2)
+model = LSTM(n_features, n_hidden, output_dim=1, num_layers=n_layers)
 model.to(device)
 
-loss_function = nn.BCEWithLogitsLoss()
+loss_function = nn.BCELoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
 for epoch in range(n_epochs):
@@ -95,8 +95,6 @@ for epoch in range(n_epochs):
         input_data = input_data.to(device)
         labels = labels.to(device)
         model.zero_grad()
-        model.hidden_cell = model.init_hidden()
-
         y_pred = model(input_data)
 
         single_loss = loss_function(y_pred, labels)
@@ -114,7 +112,6 @@ def predict_label(one_patient):
     model.eval()
     with torch.no_grad():
         one_patient = one_patient.to(device)
-        model.hidden_cell = model.init_hidden()  
         prediction = model(one_patient)  
-        return torch.sigmoid(prediction).item()  
+        return prediction.item()  
 #</Predict>
