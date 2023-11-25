@@ -52,22 +52,23 @@ class LSTM(nn.Module):
         out = self.fc(out[:, -1, :]) 
         return out
 
-# Instantiate the model
-model = LSTM(input_dim=df.shape[1], hidden_dim=32, output_dim=1, num_layers=2)
-criterion = torch.nn.BCEWithLogitsLoss()
-optimizer = torch.optim.Adam(model.parameters(), lr=0.1)
-
 # Load training data
 train_data = ICUData(TRAIN_DATA_PATH, TRAIN_LABEL_FILE)
+
+# Instantiate the model with input dimension equal to the number of features in the training data
+model = LSTM(input_dim=train_data[0][0].shape[1], hidden_dim=32, output_dim=1, num_layers=2)
+criterion = torch.nn.BCEWithLogitsLoss()
+optimizer = torch.optim.Adam(model.parameters(), lr=0.1)
 
 # Train the model
 num_epochs = 100
 for epoch in range(num_epochs):
     for i, (data, labels) in enumerate(train_data):
         model.train()
+        data = data.unsqueeze(0) # add extra dimension for batch
         optimizer.zero_grad()
         outputs = model(data)
-        loss = criterion(outputs, labels)
+        loss = criterion(outputs, labels.unsqueeze(0)) # add extra dimension for batch
         loss.backward()
         optimizer.step()
 #</Train>
@@ -77,8 +78,8 @@ for epoch in range(num_epochs):
 def predict_label(patient_data):
     # Switch to evaluation mode
     model.eval()
-    # Pass data through model
-    outputs = model(patient_data)
+    # Add an extra dimension for batch and Pass data through model
+    outputs = model(patient_data.unsqueeze(0))
     # Return the predicted probability of patient's mortality
     return torch.sigmoid(outputs).item()
 #</Predict>
