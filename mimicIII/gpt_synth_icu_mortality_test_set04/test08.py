@@ -20,7 +20,7 @@ class ICUData(Dataset):
         self.data_path = data_path
         label_data = pd.read_csv(label_file)
         self.file_names = label_data['stay']
-        self.labels = torch.tensor(label_data['y_true'].values, dtype=torch.float32)
+        self.labels = list(label_data['y_true'].values)
         self.replacement_values={'Capillary refill rate': 0.0, 'Diastolic blood pressure': 59.0 , 'Fraction inspired oxygen': 0.21, 'Glucose': 128.0, 'Heart Rate': 86, 'Height': 170.0, 'Mean blood pressure': 77.0, 'Oxygen saturation': 98.0, 'Respiratory rate': 19, 'Systolic blood pressure': 118.0, 'Temperature': 36.6, 'Weight': 81.0, 'pH': 7.4}
     def __len__(self):
         return len(self.file_names)
@@ -39,8 +39,6 @@ class ICUData(Dataset):
 ######## Prepare the dataset for training
 def pad_collate(batch):
     (xx, yy) = zip(*batch)
-    x_lens = [len(x) for x in xx]
-    y_lens = [len(y) for y in yy]
     xx_pad = pad_sequence(xx, batch_first=True, padding_value=0)
     return xx_pad, torch.tensor(yy, dtype=torch.float32)
 
@@ -108,7 +106,7 @@ for epoch in range(num_epochs):
             print(f'Epoch [{epoch+1}/{num_epochs}], Step [{i+1}/{len(dataset)//batch_size}], Loss: {loss.item()}')
 
 # Save the model
-torch.save(model.state_dict(), model_path)     
+torch.save(model.state_dict(), model_path)  
 #</Train>
 
 #<Predict>
