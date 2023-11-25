@@ -46,8 +46,9 @@ class ICUData(Dataset):
 ######## Prepare the training data
 from torch.utils.data import DataLoader
 
-# Initialize dataset
-data = ICUData(TRAIN_DATA_PATH, TRAIN_LABEL_FILE)
+# Initialize dataset with sequence_length
+sequence_length = 200 # Set sequence length
+data = ICUData(TRAIN_DATA_PATH, TRAIN_LABEL_FILE, sequence_length)
 print("Number of samples in the dataset:", len(data))
 
 # Data loader
@@ -81,15 +82,16 @@ num_epochs = 100
 model.train()
 for epoch in range(num_epochs):
     for i, (inputs, labels) in enumerate(loader):
-        inputs = inputs.view(batch_size, -1, 13)
+        # Update inputs and labels format according to sequence length
+        inputs = inputs.view(-1, sequence_length, 13) 
         labels = labels.view(-1, 1)
+        
         outputs = model(inputs)
-
         loss = criterion(outputs, labels)
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
-
+        
     if epoch % 10 == 0:
         print('Epoch: {}/{}.............'.format(epoch, num_epochs), end=' ')
         print("Loss: {:.4f}".format(loss.item()))
@@ -101,7 +103,8 @@ print('Model trained successfully!')
 def predict_label(single_sample):
     model.eval()
     with torch.no_grad():
-        output = model(single_sample.unsqueeze(0)) # Add a new dimension for batch size
+        single_sample = single_sample.view(-1, sequence_length, 13) # Update input format according to sequence length
+        output = model(single_sample) # Add a new dimension for batch size
         output = torch.sigmoid(output)
         return output.item()
 #</Predict>
