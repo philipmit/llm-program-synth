@@ -1,5 +1,4 @@
 #<PrevData>
-######## Prepare to load and preview the dataset and datatypes
 # Import necessary libraries
 import os
 import pandas as pd
@@ -7,11 +6,12 @@ import numpy as np
 import torch
 import warnings
 warnings.filterwarnings("ignore")
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import Dataset
 from torch.nn import Module, LSTM, Linear
 from torch.optim import Adam
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import roc_auc_score
+from torch.utils.data import DataLoader
 
 # File paths
 TRAIN_DATA_PATH = "/data/sls/scratch/pschro/p2/data/benchmark_output2/in-hospital-mortality/train/"
@@ -24,23 +24,22 @@ class ICUData(Dataset):
         label_data = pd.read_csv(label_file)
         self.file_names = label_data['stay']
         self.labels = torch.tensor(label_data['y_true'].values, dtype=torch.float32)
-        self.replacement_values={'Capillary refill rate': 0.0, 'Diastolic blood pressure': 59.0 , 'Fraction inspired oxygen': 0.21, 'Glucose': 128.0, 'Heart Rate': 86, 'Height': 170.0, 'Mean blood pressure': 77.0, 'Oxygen saturation': 98.0, 'Respiratory rate': 19, 'Systolic blood pressure': 118.0, 'Temperature': 36.6, 'Weight': 81.0, 'pH': 7.4}
-        self.scaler = MinMaxScaler(feature_range=(0, 1))
+        self.replacement_values={'Capillary refill rate': 2.0, 'Diastolic blood pressure': 59.0 , 'Fraction inspired oxygen': 0.21, 'Glucose': 128.0, 'Heart Rate': 86, 'Height': 170.0, 'Mean blood pressure': 77.0, 'Oxygen saturation': 98.0, 'Respiratory rate': 19, 'Systolic blood pressure': 118.0, 'Temperature': 36.6, 'Weight': 81.0, 'pH': 7.4}
     def __len__(self):
         return len(self.file_names)
     def __getitem__(self, idx):
         file_path = os.path.join(self.data_path, self.file_names[idx])
         data = pd.read_csv(file_path)
-        data = data.drop(['Hours','Glascow coma scale eye opening','Glascow coma scale motor response','Glascow coma scale total','Glascow coma scale verbal response'], axis=1)  
+        data = data.drop(['Hours','Glascow coma scale eye opening','Glascow coma scale motor response','Glascow coma scale total','Glascow coma scale verbal response'], axis=1)
         data = data.fillna(method='ffill').fillna(method='bfill')
         data = data.fillna(self.replacement_values)
-        data = self.scaler.fit_transform(data.select_dtypes(include=[np.number])) 
+        data = MinMaxScaler().fit_transform(data.select_dtypes(include=[np.number]))
         label = self.labels[idx]
         return torch.tensor(data, dtype=torch.float32).unsqueeze(1), torch.tensor(label, dtype=torch.float32)
 
 # Load ICU dataset
 icu_data = ICUData(TRAIN_DATA_PATH, TRAIN_LABEL_FILE)
-train_loader = DataLoader(dataset=icu_data, batch_size=32, shuffle=True)
+train_loader = DataLoader(dataset=icu_data, batch_size=64, shuffle=True)
 #</PrevData>
 
 #<TrainData>
