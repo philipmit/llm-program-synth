@@ -42,7 +42,7 @@ class ICUData(Dataset):
 #</PrevData>
 
 #<PrepData>
-# Custom collate function to handle variable lengths of the batch and pad accordingly
+# Custom collate function to handle variable lengths of a batch and pad accordingly
 def collate_fn(batch):
     data = [item[0] for item in batch]
     data = pad_sequence(data, batch_first=True)
@@ -53,9 +53,9 @@ def collate_fn(batch):
 #<Train>
 # Use the above method to define data loading for LSTM
 import torch
-from torch.utils.data import DataLoader
-from torch.autograd import Variable
-from torch import nn
+from torch.nn import LSTM, Linear
+from torch.nn.functional import sigmoid
+from torch.optim import Adam
 from torch.cuda.amp import autocast, GradScaler
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -68,22 +68,20 @@ class LSTM(nn.Module):
         self.hidden_dim = hidden_dim
         self.num_layers = num_layers
 
-        self.lstm = nn.LSTM(self.input_dim, self.hidden_dim, self.num_layers, batch_first=True)
+        self.lstm = LSTM(self.input_dim, self.hidden_dim, self.num_layers, batch_first=True)
 
-        self.linear = nn.Linear(self.hidden_dim, output_dim)
+        self.linear = Linear(self.hidden_dim, output_dim)
+
+    def forward(self, input):
+        hidden = self.init_hidden(input.size(0))
+        lstm_out, _ = self.lstm(input.view(input.size(0), -1, self.input_dim), hidden)
+        y_pred = sigmoid(self.linear(lstm_out[:,-1,:]))
+        return y_pred
 
     def init_hidden(self, batch_size):
         return (torch.zeros(self.num_layers, batch_size, self.hidden_dim).to(device),
                 torch.zeros(self.num_layers, batch_size, self.hidden_dim).to(device))
 
-    @autocast()
-    def forward(self, input):
-        batch_size = input.size(0)
-        seq_len = input.size(1)
-        hidden = self.init_hidden(batch_size)
-        lstm_out, _ = self.lstm(input.view(batch_size, seq_len, self.input_dim), hidden)
-        y_pred = torch.sigmoid(self.linear(lstm_out[:,-1,:]))
-        return y_pred
 
 train_dataset = ICUData(TRAIN_DATA_PATH, TRAIN_LABEL_FILE)
 train_loader = DataLoader(dataset=train_dataset, batch_size=BATCH_SIZE, shuffle=True, collate_fn=collate_fn)
@@ -97,7 +95,7 @@ model = LSTM(n_features, n_hidden, output_dim=1, num_layers=n_layers)
 model.to(device)
 
 loss_function = nn.BCELoss()
-optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+optimizer = Adam(model.parameters(), lr=0.001)
 scaler = GradScaler()
 
 for epoch in range(n_epochs):
