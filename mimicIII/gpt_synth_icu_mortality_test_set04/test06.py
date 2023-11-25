@@ -61,9 +61,9 @@ from torch.cuda.amp import autocast, GradScaler
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 BATCH_SIZE = 1
 
-class LSTM(nn.Module):
+class LSTMModel(torch.nn.Module):
     def __init__(self, input_dim, hidden_dim, output_dim=1, num_layers=2):
-        super(LSTM, self).__init__()
+        super().__init__()
         self.input_dim = input_dim
         self.hidden_dim = hidden_dim
         self.num_layers = num_layers
@@ -91,10 +91,10 @@ n_hidden = 64
 n_layers = 2
 n_epochs = 10
 
-model = LSTM(n_features, n_hidden, output_dim=1, num_layers=n_layers)
+model = LSTMModel(n_features, n_hidden, output_dim=1, num_layers=n_layers)
 model.to(device)
 
-loss_function = nn.BCELoss()
+loss_function = torch.nn.BCELoss()
 optimizer = Adam(model.parameters(), lr=0.001)
 scaler = GradScaler()
 
