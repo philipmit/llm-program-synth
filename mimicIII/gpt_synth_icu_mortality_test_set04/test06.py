@@ -35,10 +35,9 @@ class ICUData(Dataset):
                           'Glascow coma scale verbal response'], axis=1)
         data = data.fillna(method='ffill').fillna(method='bfill').fillna(self.replacement_values)
         data = data.select_dtypes(include=[np.number])
+        data = data.values.transpose()  # Change this line. We are transposing the data
         label = self.labels[idx]
-        data = torch.tensor(data.values, dtype=torch.float32).t()  # transposing the data
-        data = data.view(data.shape[0], -1)  # Reshaping the data to fit [sequence_length, num_features]
-        return data, torch.tensor(label, dtype=torch.float32)
+        return torch.tensor(data, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
 #</PrevData>
 
 #<PrepData>
