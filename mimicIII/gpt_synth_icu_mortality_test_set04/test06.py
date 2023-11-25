@@ -7,7 +7,7 @@ import numpy as np
 import torch
 import warnings
 warnings.filterwarnings("ignore")
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, DataLoader
 from torch.nn.utils.rnn import pad_sequence
 
 # File paths
@@ -42,13 +42,18 @@ class ICUData(Dataset):
 #</PrevData>
 
 #<PrepData>
-# Prepare the data as shown above - call this method when preparing the train dataloader
+# Custom collate function to handle variable lengths of the batch and pad accordingly
+def collate_fn(batch):
+    data = [item[0] for item in batch]
+    data = pad_sequence(data, batch_first=True)
+    targets = torch.stack([item[1] for item in batch])
+    return data, targets
 #</PrepData>
 
 #<Train>
 # Use the above method to define data loading for LSTM
 import torch
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import DataLoader
 from torch.autograd import Variable
 from torch import nn
 from torch.cuda.amp import autocast, GradScaler
@@ -81,9 +86,9 @@ class LSTM(nn.Module):
         return y_pred
 
 train_dataset = ICUData(TRAIN_DATA_PATH, TRAIN_LABEL_FILE)
-train_loader = DataLoader(dataset=train_dataset, batch_size=BATCH_SIZE, shuffle=True, collate_fn= lambda x: pad_sequence(x, batch_first=True))
+train_loader = DataLoader(dataset=train_dataset, batch_size=BATCH_SIZE, shuffle=True, collate_fn=collate_fn)
 
-n_features = 12  # number of features considering the input columns mentioned
+n_features = 12 
 n_hidden = 64
 n_layers = 2
 n_epochs = 10
@@ -104,7 +109,7 @@ for epoch in range(n_epochs):
         # Runs the forward pass with autocasting
         with autocast():
             y_pred = model(inputs)
-            single_loss = loss_function(y_pred, labels)
+            single_loss = loss_function(y_pred.squeeze(), labels)
 
         # Scales loss.  Calls backward() on scaled loss to create scaled gradients.
         scaler.scale(single_loss).backward()
