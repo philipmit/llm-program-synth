@@ -19,17 +19,23 @@ class ICUData(Dataset):
         self.file_names = label_data['stay']
         self.labels = torch.tensor(label_data['y_true'].values, dtype=torch.float32)
         self.replacement_values={'Capillary refill rate': 0.0, 'Diastolic blood pressure': 59.0 , 'Fraction inspired oxygen': 0.21, 'Glucose': 128.0, 'Heart Rate': 86, 'Height': 170.0, 'Mean blood pressure': 77.0, 'Oxygen saturation': 98.0, 'Respiratory rate': 19, 'Systolic blood pressure': 118.0, 'Temperature': 36.6, 'Weight': 81.0, 'pH': 7.4}
+        # Define a fixed sequence length, here it's defined as a default of 100.
+        self.seq_length = 100
     def __len__(self):
         return len(self.file_names)
     def __getitem__(self, idx):
         file_path = os.path.join(self.data_path, self.file_names[idx])
         data = pd.read_csv(file_path)
-        data = data.drop(['Hours','Glascow coma scale eye opening','Glascow coma scale motor response','Glascow coma scale total','Glascow coma scale verbal response'], axis=1)  
+        # Replace missing values
+        data = data.drop(['Hours','Glascow coma scale eye opening','Glascow coma scale motor response','Glascow coma scale total','Glascow coma scale verbal response'], axis=1)      
         data = data.fillna(method='ffill').fillna(method='bfill')
         data = data.fillna(self.replacement_values)
         data = data.select_dtypes(include=[np.number])
+        data = data[:self.seq_length]
+        data = np.pad(data.to_numpy(), [(0, self.seq_length - len(data)), (0, 0)], mode='constant')
+        data = torch.tensor(data, dtype=torch.float32)
         label = self.labels[idx]
-        return torch.tensor(data.values, dtype=torch.float32), label.unsqueeze(-1)  # Modify this line to include the feature dimension
+        return data, label.unsqueeze(-1)  # Modify this line to include the feature dimension
 #</PrevData>
 
 #<Train>
