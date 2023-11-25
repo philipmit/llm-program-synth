@@ -6,6 +6,8 @@ import pandas as pd
 import numpy as np
 import torch
 import warnings
+from torchvision import transforms
+from torch.nn.utils.rnn import pad_sequence
 warnings.filterwarnings("ignore")
 from torch.utils.data import Dataset
 
@@ -32,46 +34,20 @@ class ICUData(Dataset):
         data = data.select_dtypes(include=[np.number]) 
         label = self.labels[idx]
         return torch.tensor(data.values, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
+
+def collate_fn(batch):
+    data, labels = zip(*batch)  
+    data = pad_sequence(data, batch_first=True, padding_value=0)
+    labels = torch.stack(labels,0)
+    return data, labels
 #</PrevData>
 
-#<Evaluate>
-### Example of how predict_label is expected to function
-# val_dataset = ICUData(VAL_DATA_PATH, VAL_LABEL_FILE)
-# val_patient = val_dataset[0][0].unsqueeze(0)
-# prediction = predict_label(val_patient)
-# assert(isinstance(prediction,float))
-# print('**************************************')
-# print('Prediction: ' + str(prediction))
-# print('**************************************')
-# from sklearn.metrics import roc_auc_score
-# import warnings
-# warnings.filterwarnings("ignore")
-# prediction_label_list=[]
-# true_label_list=[]
-# for val_i in range(len(val_dataset)):
-#     val_patient = val_dataset[val_i][0].unsqueeze(0)
-#     prediction = predict_label(val_patient)
-#     true_label_list.append(int(val_dataset[val_i][1].item()))
-#     if prediction>0.5:
-#         prediction_label_list.append(1)
-#     else:
-#         prediction_label_list.append(0)
-# auc = roc_auc_score(true_label_list, prediction_label_list)
-# auc
-# print('**************************************')
-# print('VALIDATION AUC: ' + str(auc))
-# print('**************************************')
-# print('VALIDATION CODE EXECUTED SUCCESSFULLY')
-#</Evaluate>
 #<PrepData>
 ######## Prepare the dataset for training
 # Import necessary libraries
 import torch
 from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
 from torch.utils.data import DataLoader, SubsetRandomSampler
-from torch import optim
-from torch import nn
-import torch.nn.functional as F
 
 # Load dataset
 train_dataset = ICUData(TRAIN_DATA_PATH, TRAIN_LABEL_FILE)
@@ -94,10 +70,10 @@ train_indices, val_indices = indices[split:], indices[:split]
 batch_size = 32
 # Train sampler and data loader
 train_sampler = SubsetRandomSampler(train_indices)
-train_loader = DataLoader(train_dataset, batch_size=batch_size, sampler=train_sampler)
+train_loader = DataLoader(train_dataset, batch_size=batch_size, sampler=train_sampler, collate_fn=collate_fn)
 # Validation sampler and data loader
 valid_sampler = SubsetRandomSampler(val_indices)
-valid_loader = DataLoader(train_dataset, batch_size=batch_size, sampler=valid_sampler)
+valid_loader = DataLoader(train_dataset, batch_size=batch_size, sampler=valid_sampler, collate_fn=collate_fn)
 #</PrepData>
 
 #<Model>
