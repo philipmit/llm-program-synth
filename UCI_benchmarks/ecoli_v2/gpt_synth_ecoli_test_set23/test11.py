@@ -1,3 +1,4 @@
+#<PrevData>
 print('********** Load and preview the dataset and datatypes')
 # Import necessary libraries
 import pandas as pd
@@ -39,7 +40,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 
 # Define features, X, and labels, y
-X = df.iloc[:, :-1]  # All rows, all columns except the last one
+X = df.iloc[:, 1:-1]  # All rows, except first (sequence name) and last (classes)
 y = df.iloc[:, -1]   # All rows, only the last column
 
 # Label Encoding to convert labels to numerical data
