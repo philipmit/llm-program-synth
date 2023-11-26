@@ -2,10 +2,10 @@
 print('********** Load and preview the dataset and datatypes')
 # Import necessary libraries
 import pandas as pd
+import numpy as np
 # Read file
 dataset_name='Ecoli'
-dataset_name=dataset_name.lower()
-df = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/'+dataset_name+'/'+dataset_name+'.data', header=None)
+df = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/'+dataset_name+'/'+dataset_name+'.data', header=None, delim_whitespace=True)
 # Preview dataset and datatypes
 print('*******************')
 print('df.shape')
@@ -29,28 +29,25 @@ print(df.isnull().sum())
 #</PrevData>
 #<PrepData>
 print('********** Prepare the dataset for training')
-# Import necessary packages
-import numpy as np
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 # Clean the dataset
-df = df[0].str.split(expand=True)
+df.columns = ['Sequence Name', 'mcg', 'gvh', 'lip', 'chg', 'aac', 'alm1', 'alm2', 'class']
 # Define features, X, and labels, y
-X = df.iloc[:, :-1]  # All rows, except the last column
+X = df.iloc[:, 1:-1]  # All rows, except the last column
 y = df.iloc[:, -1]  # All rows, only the last column
 # Replace categorical labels with numerical
 y = y.replace(list(np.unique(y)), list(range(len(np.unique(y)))))
-# Convert X to numbers instead of strings
-X = X.apply(lambda x: pd.to_numeric(x, errors='coerce')).fillna(0)
 # Convert X and y to numpy arrays
 X = X.to_numpy()
 y = y.to_numpy()
 # Split the dataset into training and testing sets
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, stratify=y, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(X, y, stratify=y, test_size=0.5, random_state=42)
 # Scale the features 
 sc = StandardScaler()
 X_train = sc.fit_transform(X_train)
+X_test = sc.transform(X_test)
 print('*******************')
 print('X_train.shape')
 print(X_train.shape)
@@ -70,10 +67,10 @@ model = LogisticRegression()
 model.fit(X_train, y_train)
 #</Train>
 #<Predict>
-print('********** Define a function that can be used to make new predictions given one sample of data from X_test')
-def predict_label(one_sample):
+print('********** Define a function that can be used to make new predictions with given data')
+def predict_label(one_sample): # Remove the reshape operation in this function since X_test was passed as a list
     # Standardize the one_sample to match the data model was trained on
-    one_sample = sc.transform(one_sample.reshape(1, -1))
+    trained_sample = sc.transform([one_sample]) # Encapsulate the one_sample into a list instead of reshaping
     # Return the class probabilities as a 1D array
-    return model.predict_proba(one_sample)[0]  
+    return model.predict_proba(trained_sample)[0]
 #</Predict>
