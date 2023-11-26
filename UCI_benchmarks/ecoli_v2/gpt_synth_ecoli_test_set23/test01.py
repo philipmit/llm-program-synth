@@ -1,5 +1,4 @@
 #<PrevData>
-
 ######## Load and preview the dataset and datatypes
 # Import necessary libraries
 import pandas as pd
