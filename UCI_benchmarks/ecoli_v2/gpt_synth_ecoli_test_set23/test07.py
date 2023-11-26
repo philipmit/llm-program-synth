@@ -27,6 +27,7 @@ print('*******************')
 print('df.isnull().sum()')
 print(df.isnull().sum())
 #</PrevData>
+
 #<PrepData>
 print('********** Incorrect dataset structure. Need to fix the columns.')
 # Convert the single column dataset into a multi-column one
@@ -105,6 +106,8 @@ print('Accuracy of the model:', accuracy)
 #<Predict>
 print('********** Define a function that can be used to make new predictions given one sample of data from X_test')
 def predict_label(one_sample):
+    # Convert the list to a numpy array before reshaping
+    one_sample = np.array(one_sample)
     # Standardize the one_sample to match the data model was trained on
     one_sample = sc.transform(one_sample.reshape(1, -1))
     # Return the class probabilities as a 1D array
