@@ -1,4 +1,3 @@
-#<PrevData>
 print('********** Load and preview the dataset and datatypes')
 # Import necessary libraries
 import pandas as pd
@@ -33,7 +32,6 @@ print('********** Prepare the dataset for training')
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
-from imblearn.over_sampling import SMOTE 
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 
 # Define features, X, and labels, y
@@ -43,10 +41,6 @@ y = df.iloc[:, -1]   # All rows, only the last column
 # Label Encoding to convert labels to numerical data
 le = LabelEncoder()
 y = le.fit_transform(y)
-
-# Oversampling to handle imbalance in dataset
-oversample = SMOTE()
-X, y = oversample.fit_resample(X, y)
 
 # Split the dataset into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
