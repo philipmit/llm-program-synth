@@ -31,57 +31,44 @@ print(df.isnull().sum())
 print('********** Prepare the dataset for training')
 # Import necessary packages
 import numpy as np
-from sklearn.linear_model import LogisticRegression
-from sklearn.preprocessing import StandardScaler
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
-
-# Leave the features column to numerical type after excluding the sequence name column
-df = df.loc[:, list(range(1, df.shape[1]))]
-# Display dataframe info
-print('*******************')
-print('df.info()')
-print(df.info())
+from imblearn.over_sampling import SMOTE 
+from sklearn.preprocessing import LabelEncoder, StandardScaler
 
 # Define features, X, and labels, y
 X = df.iloc[:, :-1]  # All rows, all columns except the last one
 y = df.iloc[:, -1]   # All rows, only the last column
-y = y.replace(list(np.unique(y)), list(range(len(np.unique(y)))))    # Replace labels with numerical equivalents
-X=X.to_numpy()
-y=y.to_numpy()
+
+# Label Encoding to convert labels to numerical data
+le = LabelEncoder()
+y = le.fit_transform(y)
+
+# Oversampling to handle imbalance in dataset
+oversample = SMOTE()
+X, y = oversample.fit_resample(X, y)
 
 # Split the dataset into training and testing sets
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, stratify=y, random_state=42)
-X_train=X_train.tolist()
-X_test=X_test.tolist()
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
 
-# Scale the features 
+# Data normalization using StandardScaler
 sc = StandardScaler()
 X_train = sc.fit_transform(X_train)
-print('*******************')
-print('X_train.shape')
-print(X_train.shape)
-print('*******************')
-print('y_train.shape')
-print(y_train.shape)
-print('*******************')
-print('X_train[0:5]')
-print(X_train[0:5])
-print('*******************')
-print('y_train[0:5]')
-print(y_train[0:5])
+X_test = sc.transform(X_test)
 #</PrepData>
 #<Train>
 print('********** Train the model using the training data set (X_train and y_train)')
-model = LogisticRegression()
-model.fit(X_train, y_train)
+# Instatiate a random forest classifier with increased number of estimators
+clf = RandomForestClassifier(n_estimators=200, random_state=42, max_depth=7)
+clf.fit(X_train, y_train)
 #</Train>
 #<Predict>
 print('********** Following is a function, predict_label, that can be used to return new predictions given one sample of data from X_test')
 def predict_label(one_sample):
     # Casting the input to numpy array to access the reshape function
     one_sample = np.array(one_sample)
-    # Standardize the transformed input to match the data model was trained on
+    # Normalization to match the data model was trained on
     one_sample = sc.transform(one_sample.reshape(1, -1))
     # Return the class probabilities as a 1D array
-    return model.predict_proba(one_sample)[0]  
+    return clf.predict_proba(one_sample)[0]
 #</Predict>
