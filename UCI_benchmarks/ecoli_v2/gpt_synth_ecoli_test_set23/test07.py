@@ -81,3 +81,11 @@ print('*******************')
 print('y_train[0:5]')
 print(y_train[0:5])
 #</PrepData>
+#<Train>
+print('********** Train the model using the training data, X_train and y_train')
+# Import necessary libraries
+from sklearn.pipeline import make_pipeline
+from sklearn.linear_model import LogisticRegression
+model = LogisticRegression(random_state=42)
+model.fit(X_train, y_train)
+#</Train>
