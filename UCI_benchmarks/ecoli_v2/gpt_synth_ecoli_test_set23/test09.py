@@ -5,7 +5,7 @@ import pandas as pd
 # Read file
 dataset_name='Ecoli'
 dataset_name=dataset_name.lower()
-df = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/'+dataset_name+'/'+dataset_name+'.data', header=None)
+df = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/'+dataset_name+'/'+dataset_name+'.data', header=None, delim_whitespace=True)
 # Preview dataset and datatypes
 print('*******************')
 print('df.shape')
@@ -27,6 +27,8 @@ print('*******************')
 print('df.isnull().sum()')
 print(df.isnull().sum())
 #</PrevData>
+
+
 #<PrepData>
 print('********** Prepare the dataset for training')
 # Import necessary packages
@@ -34,23 +36,25 @@ import numpy as np
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
-# The data is all in one column, we need to split the data
-df = df[0].str.split('  ', expand=True)
+from sklearn.preprocessing import LabelEncoder
+
 # Define features, X, and labels, y
 X = df.iloc[:, 1:-1]  # All rows, all columns except the first and last one
 y = df.iloc[:, -1]   # All rows, only the last column
-# convert string data to numeric
-X = X.apply(pd.to_numeric, errors='coerce')
-y = y.replace(list(np.unique(y)), list(range(len(np.unique(y)))))
-X=X.to_numpy()
-y=y.to_numpy()
+
+# Handle missing and categorical data
+labelencoder_y = LabelEncoder()
+y = labelencoder_y.fit_transform(y)
+X = X.fillna(X.mean())
+
 # Split the dataset into training and testing sets
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, stratify=y, random_state=42)
-X_train=X_train.tolist()
-X_test=X_test.tolist()
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, stratify=y, random_state=42)
+
 # Scale the features 
 sc = StandardScaler()
 X_train = sc.fit_transform(X_train)
+X_test = sc.transform(X_test)
+
 print('*******************')
 print('X_train.shape')
 print(X_train.shape)
