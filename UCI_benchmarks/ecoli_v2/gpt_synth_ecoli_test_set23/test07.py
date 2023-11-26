@@ -1,115 +1,84 @@
 #<PrevData>
 print('********** Load and preview the dataset and datatypes')
+
 # Import necessary libraries
 import pandas as pd
+
 # Read file
 dataset_name='Ecoli'
 dataset_name=dataset_name.lower()
 df = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/'+dataset_name+'/'+dataset_name+'.data', header=None)
+
 # Preview dataset and datatypes
-print('*******************')
-print('df.shape')
-print(df.shape)
-print('*******************')
-print('df.head()')
 print(df.head())
-print('*******************')
-print('df.info()')
 print(df.info())
-print('*******************')
-print('df.dtypes')
 print(df.dtypes)
-print('*******************')
-for col in df.applymap(type).columns:
-    print('df.applymap(type)[{col}].unique()'.format(col=col))
-    print(df.applymap(type)[col].unique())
-print('*******************')
-print('df.isnull().sum()')
 print(df.isnull().sum())
-#</PrevData>
 
 #<PrepData>
 print('********** Incorrect dataset structure. Need to fix the columns.')
+
 # Convert the single column dataset into a multi-column one
 df = df[0].str.split(expand=True)
 df.columns = ["Sequence", "mcg", "gvh", "lip", "chg", "aac", "alm1", "alm2", "class"]
 df.drop(columns=["Sequence"], inplace=True)
 
-# Check data types
-print('*******************')
-print('df.dtypes')
-print(df.dtypes)
-# Convert datatypes
+# Check data types and convert as necessary
 df = df.astype({"mcg": float, "gvh": float, "lip": float, "chg": float, "aac": float, "alm1": float, "alm2": float, "class": str})
-print('df after changing dtypes:')
-print('*******************')
-print('df.dtypes')
-print(df.dtypes)
 
 # Check the structured dataframe
-print('*******************')
-print('df.head()')
 print(df.head())
 
 print('********** Prepare the dataset for training')
+
 # Import necessary packages
 import numpy as np
-from sklearn.linear_model import LogisticRegression
-from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
+from imblearn.over_sampling import SMOTE
+
 # Define features, X, and labels, y
 X = df.iloc[:, :-1]  # All rows, all columns except the last one
 y = df.iloc[:, -1]   # All rows, only the last column
+
 # Convert string labels into numerical labels
 y = y.replace(list(np.unique(y)), list(range(len(np.unique(y)))))
+
+# Handle the class imbalance in the dataset using SMOTE
+smote = SMOTE(sampling_strategy='minority')
+X, y = smote.fit_resample(X, y)
 
 # Split the dataset into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, stratify=y, random_state=42)
 
-# Scale the features 
-sc = StandardScaler()
-X_train = sc.fit_transform(X_train)
-print('*******************')
-print('X_train.shape')
-print(X_train.shape)
-print('*******************')
-print('y_train.shape')
-print(y_train.shape)
-print('*******************')
-print('X_train[0:5]')
-print(X_train[0:5])
-print('*******************')
-print('y_train[0:5]')
-print(y_train[0:5])
-#</PrepData>
 #<Train>
 print('********** Train the model using the training data, X_train and y_train')
+
 # Import necessary libraries
-from sklearn.pipeline import make_pipeline
-from sklearn.linear_model import LogisticRegression
-model = LogisticRegression(random_state=42)
+from sklearn.ensemble import RandomForestClassifier
+
+# Use a RandomForestClassifier instead of Logistic Regression for better performance
+model = RandomForestClassifier(n_estimators=100, random_state=42)
 model.fit(X_train, y_train)
-#</Train>
+
 #<Test>
 print('********** Evaluate the model using the testing data, X_test and y_test')
+
 # Import necessary libraries
 from sklearn.metrics import accuracy_score
-# Scale the testing data
-X_test = sc.transform(X_test)
+from sklearn.metrics import roc_auc_score
+
 # Predict the labels for testing data
 y_pred = model.predict(X_test)
-# Compute the accuracy of the model
-accuracy = accuracy_score(y_test, y_pred)
-print('Accuracy of the model:', accuracy)
-#</Test>
+
+# Compute the AUC of the model
+roc_auc = roc_auc_score(y_test, y_pred)
+print('AUC-ROC of the model:', roc_auc)
 
 #<Predict>
 print('********** Define a function that can be used to make new predictions given one sample of data from X_test')
 def predict_label(one_sample):
     # Convert the list to a numpy array before reshaping
     one_sample = np.array(one_sample)
-    # Standardize the one_sample to match the data model was trained on
-    one_sample = sc.transform(one_sample.reshape(1, -1))
     # Return the class probabilities as a 1D array
-    return model.predict_proba(one_sample)[0] 
+    return model.predict_proba(one_sample.reshape(1, -1))[0]
 #</Predict>
