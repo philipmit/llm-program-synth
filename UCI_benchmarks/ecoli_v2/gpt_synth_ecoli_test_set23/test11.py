@@ -5,7 +5,7 @@ import pandas as pd
 # Read file
 dataset_name='Ecoli'
 dataset_name=dataset_name.lower()
-df = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/'+dataset_name+'/'+dataset_name+'.data', header=None)
+df = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/'+dataset_name+'/'+dataset_name+'.data', header=None, delim_whitespace=True)
 # Preview dataset and datatypes
 print('*******************')
 print('df.shape')
@@ -27,6 +27,7 @@ print('*******************')
 print('df.isnull().sum()')
 print(df.isnull().sum())
 #</PrevData>
+
 #<PrepData>
 print('********** Prepare the dataset for training')
 # Import necessary packages
@@ -35,11 +36,8 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 
-# Parse the single column into multiple columns
-df = df[0].str.split(expand=True)
-# Convert feature columns to numerical type
-for col in df.columns[:-1]:   # All columns except the last one
-    df[col] = df[col].astype(float)
+# Leave the features column to numerical type after excluding the sequence name column
+df = df.loc[:, list(range(1, df.shape[1]))]
 # Display dataframe info
 print('*******************')
 print('df.info()')
