@@ -1,4 +1,3 @@
-#<PrevData>
 print('********** Load and preview the dataset and datatypes')
 
 # Import necessary libraries
@@ -34,7 +33,7 @@ print('********** Prepare the dataset for training')
 # Import necessary packages
 import numpy as np
 from sklearn.model_selection import train_test_split
-from imblearn.over_sampling import SMOTE
+# Remove importing of the imblearn package as it's causing an issue
 
 # Define features, X, and labels, y
 X = df.iloc[:, :-1]  # All rows, all columns except the last one
@@ -43,9 +42,7 @@ y = df.iloc[:, -1]   # All rows, only the last column
 # Convert string labels into numerical labels
 y = y.replace(list(np.unique(y)), list(range(len(np.unique(y)))))
 
-# Handle the class imbalance in the dataset using SMOTE
-smote = SMOTE(sampling_strategy='minority')
-X, y = smote.fit_resample(X, y)
+# Handle the class imbalance in the dataset is removed as 'imblearn' package isn't available
 
 # Split the dataset into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, stratify=y, random_state=42)
