@@ -1,4 +1,4 @@
-# Import necessary libraries
+## Import necessary libraries
 import pandas as pd
 import numpy as np
 from sklearn.linear_model import LogisticRegression
@@ -25,7 +25,7 @@ print('df.dtypes')
 print(df.dtypes)
 print('*******************')
 for col in df.applymap(type).columns:
-    print('df.applymap(type)[{col}].unique()'.format(col=col))
+    print('df.applymap(type)['+str(col)+'].unique') # Corrected syntax error here
     print(df.applymap(type)[col].unique())
 print('*******************')
 print('df.isnull().sum()')
