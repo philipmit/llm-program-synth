@@ -88,6 +88,10 @@ print('Model accuracy on test data:', score)
 #<Predict>
 print('********** Define a function that can be used to make new predictions given one or multiple samples of data from X_test')
 def predict_label(one_sample):
+    # Convert one_sample to numpy array and reshape if necessary
+    one_sample = np.asarray(one_sample)
+    if one_sample.ndim == 1:
+        one_sample = one_sample.reshape(1, -1)
     # Standardize the one_sample to match the data model was trained on
     one_sample = sc.transform(one_sample)
     # Return the class probabilities as a 1D array
