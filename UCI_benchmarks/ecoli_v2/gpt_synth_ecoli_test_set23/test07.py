@@ -3,10 +3,14 @@ print('********** Load and preview the dataset and datatypes')
 # Import necessary libraries
 import pandas as pd
 
+# Dataset URL 
+dataset_url = 'https://archive.ics.uci.edu/ml/machine-learning-databases/ecoli/ecoli.data'
+
+# Column names for the dataset
+column_names = ['SequenceName', 'mcg', 'gvh', 'lip', 'chg', 'aac', 'alm1', 'alm2', 'Site']
+
 # Read file
-dataset_name='Ecoli'
-dataset_name=dataset_name.lower()
-df = pd.read_csv(dataset_name+'.data', header=None, delimiter="\s+")
+df = pd.read_csv(dataset_url, delim_whitespace=True, names=column_names)
 
 # Preview dataset and datatypes
 print(df.head())
@@ -15,20 +19,14 @@ print(df.dtypes)
 print(df.isnull().sum())
 
 #<PrepData>
-# No need to structure and re-define the dataframe - it's already structured correctly. However, we need to convert the last column to categorical integers.
 
-# Check data types and convert as necessary
-df.iloc[:, -1] = pd.Categorical(df.iloc[:, -1])
-df.iloc[:, -1] = df.iloc[:, -1].cat.codes
-
-# Then prepare the dataset for training
-
-# Import necessary packages
-import numpy as np
+# Convert last column 'Site' to categorical integers.
+df['Site'] = pd.Categorical(df['Site'])
+df['Site'] = df['Site'].cat.codes
 
 # Define features, X, and labels, y 
-X = df.iloc[:, :-1]  # All rows, all columns except the last one
-y = df.iloc[:, -1]   # All rows, only the last column
+X = df.iloc[:, 1:-1]  # All rows, all features columns except the SequenceName and Site
+y = df.iloc[:, -1]   # All rows, only the Site column
 
 # Import train_test_split
 from sklearn.model_selection import train_test_split
