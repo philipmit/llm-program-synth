@@ -5,6 +5,10 @@ import pandas as pd
 dataset_name='Ecoli'
 dataset_name=dataset_name.lower()
 df = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/'+dataset_name+'/'+dataset_name+'.data', header=None, delim_whitespace=True)
+
+# Dataset seems to have a string column, we will convert it into category and then its codes are used
+df.iloc[:, 0] = df.iloc[:, 0].astype('category').cat.codes
+
 # Preview dataset and datatypes
 print('*******************')
 print('df.shape')
