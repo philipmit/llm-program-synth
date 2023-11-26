@@ -1,94 +1,3 @@
-#<PrevData>
-print('********** Load and preview the dataset and datatypes')
-# Import necessary libraries
-import pandas as pd
-# Read file
-dataset_name='Iris'
-dataset_name=dataset_name.lower()
-df = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/'+dataset_name+'/'+dataset_name+'.data', header=None)
-# Preview dataset and datatypes
-print('*******************')
-print('df.shape')
-print(df.shape)
-print('*******************')
-print('df.head()')
-print(df.head())
-print('*******************')
-print('df.info()')
-print(df.info())
-print('*******************')
-print('df.dtypes')
-print(df.dtypes)
-print('*******************')
-for col in df.applymap(type).columns:
-    print('df.applymap(type)[{col}].unique()'.format(col=col))
-    print(df.applymap(type)[col].unique())
-print('*******************')
-print('df.isnull().sum()')
-print(df.isnull().sum())
-#</PrevData>
-
-
-#<PrepData>
-print('
-
-********** Prepare the dataset for training')
-# Import necessary packages
-import numpy as np
-from sklearn.linear_model import LogisticRegression
-from sklearn.preprocessing import StandardScaler
-from sklearn.model_selection import train_test_split
-# Define features, X, and labels, y
-X = df.iloc[:, :-1]  # All rows, all columns except the last one
-y = df.iloc[:, -1]   # All rows, only the last column
-y = y.replace(list(np.unique(y)), list(range(len(np.unique(y)))))
-X=X.to_numpy()
-y=y.to_numpy()
-# Split the dataset into training and testing sets
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, stratify=y, random_state=42)
-X_train=X_train.tolist()
-X_test=X_test.tolist()
-# Scale the features 
-sc = StandardScaler()
-X_train = sc.fit_transform(X_train)
-print('*******************')
-print('X_train.shape')
-print(X_train.shape)
-print('*******************')
-print('y_train.shape')
-print(y_train.shape)
-print('*******************')
-print('X_train[0:5]')
-print(X_train[0:5])
-print('*******************')
-print('y_train[0:5]')
-print(y_train[0:5])
-#</PrepData>
-
-#<Train>
-print('
-
-********** Train the model using the training data, X_train and y_train')
-model = LogisticRegression()
-model.fit(X_train, y_train)
-#</Train>
-
-#<Predict>
-print('
-
-********** Define a function that can be used to make new predictions given one sample of data from X_test')
-def predict_label(one_sample):
-    # Standardize the one_sample to match the data model was trained on
-    one_sample = sc.transform(one_sample.reshape(1, -1))
-    # Return the class probabilities as a 1D array
-    return model.predict_proba(one_sample)[0]  
-#</Predict>
-
- 
-******** Prompt 1:
-You are an AI model. You are tasked with training a logistic regression model to predict the labels in the Ecoli dataset. The labels are in the last column of the dataset. 
-
-******** Response 1:
 #<Train>
 print('********** Train the model using the training data, X_train and y_train')
 from sklearn.linear_model import LogisticRegression
@@ -97,29 +6,13 @@ model.fit(X_train, y_train)
 #</Train>
 
 
-///////////// Response 1 output
-********** Train the model using the training data, X_train and y_train
-///////////// 
-
-******** Prompt for continuing code started in Response 1:
-The output of the code from Response 1 from GPT is provided above. The information in the output may help with the continued code completion. Please continue to complete the code.
-
-******** Response 1 continued:
-#<Train>
-print('********** Train the model using the training data, X_train and y_train')
-from sklearn.linear_model import LogisticRegression
-model = LogisticRegression()
-model.fit(X_train, y_train)
-#</Train>
 #<Predict>
-print('
-
-********** Define a function that can be used to make new predictions given one sample of data from X_test')
+print('\n********** Define a function that can be used to make new predictions given one sample of data from X_test')
 from sklearn.preprocessing import StandardScaler
 sc = StandardScaler()
 def predict_label(one_sample):
     # Standardize the one_sample to match the data model was trained on
     one_sample = sc.transform(one_sample.reshape(1, -1))
     # Return the class probabilities as a 1D array
-    return model.predict_proba(one_sample)[0]  
+    return model.predict_proba(one_sample)[0]
 #</Predict>
