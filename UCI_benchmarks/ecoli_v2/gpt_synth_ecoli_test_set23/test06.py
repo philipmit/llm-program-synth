@@ -1,4 +1,3 @@
-#<PrevData>
 print('********** Load and preview the dataset and datatypes')
 # Import necessary libraries
 import pandas as pd
@@ -69,8 +68,10 @@ model.fit(X_train, y_train)
 #<Predict>
 print('********** Define a function that can be used to make new predictions given one sample of data from X_test')
 def predict_label(one_sample):
+    # Convert the one_sample from list to numpy ndarray
+    one_sample_np = np.array(one_sample)
     # Standardize the one_sample to match the data model was trained on
-    one_sample = sc.transform(one_sample.reshape(1, -1))
+    one_sample_np_standardized = sc.transform(one_sample_np.reshape(1, -1))
     # Return the class probabilities as a 1D array
-    return model.predict_proba(one_sample)[0]  
+    return model.predict_proba(one_sample_np_standardized)[0]  
 #</Predict>
