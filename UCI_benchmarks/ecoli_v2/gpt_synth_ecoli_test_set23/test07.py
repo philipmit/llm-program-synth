@@ -89,3 +89,24 @@ from sklearn.linear_model import LogisticRegression
 model = LogisticRegression(random_state=42)
 model.fit(X_train, y_train)
 #</Train>
+#<Test>
+print('********** Evaluate the model using the testing data, X_test and y_test')
+# Import necessary libraries
+from sklearn.metrics import accuracy_score
+# Scale the testing data
+X_test = sc.transform(X_test)
+# Predict the labels for testing data
+y_pred = model.predict(X_test)
+# Compute the accuracy of the model
+accuracy = accuracy_score(y_test, y_pred)
+print('Accuracy of the model:', accuracy)
+#</Test>
+
+#<Predict>
+print('********** Define a function that can be used to make new predictions given one sample of data from X_test')
+def predict_label(one_sample):
+    # Standardize the one_sample to match the data model was trained on
+    one_sample = sc.transform(one_sample.reshape(1, -1))
+    # Return the class probabilities as a 1D array
+    return model.predict_proba(one_sample)[0] 
+#</Predict>
