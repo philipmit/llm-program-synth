@@ -2,6 +2,7 @@
 print('********** Load and preview the dataset and datatypes')
 # Import necessary libraries
 import pandas as pd
+import numpy as np
 # Read file
 dataset_name='Ecoli'
 dataset_name=dataset_name.lower()
@@ -26,19 +27,12 @@ print('*******************')
 print('df.dtypes')
 print(df.dtypes)
 print('*******************')
-for col in df.applymap(type).columns:
-    print('df.applymap(type)[{col}].unique()'.format(col=col))
-    print(df.applymap(type)[col].unique())
-print('*******************')
-print('df.isnull().sum()')
-print(df.isnull().sum())
 #</PrevData>
 
 
 #<PrepData>
 print('********** Prepare the dataset for training')
 # Import necessary packages
-import numpy as np
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
@@ -51,18 +45,6 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, stratif
 # Scale the features 
 sc = StandardScaler()
 X_train = sc.fit_transform(X_train)
-print('*******************')
-print('X_train.shape')
-print(X_train.shape)
-print('*******************')
-print('y_train.shape')
-print(y_train.shape)
-print('*******************')
-print('X_train[0:5]')
-print(X_train[0:5])
-print('*******************')
-print('y_train[0:5]')
-print(y_train[0:5])
 #</PrepData>
 
 
@@ -79,6 +61,9 @@ print('********** Define a function that can be used to make new predictions giv
 
 # Create a prediction function 
 def predict_label(one_sample):
+    # Check if one_sample is a list and convert it to numpy array if True
+    if isinstance(one_sample, list):
+        one_sample = np.array(one_sample)
     # Standardize the one_sample to what the model was trained on
     one_sample = sc.transform(one_sample.reshape(1, -1))
     # Return the class probabilities as a 1D array
@@ -90,7 +75,8 @@ print('Test sample:')
 print(test_sample)
 print('Predicted label probabilities:')
 print(predict_label(test_sample))
-# Average accuracy on the testing set
+
+# Scale the X_test 
 X_test = sc.transform(X_test)
 score = model.score(X_test, y_test)
 print('Test Accuracy: ', score)
