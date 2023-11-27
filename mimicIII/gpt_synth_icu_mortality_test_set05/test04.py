@@ -134,7 +134,7 @@ for epoch in range(num_epochs):
     for i, (sequences, lengths, labels) in enumerate(train_loader):
         # Move the sequences, lengths, and labels to the device
         sequences = sequences.to(device)
-        lengths = torch.tensor(lengths, dtype=torch.long).to('cpu') # lengths should be on CPU
+        lengths = torch.tensor(lengths, dtype=torch.long).to(device) # lengths should be on the same device as sequences
         labels = labels.to(device)
         # Forward pass
         outputs = model(sequences, lengths) 
@@ -158,7 +158,7 @@ def predict_label(one_patient):
     model.eval()
     # Prepare the patient data
     sequence = one_patient[0].unsqueeze(0).to(device)
-    length = torch.tensor([one_patient[0].shape[0]]).to('cpu') # length should be on CPU
+    length = torch.tensor([one_patient[0].shape[0]]).to(device) # length should be on the same device as sequence
     # Make the prediction
     with no_grad():
         output = model(sequence, length) 
