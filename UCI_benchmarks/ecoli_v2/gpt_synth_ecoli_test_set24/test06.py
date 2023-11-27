@@ -74,10 +74,10 @@ print('y_train.shape')
 print(y_train.shape)
 print('*******************')
 print('X_train[0:5]')
-print(X_train[0:5)
+print(X_train[0:5])
 print('*******************')
 print('y_train[0:5]')
-print(y_train[0:5)
+print(y_train[0:5])
 #</PrepData>
 #<Train>
 print('********** Train the model using the training data, X_train and y_train')
