@@ -73,8 +73,6 @@ from sklearn.linear_model import LogisticRegression
 # Initialize and fit the model
 model = LogisticRegression()
 model.fit(X_train, y_train)
-
-
 #</Train>
 #<FinalizeModel>
 print('********** Evaluate the model using the testing data, X_test and y_test')
@@ -83,7 +81,6 @@ X_test = sc.transform(X_test)
 # Get predicted probabilities for X_test
 y_preds = model.predict(X_test)
 #</FinalizeModel>
-
 #<EvaluationMetrics>
 print('********** Report evaluation metrics for the model')
 # Import necessary packages
@@ -98,10 +95,11 @@ print(confusion_matrix(y_test, y_preds))
 print("Classification Report:")
 print(classification_report(y_test, y_preds))
 #</EvaluationMetrics>
-
 #<Predict>
 print('********** Define a function that can be used to make new predictions given one sample of data from X_test')
 def predict_label(one_sample):
+    # Transform the one_sample to numpy array
+    one_sample = np.array(one_sample)
     # Standardize the one_sample to match the data model was trained on
     one_sample = sc.transform(one_sample.reshape(1, -1))
     # Return the class probabilities as a 1D array
