@@ -74,3 +74,41 @@ print('********** Train the model using the training data, X_train and y_train')
 model = LogisticRegression()
 model.fit(X_train, y_train)
 #</Train>
+#<EvalTrain>
+print('********** Evaluate the model on the training dataset')
+
+# Measure its accuracy on the training set
+train_accuracy = model.score(X_train, y_train)
+
+print("Training accuracy of the model: ", train_accuracy)
+#</EvalTrain>
+
+#<TransformTest>
+print('********** Transform the test dataset in the same way as the training dataset')
+X_test = sc.transform(X_test)
+
+print('*******************')
+print('X_test.shape')
+print(X_test.shape)
+print('*******************')
+print('X_test[0:5]')
+print(X_test[0:5])
+#</TransformTest>
+
+#<EvalTest>
+print('********** Evaluate the model on the test dataset')
+# Measure its accuracy on the test set
+test_accuracy = model.score(X_test, y_test)
+
+print("Test accuracy of the model: ", test_accuracy)
+#</EvalTest>
+
+#<Predict>
+print('********** Define a function that can be used to make new predictions given one sample of data from X_test')
+def predict_label(one_sample):
+    # Standardize the one_sample to match the data model was trained on
+    one_sample = sc.transform(one_sample.reshape(1, -1))
+    # Return the class label
+    return model.predict(one_sample)[0]  
+# Example usage: predict_label(X_test[0])
+#</Predict>
