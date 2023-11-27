@@ -31,8 +31,8 @@ le = LabelEncoder()
 y = le.fit_transform(y)
 
 # Convert DataFrames to NumPy arrays
-X = X.to_numpy(dtype=np.float64)
-y = y.to_numpy(dtype=np.int64)
+X = X.values
+y = np.array(y) 
 
 # Split the dataset into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.75, stratify=y, random_state=42)
@@ -50,11 +50,9 @@ model.fit(X_train, y_train)
 print('********** Define a function to predict labels')
 def predict_label(one_sample):
     # Standardize the one_sample to match the data model was trained on
-    one_sample = scaler.transform(np.array(one_sample).reshape(1, -1))
-    # Return the class probabilities as a 1D array
-    class_probabilities=model.predict_proba(one_sample)[0]
-    # Find the maximum class probability
-    class_index = np.argmax(class_probabilities)
+    one_sample = scaler.transform([one_sample])
+    # Output the class prediction (not probabilities)
+    prediction = model.predict(one_sample)
     # Return the class label predicted
-    return le.get_classes_[class_index]
+    return le.inverse_transform(prediction)
 #</Predict>
