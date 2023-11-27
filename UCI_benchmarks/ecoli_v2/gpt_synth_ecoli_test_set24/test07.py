@@ -73,3 +73,23 @@ print('********** Train the model using the training data, X_train and y_train')
 model = LogisticRegression(random_state=0, max_iter=200)
 model.fit(X_train, y_train)
 #</Train>
+#<Eval>
+print('********** Evaluate the model on the testing data, X_test and y_test')
+# Import the accuracy_score from sklearn.metrics
+from sklearn.metrics import accuracy_score
+# Use the trained model to predict on the test set
+y_pred = model.predict(X_test)
+# Calculate accuracy on the test set
+accuracy = accuracy_score(y_test, y_pred)
+print('Model accuracy on test set:', accuracy)
+#</Eval>
+
+#<Predict>
+print('********** Define a function that can be used to make new predictions given a sample of data')
+def predict_label(one_sample):
+    # Standardize the one_sample to match the data model was trained on
+    one_sample = np.array(one_sample).reshape(1, -1)
+    one_sample = sc.transform(one_sample)
+    # Return the predicted class
+    return model.predict(one_sample)[0]
+#</Predict>
