@@ -28,12 +28,13 @@ print('*******************')
 print('df.isnull().sum()')
 print(df.isnull().sum())
 #</PrevData>
+
 #<PrepData>
 print('********** Prepare the dataset for training')
 # The dataset is not in the right format. It seems to be in one column & needs to be separated by whitespace.
 df = df[0].str.split(expand=True)
 # Define features, X, and labels, y
-X = df.iloc[:, :-1]  # All rows, all columns except the last one
+X = df.iloc[:, 1:-1]  # All rows, all columns except the first and last one
 y = df.iloc[:, -1]   # All rows, only the last column
 y = np.asarray(y)
 # Encode categorical data (assumes that the last column in dataframe df is the output classification)
@@ -41,7 +42,7 @@ from sklearn.preprocessing import LabelEncoder
 le = LabelEncoder()
 y = le.fit_transform(y)
 # Convert all features to float
-X = X.astype(float)
+X = X.apply(pd.to_numeric, errors='coerce')
 # Check for missing values. If there are missing values in columns, fill them with the column's mean.
 X.fillna(X.mean(), inplace=True)
 # Import necessary packages
