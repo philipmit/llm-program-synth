@@ -91,3 +91,77 @@ def collate_fn(batch):
 batch_size = 64
 train_loader = DataLoader(df, batch_size=batch_size, shuffle=True, collate_fn=collate_fn)
 #</PrepData>
+#<Train>
+print('********** Define the LSTM model')
+# Define the LSTM model
+class LSTMModel(Module):
+    def __init__(self, input_size, hidden_size, num_layers, output_size):
+        super(LSTMModel, self).__init__()
+        self.hidden_size = hidden_size
+        self.num_layers = num_layers
+        self.lstm = LSTM(input_size, hidden_size, num_layers, batch_first=True)
+        self.fc = Linear(hidden_size, output_size)
+        self.sigmoid = Sigmoid()
+    def forward(self, x, lengths):
+        # Pack the sequences
+        x = pack_padded_sequence(x, lengths, batch_first=True)
+        # Run the LSTM
+        out, _ = self.lstm(x)
+        # Unpack the sequences
+        out, _ = pad_packed_sequence(out, batch_first=True)
+        # Get the last output for each sequence
+        out = out[range(len(out)), lengths-1, :]
+        # Run the fully connected layer
+        out = self.fc(out)
+        # Run the sigmoid function
+        out = self.sigmoid(out)
+        return out
+
+print('********** Train the LSTM model')
+# Set the device
+device = device("cuda" if is_available() else "cpu")
+# Initialize the model
+model = LSTMModel(input_size=13, hidden_size=64, num_layers=2, output_size=1).to(device)
+if is_available():
+    model = DataParallel(model)
+# Initialize the optimizer
+optimizer = Adam(model.parameters())
+# Initialize the loss function
+criterion = BCELoss()
+# Train the model
+num_epochs = 10
+for epoch in range(num_epochs):
+    for i, (sequences, lengths, labels) in enumerate(train_loader):
+        # Move the sequences, lengths, and labels to the device
+        sequences = sequences.to(device)
+        lengths = lengths.to(device)
+        labels = labels.to(device)
+        # Forward pass
+        outputs = model(sequences, lengths)
+        loss = criterion(outputs, labels)
+        # Backward and optimize
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+        if (i+1) % 100 == 0:
+            print ('Epoch [{}/{}], Step [{}/{}], Loss: {:.4f}'.format(epoch+1, num_epochs, i+1, len(train_loader), loss.item()))
+# Save the model checkpoint
+torch_save(model.state_dict(), 'model.ckpt')
+#</Train>
+
+#<Predict>
+print('********** Define a function that can be used to make new predictions given one patient from the dataset provided by ICUData')
+def predict_label(one_patient):
+    # Load the model
+    model = LSTMModel(input_size=13, hidden_size=64, num_layers=2, output_size=1).to(device)
+    model.load_state_dict(torch_load('model.ckpt'))
+    model.eval()
+    # Prepare the patient data
+    sequence = one_patient[0].unsqueeze(0).to(device)
+    length = torch.tensor([one_patient[0].shape[0]]).to(device)
+    # Make the prediction
+    with no_grad():
+        output = model(sequence, length)
+    # Return the predicted probability of ICU mortality
+    return output.item()
+#</Predict>
