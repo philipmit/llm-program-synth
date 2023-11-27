@@ -3,9 +3,7 @@ print('********** Load and preview the dataset and datatypes')
 # Import necessary libraries
 import pandas as pd
 # Read file
-dataset_name='Ecoli'
-dataset_name=dataset_name.lower()
-df = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/'+dataset_name+'/'+dataset_name+'.data', header=None)
+df = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', delim_whitespace=True, header=None)
 # Preview dataset and datatypes
 print('*******************')
 print('df.shape')
@@ -29,17 +27,10 @@ print(df.isnull().sum())
 #</PrevData>
 #<PrepData>
 print('********** Prepare the dataset for training')
-# Since the data is not properly separated and additional preprocessing is necessary , we'll use Separator
-dataset = df[0].str.split('  ', expand=True)
-# Edit the dataset to ensure format
-dataset = dataset.replace("", None)
-dataset = dataset.dropna(axis=1)
-# Remove extra leading whitespace
-dataset = dataset.applymap(lambda x: x.strip() if isinstance(x, str) else x)
-
+# Since the data is already properly separated and no additional preprocessing is necessary
 # Define features, X, and labels, y
-X = dataset.iloc[:, 1:-1]  # All rows, all columns except the first and last one
-y = dataset.iloc[:, -1]  # All rows, only the last column
+X = df.iloc[:, 1:-1]  # All rows, all columns except the first and last one
+y = df.iloc[:, -1]  # All rows, only the last column
 
 # Import necessary packages
 import numpy as np
@@ -65,6 +56,7 @@ else:
 # Scale the features to standardize them. Fit only to the training data, then apply the transformations to the data
 sc = StandardScaler()
 X_train = sc.fit_transform(X_train)
+X_test = sc.transform(X_test)
 
 print('*******************')
 print('X_train.shape')
@@ -92,6 +84,9 @@ model.fit(X_train, y_train)
 print('********** Define a function that can be used to make new predictions given one sample of data in list format')
 # Define the prediction function
 def predict_label(one_sample):
+    # Confirm the input data is in the right format (list). If not, convert it to list
+    if isinstance(one_sample,np.ndarray):
+        one_sample=one_sample.tolist()
     # Convert list to numpy array
     one_sample = np.array(one_sample)
     # Scale the features of the one_sample to standardize them
