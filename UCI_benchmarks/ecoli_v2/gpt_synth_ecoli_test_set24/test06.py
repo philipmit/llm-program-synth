@@ -22,6 +22,7 @@ y = df.iloc[:, -1]   # All rows, only the last column
 print(df.head())
 print(df.dtypes)
 print(df.info())
+
 #</PrevData>
 #<PrepData>
 print('********** Prepare the dataset for training')
@@ -54,5 +55,5 @@ def predict_label(one_sample):
     # Output the class prediction (not probabilities)
     prediction = model.predict(one_sample)
     # Return the class label predicted
-    return le.inverse_transform(prediction)
+    return prediction[0]  # Wrapped the return statement to extract the first (and only) element from predicted array as the function expects a single value, not an array
 #</Predict>
