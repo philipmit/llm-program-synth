@@ -4,6 +4,8 @@ print('********** Load and preview the dataset and datatypes')
 import pandas as pd
 import numpy as np
 from sklearn.utils import shuffle
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
 # Read file
 dataset_name='Ecoli'
 dataset_name=dataset_name.lower()
@@ -37,18 +39,19 @@ print('********** Prepare the dataset for training')
 X = df.iloc[:, 1:-1]  # All rows, all columns except the first and last one
 X = X.apply(pd.to_numeric, errors='coerce')
 y = df.iloc[:, -1]   # All rows, only the last column
-# Shuffle and split the dataset into training, validation, and testing sets
+# Shuffle and split the dataset into training and testing sets
 X, y = shuffle(X, y, random_state=42)
-X_train, X_val, X_test, y_train, y_val, y_test = train_test_split(X, y, test_size=0.2, stratify=y, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, stratify=y, random_state=42)
 # Scale the features 
 sc = StandardScaler()
 X_train = sc.fit_transform(X_train)
-X_val = sc.transform(X_val)
+X_test = sc.transform(X_test)
 #</PrepData>
 
 
-#<ImprovedTrain>
-print('********** Train the Logistic Regression model using the training data, X_train and y_train with improved model parameters')
+#<Train>
+print('********** Train the Logistic Regression model using the training data, X_train and y_train')
+from sklearn.linear_model import LogisticRegression
 # Use balanced mode to adjust the class weights in the Logistic Regression model for imbalanced dataset
 # Increase the number of iterations to 1000 and change the solver to 'saga' for large dataset and multi-class prediction
 # Use l1 penalty in the regularization to create a sparse solution
@@ -57,10 +60,10 @@ model = LogisticRegression(max_iter=1000, solver='saga', class_weight='balanced'
 # Fit the model on the train data
 model.fit(X_train, y_train)
 
-# Evaluate the model on the validation set
-score = model.score(X_val, y_val)
-print('Validation Accuracy: ', score)
-#</ImprovedTrain>
+# Evaluate the model on the test set
+score = model.score(X_test, y_test)
+print('Test Accuracy: ', score)
+#</Train>
 
 #<Predict>
 print('********** Define a function that can be used to make new predictions given one sample of data from X_test')
@@ -75,14 +78,9 @@ def predict_label(one_sample):
     return model.predict_proba(one_sample)[0]
 
 # Test the function on a single data point
-test_sample = np.array(X_test.iloc[0])
+test_sample = np.array(X_test[0])
 print('Test sample:')
 print(test_sample)
 print('Predicted label probabilities:')
 print(predict_label(test_sample))
-
-# Scale the X_test 
-X_test = sc.transform(X_test)
-score = model.score(X_test, y_test)
-print('Test Accuracy: ', score)
 #</Predict>
