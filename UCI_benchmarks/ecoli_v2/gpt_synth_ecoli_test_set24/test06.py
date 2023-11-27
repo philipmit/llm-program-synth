@@ -6,9 +6,14 @@ import numpy as np
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.preprocessing import StandardScaler, LabelEncoder
+from urllib.request import urlopen
+ 
+# Define the URL where the dataset is located
+url = 'https://archive.ics.uci.edu/ml/machine-learning-databases/ecoli/ecoli.data'
 
 # Load dataset
-df = pd.read_csv('ecoli.data', delim_whitespace=True, header=None)
+raw_data = urlopen(url)
+df = pd.read_csv(raw_data, delim_whitespace=True, header=None)
 df.columns = ['Sequence Name', 'mcg', 'gvh', 'lip', 'chg', 'aac', 'alm1', 'alm2', 'class']
 
 # Define features, X, and labels, y
