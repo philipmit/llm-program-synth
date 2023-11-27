@@ -137,7 +137,7 @@ for epoch in range(num_epochs):
         lengths = torch.tensor(lengths, dtype=torch.long).to(device)
         labels = labels.to(device)
         # Forward pass
-        outputs = model(sequences, lengths)
+        outputs = model(sequences, lengths.cpu()) # lengths should be on CPU
         loss = criterion(outputs, labels.unsqueeze(1))
         # Backward and optimize
         optimizer.zero_grad()
@@ -161,7 +161,7 @@ def predict_label(one_patient):
     length = torch.tensor([one_patient[0].shape[0]]).to(device)
     # Make the prediction
     with no_grad():
-        output = model(sequence, length)
+        output = model(sequence, length.cpu()) # length should be on CPU
     # Return the predicted probability of ICU mortality
     return output.item()
 #</Predict>
