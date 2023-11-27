@@ -2,6 +2,7 @@
 print('********** Load and preview the dataset and datatypes')
 # Import necessary libraries
 import pandas as pd
+import numpy as np
 # Read file
 dataset_name='Ecoli'
 dataset_name=dataset_name.lower()
@@ -28,7 +29,6 @@ print('df.isnull().sum()')
 print(df.isnull().sum())
 #</PrevData>
 
-
 #<PrepData>
 print('********** Prepare the dataset for training')
 # Dataset seems to be reading as one column so we will split it into multiple columns
@@ -45,8 +45,8 @@ y=y.to_numpy()
 unique_labels = np.unique(y)
 label_dict = {unique_label: i for i, unique_label in enumerate(unique_labels)}
 y = [label_dict[i] for i in y.tolist()]
-# Make sure unique labels are balanced
-min_sample = min([y.tolist().count(i) for i in unique_labels])
+# Check if unique labels are balanced
+min_sample = min([y.count(i) for i in unique_labels])
 if min_sample < 2:
     print('*******************')
     print('Number of samples in the smaller class is less than 2, stratify is impossible')
