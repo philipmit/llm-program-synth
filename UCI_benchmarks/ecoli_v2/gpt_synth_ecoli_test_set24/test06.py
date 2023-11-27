@@ -60,8 +60,8 @@ y = y.replace(list(np.unique(y)), list(range(len(np.unique(y)))))
 X = X.to_numpy(dtype=np.float64)
 y = y.to_numpy(dtype=np.float64)
 
-# Split the dataset into training and testing sets
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, stratify=y, random_state=42)
+# Split the dataset into training and testing sets; test size increased to 0.75 for more data to validate and improve the model
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.75, stratify=y, random_state=42)
 
 # Scale the features 
 sc = StandardScaler()
@@ -74,14 +74,14 @@ print('y_train.shape')
 print(y_train.shape)
 print('*******************')
 print('X_train[0:5]')
-print(X_train[0:5])
+print(X_train[0:5)
 print('*******************')
 print('y_train[0:5]')
-print(y_train[0:5])
+print(y_train[0:5)
 #</PrepData>
 #<Train>
 print('********** Train the model using the training data, X_train and y_train')
-model = LogisticRegression()
+model = LogisticRegression(max_iter=200) # Number of iterations increased to allow the model to learn more
 model.fit(X_train, y_train)
 #</Train>
 #<Predict>
