@@ -55,5 +55,5 @@ def predict_label(one_sample):
     # Output the class prediction (not probabilities)
     prediction = model.predict(one_sample)
     # Return the class label predicted
-    return prediction[0]  # Wrapped the return statement to extract the first (and only) element from predicted array as the function expects a single value, not an array
+    return le.inverse_transform(prediction)[0] # The prediction should be converted back to the original label using LabelEncoder's inverse_transform function.
 #</Predict>
