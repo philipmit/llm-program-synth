@@ -1,12 +1,11 @@
 #<PrevData>
 print('********** Load and preview the dataset and datatypes')
-# Import necessary libraries
 import pandas as pd
-# Read file
+
 dataset_name='Ecoli'
 dataset_name=dataset_name.lower()
 df = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/'+dataset_name+'/'+dataset_name+'.data', header=None)
-# Preview dataset and datatypes
+
 print('*******************')
 print('df.shape')
 print(df.shape)
@@ -29,38 +28,31 @@ print(df.isnull().sum())
 #</PrevData>
 #<PrepData>
 print('********** Prepare the dataset for training')
-# Import necessary packages
 import numpy as np
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 from sklearn import preprocessing
 
-# As the data seems to be space-separated, handling that first
 df = pd.DataFrame(df[0].str.split().tolist())
-# Set the header names
+
 df.columns = ['protein_id', 'mcg', 'gvh', 'lip', 'chg', 'aac', 'alm1', 'alm2', 'class']
 
-# Now, we need to ignore 'protein_id' for the model as it's specific to an observation and not a general feature.
 df = df.drop(columns=['protein_id'])
 
-# Mapping the labels to integers
 le = preprocessing.LabelEncoder()
 df['class'] = le.fit_transform(df['class'])
 
-# Let's convert the data to float
 df = df.applymap(float)
 
-# Define features, X, and labels, y
-X = df.iloc[:, :-1]  # All rows, all columns except the last one
-y = df.iloc[:, -1]   # All rows, only the last column
+X = df.iloc[:, :-1]  
+y = df.iloc[:, -1]   
 
-# Split the dataset into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# Scale the features 
 sc = StandardScaler()
 X_train = sc.fit_transform(X_train)
+
 print('*******************')
 print('X_train.shape')
 print(X_train.shape)
@@ -81,10 +73,14 @@ model.fit(X_train, y_train)
 #</Train>
 #<Predict>
 print('********** Define a function that can be used to make new predictions given one sample of data from X_test')
+
 def predict_label(one_sample):
+    # Convert list to numpy array
+    one_sample = np.array(one_sample)
+    # Reshape, because the model expects a 2D array
+    one_sample = one_sample.reshape((1, -1))
     # Standardize the one_sample to match the data model was trained on
-    one_sample = sc.transform(one_sample.reshape(1, -1))
-    
+    one_sample = sc.transform(one_sample)
     # Return the class probabilities as a 1D array
     return model.predict_proba(one_sample)[0]  
 #</Predict>
