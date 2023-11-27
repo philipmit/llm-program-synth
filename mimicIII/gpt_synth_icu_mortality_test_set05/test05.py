@@ -71,8 +71,8 @@ train_dataset = torch.utils.data.Subset(df, train_idx)
 test_dataset = torch.utils.data.Subset(df, test_idx)
 
 # Create data loaders for training and testing sets
-train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True, collate_fn=collate_fn)
-test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False, collate_fn=collate_fn)
+train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True, collate_fn=collate_fn)
+test_loader = DataLoader(test_dataset, batch_size=64, shuffle=False, collate_fn=collate_fn)
 #</PrepData>
 #<Train>
 print('********** Define the LSTM model and train it using the training data')
@@ -86,7 +86,7 @@ class LSTM(nn.Module):
         super(LSTM, self).__init__()
         self.hidden_size = hidden_size
         self.num_layers = num_layers
-        self.lstm = nn.LSTM(input_size, hidden_size, num_layers, batch_first=True)
+        self.lstm = nn.LSTM(input_size, hidden_size, num_layers, batch_first=True, dropout=0.5)
         self.fc = nn.Linear(hidden_size, output_size)
     def forward(self, x):
         h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device) 
@@ -96,15 +96,15 @@ class LSTM(nn.Module):
         return out
 
 # Initialize the LSTM model
-model = LSTM(input_size=13, hidden_size=64, num_layers=2, output_size=1)
+model = LSTM(input_size=13, hidden_size=128, num_layers=2, output_size=1)
 model = model.cuda()
 
 # Define the loss function and optimizer
 criterion = nn.BCEWithLogitsLoss()
-optimizer = optim.Adam(model.parameters(), lr=0.001)
+optimizer = optim.Adam(model.parameters(), lr=0.0005)
 
 # Train the model
-num_epochs = 10
+num_epochs = 20
 for epoch in range(num_epochs):
     model.train()
     running_loss = 0.0
