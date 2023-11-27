@@ -3,6 +3,7 @@ print('********** Load and preview the dataset and datatypes')
 # Import necessary libraries
 import pandas as pd
 import numpy as np
+from sklearn.utils import shuffle
 # Read file
 dataset_name='Ecoli'
 dataset_name=dataset_name.lower()
@@ -32,35 +33,37 @@ print('*******************')
 
 #<PrepData>
 print('********** Prepare the dataset for training')
-# Import necessary packages
-from sklearn.linear_model import LogisticRegression
-from sklearn.preprocessing import StandardScaler
-from sklearn.model_selection import train_test_split
 # Define features, X, and labels, y
 X = df.iloc[:, 1:-1]  # All rows, all columns except the first and last one
 X = X.apply(pd.to_numeric, errors='coerce')
 y = df.iloc[:, -1]   # All rows, only the last column
-# Split the dataset into training and testing sets
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, stratify=y, random_state=42)
+# Shuffle and split the dataset into training, validation, and testing sets
+X, y = shuffle(X, y, random_state=42)
+X_train, X_val, X_test, y_train, y_val, y_test = train_test_split(X, y, test_size=0.2, stratify=y, random_state=42)
 # Scale the features 
 sc = StandardScaler()
 X_train = sc.fit_transform(X_train)
+X_val = sc.transform(X_val)
 #</PrepData>
 
 
 #<ImprovedTrain>
 print('********** Train the Logistic Regression model using the training data, X_train and y_train with improved model parameters')
-# Instantiate the Logistic Regression model
-# Increase the number of iterations and change the solver to 'liblinear' for better convergence
-model = LogisticRegression(max_iter=500, solver='liblinear')
+# Use balanced mode to adjust the class weights in the Logistic Regression model for imbalanced dataset
+# Increase the number of iterations to 1000 and change the solver to 'saga' for large dataset and multi-class prediction
+# Use l1 penalty in the regularization to create a sparse solution
+model = LogisticRegression(max_iter=1000, solver='saga', class_weight='balanced', penalty='l1')
 
 # Fit the model on the train data
 model.fit(X_train, y_train)
+
+# Evaluate the model on the validation set
+score = model.score(X_val, y_val)
+print('Validation Accuracy: ', score)
 #</ImprovedTrain>
 
 #<Predict>
 print('********** Define a function that can be used to make new predictions given one sample of data from X_test')
-
 # Create a prediction function 
 def predict_label(one_sample):
     # Check if one_sample is a list and convert it to numpy array if True
