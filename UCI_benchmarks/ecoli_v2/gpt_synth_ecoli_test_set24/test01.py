@@ -32,6 +32,7 @@ print('********** Prepare the dataset for training')
 # Since the data is not properly separated and additional preprocessing is necessary , we'll use Separator
 dataset = df[0].str.split('  ', expand=True)
 # Edit the dataset to ensure format
+dataset = dataset.replace("", None)
 dataset = dataset.dropna(axis=1)
 # Remove extra leading whitespace
 dataset = dataset.applymap(lambda x: x.strip() if isinstance(x, str) else x)
@@ -55,7 +56,7 @@ if min_class_size < 2:
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
 else:
     # Convert dataframe to numpy for model compatibility
-    X = X.to_numpy()
+    X = X.apply(pd.to_numeric).to_numpy() # Convert string to numeric
     y = y.to_numpy()
 
     # Split the dataset into training and testing sets. Set stratify=y for equal distribution in train/test set
