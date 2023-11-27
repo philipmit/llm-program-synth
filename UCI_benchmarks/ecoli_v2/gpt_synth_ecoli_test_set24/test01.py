@@ -2,54 +2,33 @@
 print('********** Load and preview the dataset and datatypes')
 # Import necessary libraries
 import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import roc_auc_score
+from sklearn.model_selection import GridSearchCV
+from sklearn.linear_model import LogisticRegression
+from sklearn.preprocessing import StandardScaler
+
 # Read file
 df = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', delim_whitespace=True, header=None)
-# Preview dataset and datatypes
-print('*******************')
-print('df.shape')
-print(df.shape)
-print('*******************')
-print('df.head()')
-print(df.head())
-print('*******************')
-print('df.info()')
-print(df.info())
-print('*******************')
-print('df.dtypes')
-print(df.dtypes)
-print('*******************')
-for col in df.applymap(type).columns:
-    print('df.applymap(type)[{col}].unique()'.format(col=col))
-    print(df.applymap(type)[col].unique())
-print('*******************')
-print('df.isnull().sum()')
-print(df.isnull().sum())
-#</PrevData>
-#<PrepData>
-print('********** Prepare the dataset for training')
-# Since the data is already properly separated and no additional preprocessing is necessary
+
 # Define features, X, and labels, y
 X = df.iloc[:, 1:-1]  # All rows, all columns except the first and last one
 y = df.iloc[:, -1]  # All rows, only the last column
 
-# Import necessary packages
-import numpy as np
-from sklearn.linear_model import LogisticRegression
-from sklearn.preprocessing import StandardScaler
-from sklearn.model_selection import train_test_split
 # Convert labels to unique integers for model compatibility
 y = y.replace(list(np.unique(y)), list(range(len(np.unique(y)))))
 
-# Check if any class contains less than 2 instances, which prevents stratified split
+# Check if any class contain less than 2 instances
 min_class_size = y.value_counts().min()
 if min_class_size < 2:
     print(f"The smallest class contains {min_class_size} instance(s). Stratified split is not possible.")
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
 else:
     # Convert dataframe to numpy for model compatibility
-    X = X.apply(pd.to_numeric).to_numpy() # Convert string to numeric
+    X = X.apply(pd.to_numeric).to_numpy()  # Convert string to numeric
     y = y.to_numpy()
-  
+
     # Split the dataset into training and testing sets. Set stratify=y for equal distribution in train/test set
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, stratify=y, random_state=42)
 
@@ -58,31 +37,51 @@ sc = StandardScaler()
 X_train = sc.fit_transform(X_train)
 X_test = sc.transform(X_test)
 
-print('*******************')
-print('X_train.shape')
-print(X_train.shape)
-print('*******************')
-print('y_train.shape')
-print(y_train.shape)
-print('*******************')
-print('X_train[0:5]')
-print(X_train[0:5])
-print('*******************')
-print('y_train[0:5]')
-print(y_train[0:5])
+#</PrevData>
+
+#<PrepData>
+
+# Grid search to optimize hyperparameters
+parameters = {'penalty': ['l1', 'l2', 'elasticnet', 'none'], 
+              'C': np.logspace(-4, 4, 20), 
+              'solver': ['lbfgs', 'newton-cg', 'liblinear', 'sag', 'saga'],
+              'max_iter': list(range(100,800,100))}
+  
+log_reg = LogisticRegression(random_state=42)
+clf = GridSearchCV(log_reg, parameters, cv=5, verbose=0, n_jobs=-1)
+best_model = clf.fit(X_train,y_train)
+params_optimal = best_model.best_params_
+
+print('Best penalty:', params_optimal['penalty'])
+print('Best C:', params_optimal['C'])
+print('Best solver:', params_optimal['solver'])
+print('Best max_iter:', params_optimal['max_iter'])
+
 #</PrepData>
+
 #<Train>
-print('********** Train the model using the training data, X_train and y_train')
-# Initialize Logistic Regression model.
-model = LogisticRegression(random_state=42, max_iter=1000)
+# Initialize Logistic Regression model with optimal parameters.
+model_optimal = LogisticRegression(penalty = params_optimal['penalty'], 
+                                   C = params_optimal['C'], 
+                                   solver = params_optimal['solver'], 
+                                   max_iter = params_optimal['max_iter'],
+                                   random_state=42)
+
 # Fit the model using training data.
-model.fit(X_train, y_train)
+model_optimal.fit(X_train, y_train)
+
+# Use trained model to predict labels of the test set
+y_pred_proba = model_optimal.predict_proba(X_test)[::,1]
+
+# Calculate AUC
+auc = roc_auc_score(y_test, y_pred_proba)
+print('Improved AUC:', auc)
 #</Train>
 
 #<Predict>
-print('********** Define a function that can be used to make new predictions given one sample of data in list format')
+print('Define the prediction function with optimal params')
 # Define the prediction function
-def predict_label(one_sample):
+def predict_label_opt(one_sample):
     # Confirm the input data is in the right format (list). If not, convert it to list
     if isinstance(one_sample, np.ndarray):
         one_sample = one_sample.tolist()
@@ -95,5 +94,5 @@ def predict_label(one_sample):
     # Scale the features of the one_sample to standardize them
     one_sample = sc.transform(one_sample)
     # Use predict_proba instead of predict to get probabilities 
-    return model.predict_proba(one_sample)[0]  # Return the first element to keep it within 2 dimensions
+    return model_optimal.predict_proba(one_sample)[0]  # Return the first element to keep it within 2 dimensions
 #</Predict>
