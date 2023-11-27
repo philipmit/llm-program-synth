@@ -48,14 +48,16 @@ X_train = sc.fit_transform(X_train)
 #</PrepData>
 
 
-#<Train>
-print('********** Train the Logistic Regression model using the training data, X_train and y_train')
+#<ImprovedTrain>
+print('********** Train the Logistic Regression model using the training data, X_train and y_train with improved model parameters')
 # Instantiate the Logistic Regression model
-model = LogisticRegression()
+# Increase the number of iterations and change the solver to 'liblinear' for better convergence
+model = LogisticRegression(max_iter=500, solver='liblinear')
 
 # Fit the model on the train data
 model.fit(X_train, y_train)
-#</Train>
+#</ImprovedTrain>
+
 #<Predict>
 print('********** Define a function that can be used to make new predictions given one sample of data from X_test')
 
