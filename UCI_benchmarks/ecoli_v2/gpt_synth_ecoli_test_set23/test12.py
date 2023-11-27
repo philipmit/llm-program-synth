@@ -74,3 +74,24 @@ model = LogisticRegression()
 # Fit the model on the train data
 model.fit(X_train, y_train)
 #</Train>
+#<Predict>
+print('********** Define a function that can be used to make new predictions given one sample of data from X_test')
+
+# Create a prediction function 
+def predict_label(one_sample):
+    # Standardize the one_sample to what the model was trained on
+    one_sample = sc.transform(one_sample.reshape(1, -1))
+    # Return the class probabilities as a 1D array
+    return model.predict_proba(one_sample)[0]
+
+# Test the function on a single data point
+test_sample = np.array(X_test.iloc[0])
+print('Test sample:')
+print(test_sample)
+print('Predicted label probabilities:')
+print(predict_label(test_sample))
+# Average accuracy on the testing set
+X_test = sc.transform(X_test)
+score = model.score(X_test, y_test)
+print('Test Accuracy: ', score)
+#</Predict>
