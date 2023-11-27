@@ -96,5 +96,6 @@ def predict_label(one_sample):
     # Scale the features of the one_sample to standardize them
     one_sample = sc.transform(one_sample)
     # Predict and return the classified label using item() instead of np.asscalar to convert the array to a scalar
-    return model.predict(one_sample).item()
+    # Wrap the predicted label inside a list to avoid 'int' object is not iterable error
+    return [model.predict(one_sample).item()]
 #</Predict>
