@@ -125,7 +125,7 @@ print('********** Define a function that can be used to make new predictions giv
 def predict_label(one_sample):
     model.eval()
     with torch.no_grad():
-        inputs = one_sample[0].unsqueeze(0).cuda()
+        inputs = one_sample.unsqueeze(0).cuda()  # Add an extra dimension for batch
         outputs = model(inputs)
         predicted = torch.sigmoid(outputs).item()
     return predicted
