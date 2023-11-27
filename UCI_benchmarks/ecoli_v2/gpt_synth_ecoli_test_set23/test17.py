@@ -27,6 +27,8 @@ print('*******************')
 print('df.isnull().sum()')
 print(df.isnull().sum())
 #</PrevData>
+
+
 #<PrepData>
 print('********** Prepare the dataset for training')
 # Dataset seems to be reading as one column so we will split it into multiple columns
@@ -43,6 +45,9 @@ y = y.replace(label_dict)
 # Convert dataframe to numpy array
 X=X.to_numpy()
 y=y.to_numpy()
+# Import necessary packages
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
 # Split the dataset into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, stratify=y, random_state=42)
 # Scale the features 
