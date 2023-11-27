@@ -41,7 +41,7 @@ y = y.replace(list(np.unique(y)), list(range(len(np.unique(y)))))
 
 # Converting DataFrames to NumPy arrays
 X = X.to_numpy(dtype=np.float64)
-y = y.to_numpy(dtype=np.int)
+y = y.to_numpy(dtype=np.int64)
 
 # Split the dataset into training and testing sets; test size increased to 0.75 for more data to validate and improve the model
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.75, stratify=y, random_state=42)
