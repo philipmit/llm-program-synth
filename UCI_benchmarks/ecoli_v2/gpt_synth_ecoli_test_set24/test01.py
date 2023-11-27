@@ -48,12 +48,18 @@ from sklearn.model_selection import train_test_split
 # Convert labels to unique integers for model compatibility
 y = y.replace(list(np.unique(y)), list(range(len(np.unique(y)))))
 
-# Convert dataframe to numpy for model compatibility
-X = X.to_numpy()
-y = y.to_numpy()
+# Check if any class contains less than 2 instances, which prevents stratified split
+min_class_size = y.value_counts().min()
+if min_class_size < 2:
+    print(f"The smallest class contains {min_class_size} instance(s). Stratified split is not possible.")
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
+else:
+    # Convert dataframe to numpy for model compatibility
+    X = X.to_numpy()
+    y = y.to_numpy()
 
-# Split the dataset into training and testing sets. Set stratify=y for equal distribution in train/test set
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, stratify=y, random_state=42)
+    # Split the dataset into training and testing sets. Set stratify=y for equal distribution in train/test set
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, stratify=y, random_state=42)
 
 # Scale the features to standardize them. Fit only to the training data, then apply the transformations to the data
 sc = StandardScaler()
