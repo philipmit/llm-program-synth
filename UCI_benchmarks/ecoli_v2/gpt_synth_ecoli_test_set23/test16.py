@@ -27,3 +27,50 @@ print('*******************')
 print('df.isnull().sum()')
 print(df.isnull().sum())
 #</PrevData>
+#<PrepData>
+print('********** Prepare the dataset for training')
+# Import necessary packages
+import numpy as np
+from sklearn.linear_model import LogisticRegression
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import train_test_split
+from sklearn import preprocessing
+
+# As the data seems to be space-separated, handling that first
+df = pd.DataFrame(df[0].str.split().tolist())
+# Set the header names
+df.columns = ['protein_id', 'mcg', 'gvh', 'lip', 'chg', 'aac', 'alm1', 'alm2', 'class']
+
+# Now, we need to ignore 'protein_id' for the model as it's specific to an observation and not a general feature.
+df = df.drop(columns=['protein_id'])
+
+# Mapping the labels to integers
+le = preprocessing.LabelEncoder()
+df['class'] = le.fit_transform(df['class'])
+
+# Let's convert the data to float
+df = df.applymap(float)
+
+# Define features, X, and labels, y
+X = df.iloc[:, :-1]  # All rows, all columns except the last one
+y = df.iloc[:, -1]   # All rows, only the last column
+
+# Split the dataset into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Scale the features 
+sc = StandardScaler()
+X_train = sc.fit_transform(X_train)
+print('*******************')
+print('X_train.shape')
+print(X_train.shape)
+print('*******************')
+print('y_train.shape')
+print(y_train.shape)
+print('*******************')
+print('X_train[0:5]')
+print(X_train[0:5])
+print('*******************')
+print('y_train[0:5]')
+print(y_train[0:5])
+#</PrepData>
