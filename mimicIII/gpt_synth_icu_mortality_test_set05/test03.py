@@ -107,7 +107,7 @@ class LSTMModel(Module):
         self.sigmoid = Sigmoid()
     def forward(self, x, lengths):
         # Pack the sequence
-        x = pack_padded_sequence(x, lengths, batch_first=True, enforce_sorted=False)
+        x = pack_padded_sequence(x, lengths.cpu(), batch_first=True, enforce_sorted=False)
         # LSTM
         out, _ = self.lstm(x)
         # Unpack the sequence
