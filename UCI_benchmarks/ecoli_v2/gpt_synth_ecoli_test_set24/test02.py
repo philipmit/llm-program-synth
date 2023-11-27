@@ -76,3 +76,34 @@ model.fit(X_train, y_train)
 
 
 #</Train>
+#<FinalizeModel>
+print('********** Evaluate the model using the testing data, X_test and y_test')
+# Transform X_test
+X_test = sc.transform(X_test)
+# Get predicted probabilities for X_test
+y_preds = model.predict(X_test)
+#</FinalizeModel>
+
+#<EvaluationMetrics>
+print('********** Report evaluation metrics for the model')
+# Import necessary packages
+from sklearn.metrics import confusion_matrix, classification_report, accuracy_score
+# Calculate accuracy of model
+accuracy = accuracy_score(y_test, y_preds)
+print(f"Accuracy: {accuracy*100:.2f}%")
+# Print confusion matrix
+print("Confusion Matrix:")
+print(confusion_matrix(y_test, y_preds))
+# Print classification report
+print("Classification Report:")
+print(classification_report(y_test, y_preds))
+#</EvaluationMetrics>
+
+#<Predict>
+print('********** Define a function that can be used to make new predictions given one sample of data from X_test')
+def predict_label(one_sample):
+    # Standardize the one_sample to match the data model was trained on
+    one_sample = sc.transform(one_sample.reshape(1, -1))
+    # Return the class probabilities as a 1D array
+    return model.predict_proba(one_sample)[0]  
+#</Predict>
