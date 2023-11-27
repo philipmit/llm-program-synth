@@ -75,7 +75,6 @@ print(y_train[0:5])
 print('********** Train the model using the training data, X_train and y_train')
 # Initialize Logistic Regression model.
 model = LogisticRegression(random_state=42, max_iter=1000)
-
 # Fit the model using training data.
 model.fit(X_train, y_train)
 #</Train>
@@ -85,8 +84,8 @@ print('********** Define a function that can be used to make new predictions giv
 # Define the prediction function
 def predict_label(one_sample):
     # Confirm the input data is in the right format (list). If not, convert it to list
-    if isinstance(one_sample,np.ndarray):
-        one_sample=one_sample.tolist()
+    if isinstance(one_sample, np.ndarray):
+        one_sample = one_sample.tolist()
 
     if not isinstance(one_sample[0], list):
         one_sample = [one_sample]
@@ -95,7 +94,6 @@ def predict_label(one_sample):
     one_sample = np.array(one_sample)
     # Scale the features of the one_sample to standardize them
     one_sample = sc.transform(one_sample)
-    # Predict and return the classified label using item() instead of np.asscalar to convert the array to a scalar
-    # Wrap the predicted label inside a list to avoid 'int' object is not iterable error
-    return [model.predict(one_sample).item()]
+    # Use predict_proba instead of predict to get probabilities 
+    return model.predict_proba(one_sample)
 #</Predict>
