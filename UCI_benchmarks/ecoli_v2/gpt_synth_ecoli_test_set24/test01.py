@@ -49,7 +49,7 @@ else:
     # Convert dataframe to numpy for model compatibility
     X = X.apply(pd.to_numeric).to_numpy() # Convert string to numeric
     y = y.to_numpy()
-
+  
     # Split the dataset into training and testing sets. Set stratify=y for equal distribution in train/test set
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, stratify=y, random_state=42)
 
@@ -87,10 +87,14 @@ def predict_label(one_sample):
     # Confirm the input data is in the right format (list). If not, convert it to list
     if isinstance(one_sample,np.ndarray):
         one_sample=one_sample.tolist()
+
+    if not isinstance(one_sample[0], list):
+        one_sample = [one_sample]
+
     # Convert list to numpy array
     one_sample = np.array(one_sample)
     # Scale the features of the one_sample to standardize them
-    one_sample = sc.transform(one_sample.reshape(1, -1))
-    # Predict and return the classified label
-    return model.predict(one_sample)[0]  
+    one_sample = sc.transform(one_sample)
+    # Predict and return the classified label using np.asscalar to convert the array to a scalar
+    return np.asscalar(model.predict(one_sample))
 #</Predict>
