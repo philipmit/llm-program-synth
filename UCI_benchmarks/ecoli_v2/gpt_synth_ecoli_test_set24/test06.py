@@ -9,13 +9,11 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 
 # Load dataset
-dataset_name='Ecoli'
-dataset_name=dataset_name.lower()
-df = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/'+dataset_name+'/'+dataset_name+'.data', header=None, delimiter="\s+")
-df = df.drop(columns=[0])
+df = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', delim_whitespace=True, header=None)
+df.columns = ['Sequence Name', 'mcg', 'gvh', 'lip', 'chg', 'aac', 'alm1', 'alm2', 'class']
 
 # Define features, X, and labels, y
-X = df.iloc[:, :-1]  # All rows, all columns except the last one
+X = df.iloc[:, 1:-1]  # All rows, all columns except the last one
 y = df.iloc[:, -1]   # All rows, only the last column
 
 # Preview dataset and datatypes
@@ -35,7 +33,7 @@ X = X.values
 y = np.array(y) 
 
 # Split the dataset into training and testing sets
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.75, stratify=y, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, stratify=y, random_state=42)
 
 # Scale the features 
 scaler = StandardScaler()
@@ -53,6 +51,6 @@ def predict_label(one_sample):
     one_sample = scaler.transform([one_sample])
     # Output the class prediction (not probabilities)
     prediction = model.predict(one_sample)
-    # Return the class label predicted
-    return le.inverse_transform(prediction)[0] # The prediction should be converted back to the original label using LabelEncoder's inverse_transform function.
+    # Return the class label predicted as number not sequence
+    return le.inverse_transform(prediction)[0] # The prediction should be converted back to a single original label not sequence using LabelEncoder's inverse_transform function.
 #</Predict>
