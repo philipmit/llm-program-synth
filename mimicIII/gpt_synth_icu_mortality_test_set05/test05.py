@@ -74,3 +74,59 @@ test_dataset = torch.utils.data.Subset(df, test_idx)
 train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True, collate_fn=collate_fn)
 test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False, collate_fn=collate_fn)
 #</PrepData>
+#<Train>
+print('********** Define the LSTM model and train it using the training data')
+# Import necessary packages
+import torch.nn as nn
+import torch.optim as optim
+
+# Define the LSTM model
+class LSTM(nn.Module):
+    def __init__(self, input_size, hidden_size, num_layers, output_size):
+        super(LSTM, self).__init__()
+        self.hidden_size = hidden_size
+        self.num_layers = num_layers
+        self.lstm = nn.LSTM(input_size, hidden_size, num_layers, batch_first=True)
+        self.fc = nn.Linear(hidden_size, output_size)
+    def forward(self, x):
+        h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device) 
+        c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device)
+        out, _ = self.lstm(x, (h0, c0))  
+        out = self.fc(out[:, -1, :])  
+        return out
+
+# Initialize the LSTM model
+model = LSTM(input_size=13, hidden_size=64, num_layers=2, output_size=1)
+model = model.cuda()
+
+# Define the loss function and optimizer
+criterion = nn.BCEWithLogitsLoss()
+optimizer = optim.Adam(model.parameters(), lr=0.001)
+
+# Train the model
+num_epochs = 10
+for epoch in range(num_epochs):
+    model.train()
+    running_loss = 0.0
+    for i, (inputs, labels) in enumerate(train_loader):
+        inputs = inputs.cuda()
+        labels = labels.cuda()
+        optimizer.zero_grad()
+        outputs = model(inputs)
+        loss = criterion(outputs.view(-1), labels)
+        loss.backward()
+        optimizer.step()
+        running_loss += loss.item()
+    print('Epoch [{}/{}], Loss: {:.4f}'.format(epoch+1, num_epochs, running_loss/len(train_loader)))
+#</Train>
+
+#<Predict>
+print('********** Define a function that can be used to make new predictions given one sample of data from the test_loader')
+def predict_label(one_sample):
+    model.eval()
+    with torch.no_grad():
+        inputs = one_sample[0].unsqueeze(0).cuda()
+        outputs = model(inputs)
+        predicted = torch.sigmoid(outputs).item()
+    return predicted
+#</Predict>
