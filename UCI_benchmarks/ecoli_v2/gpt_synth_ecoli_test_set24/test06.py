@@ -22,7 +22,6 @@ y = df.iloc[:, -1]   # All rows, only the last column
 print(df.head())
 print(df.dtypes)
 print(df.info())
-
 #</PrevData>
 #<PrepData>
 print('********** Prepare the dataset for training')
