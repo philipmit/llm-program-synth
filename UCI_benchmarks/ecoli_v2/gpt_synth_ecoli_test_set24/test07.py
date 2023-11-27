@@ -2,6 +2,7 @@
 print('********** Load and preview the dataset and datatypes')
 # Import necessary libraries
 import pandas as pd
+import numpy as np
 # Read file
 dataset_name='Ecoli'
 dataset_name=dataset_name.lower()
@@ -43,6 +44,10 @@ y = le.fit_transform(y)
 X = X.astype(float)
 # Check for missing values. If there are missing values in columns, fill them with the column's mean.
 X.fillna(X.mean(), inplace=True)
+# Import necessary packages
+from sklearn.linear_model import LogisticRegression
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import train_test_split
 # Split the dataset into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.15, random_state=42)
 # Scale the features 
