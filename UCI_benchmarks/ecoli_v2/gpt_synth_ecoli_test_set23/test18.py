@@ -110,7 +110,7 @@ def predict_label(one_sample):
     one_sample = np.array(one_sample)
     # Standardize the sample to match the data model was trained on
     one_sample = sc.transform(one_sample.reshape(1, -1))
-    # Return the class label
-    return model.predict(one_sample)[0]  
+    # Return the class label as a list
+    return [model.predict(one_sample)[0]] 
 # Example usage: predict_label(X_test[0])
 #</Predict>
