@@ -79,3 +79,11 @@ print('*******************')
 print('y_train[0:5]')
 print(y_train[0:5])
 #</PrepData>
+#<Train>
+print('********** Train the model using the training data, X_train and y_train')
+# Initialize Logistic Regression model.
+model = LogisticRegression(random_state=42, max_iter=1000)
+
+# Fit the model using training data.
+model.fit(X_train, y_train)
+#</Train>
