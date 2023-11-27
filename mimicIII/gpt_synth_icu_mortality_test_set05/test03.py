@@ -94,3 +94,80 @@ print('*******************')
 print('example_batch[2].shape')
 print(example_batch[2].shape)
 #</PrepData>
+#<Train>
+print('********** Define the LSTM model')
+# Define the LSTM model
+class LSTMModel(Module):
+    def __init__(self, input_size, hidden_size, num_layers, output_size):
+        super(LSTMModel, self).__init__()
+        self.hidden_size = hidden_size
+        self.num_layers = num_layers
+        self.lstm = LSTM(input_size, hidden_size, num_layers, batch_first=True)
+        self.fc = Linear(hidden_size, output_size)
+        self.sigmoid = Sigmoid()
+    def forward(self, x, lengths):
+        # Pack the sequence
+        x = pack_padded_sequence(x, lengths, batch_first=True, enforce_sorted=False)
+        # LSTM
+        out, _ = self.lstm(x)
+        # Unpack the sequence
+        out, _ = pad_packed_sequence(out, batch_first=True)
+        # Get the last output for each sequence
+        out = out[range(len(out)), lengths - 1, :]
+        # Fully connected layer
+        out = self.fc(out)
+        # Sigmoid activation function
+        out = self.sigmoid(out)
+        return out
+
+print('********** Train the LSTM model')
+# Train the LSTM model
+# Define the device
+device = device("cuda" if is_available() else "cpu")
+# Define the model
+model = LSTMModel(input_size=13, hidden_size=64, num_layers=2, output_size=1).to(device)
+if is_available():
+    model = DataParallel(model)
+# Define the loss function
+criterion = BCELoss()
+# Define the optimizer
+optimizer = Adam(model.parameters())
+# Number of epochs
+num_epochs = 10
+# Train the model
+for epoch in range(num_epochs):
+    for i, (data, lengths, labels) in enumerate(data_loader):
+        data = data.to(device)
+        lengths = lengths.to(device)
+        labels = labels.to(device)
+        # Forward pass
+        outputs = model(data, lengths)
+        loss = criterion(outputs, labels)
+        # Backward and optimize
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+        if (i+1) % 10 == 0:
+            print ('Epoch [{}/{}], Step [{}/{}], Loss: {:.4f}'.format(epoch+1, num_epochs, i+1, len(data_loader), loss.item()))
+#</Train>
+
+#<Predict>
+print('********** Define a function that can be used to make new predictions given one patient from the dataset provided by ICUData')
+def predict_label(one_patient):
+    # Convert the data to a tensor and add an extra dimension for batch size
+    data = torch.unsqueeze(one_patient[0], 0)
+    # Get the length of the sequence
+    length = torch.tensor([len(one_patient[0])])
+    # Move the data to the device
+    data = data.to(device)
+    length = length.to(device)
+    # Set the model to evaluation mode
+    model.eval()
+    # Make the prediction
+    with no_grad():
+        output = model(data, length)
+    # Get the predicted class
+    predicted_class = (output > 0.5).float()
+    # Return the predicted class and the predicted probability
+    return predicted_class.item(), output.item()
+#</Predict>
