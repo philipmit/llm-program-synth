@@ -88,7 +88,7 @@ model.fit(X_train, y_train)
 print('********** Define a function that can be used to make new predictions given one sample of data from X_test')
 def predict_label(one_sample):
     # Standardize the one_sample to match the data model was trained on
-    one_sample = sc.transform(one_sample.reshape(1, -1))
+    one_sample = sc.transform(np.array(one_sample).reshape(1, -1))
     # Return the class probabilities as a 1D array
     return model.predict_proba(one_sample)[0]  
 #</Predict>
