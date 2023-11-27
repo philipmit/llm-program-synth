@@ -51,6 +51,6 @@ def predict_label(one_sample):
     one_sample = scaler.transform([one_sample])
     # Output the class prediction (not probabilities)
     prediction = model.predict(one_sample)
-    # Return the class label predicted as number not sequence
-    return le.inverse_transform(prediction)[0] # The prediction should be converted back to a single original label not sequence using LabelEncoder's inverse_transform function.
+    # Return the class label predicted as single integer not sequence 
+    return le.inverse_transform(prediction)[0] # The prediction should be returned as a single integer
 #</Predict>
