@@ -2,65 +2,59 @@
 print('********** Load and preview the dataset and datatypes')
 # Import necessary libraries
 import pandas as pd
+import numpy as np
+from sklearn.linear_model import LogisticRegression
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder
+
+# Load dataset
 dataset_name='Ecoli'
 dataset_name=dataset_name.lower()
 df = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/'+dataset_name+'/'+dataset_name+'.data', header=None, delimiter="\s+")
 df = df.drop(columns=[0])
 
-# Preview dataset and datatypes
-print('*******************')
-print('df.shape')
-print(df.shape)
-print('*******************')
-print('df.head()')
-print(df.head())
-print('*******************')
-print('df.info()')
-print(df.info())
-print('*******************')
-print('df.dtypes')
-print(df.dtypes)
-print('*******************')
-print('df.isnull().sum()')
-print(df.isnull().sum())
-#</PrevData>
-#<PrepData>
-print('********** Prepare the dataset for training')
-# Import necessary packages
-import numpy as np
-from sklearn.linear_model import LogisticRegression
-from sklearn.preprocessing import StandardScaler
-from sklearn.model_selection import train_test_split
-
 # Define features, X, and labels, y
 X = df.iloc[:, :-1]  # All rows, all columns except the last one
 y = df.iloc[:, -1]   # All rows, only the last column
 
-# Preprocess labels from string to integer
-y = y.replace(list(np.unique(y)), list(range(len(np.unique(y)))))
+# Preview dataset and datatypes
+print(df.head())
+print(df.dtypes)
+print(df.info())
+#</PrevData>
+#<PrepData>
+print('********** Prepare the dataset for training')
 
-# Converting DataFrames to NumPy arrays
+# Transform y from strings to integers
+le = LabelEncoder()
+y = le.fit_transform(y)
+
+# Convert DataFrames to NumPy arrays
 X = X.to_numpy(dtype=np.float64)
 y = y.to_numpy(dtype=np.int64)
 
-# Split the dataset into training and testing sets; test size increased to 0.75 for more data to validate and improve the model
+# Split the dataset into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.75, stratify=y, random_state=42)
 
 # Scale the features 
 scaler = StandardScaler()
 X_train = scaler.fit_transform(X_train)
 X_test = scaler.transform(X_test) # use the same scaler (from training data) to standardize test data
-#</PrepData>
-#<Train>
-print('********** Train the model using the training data, X_train and y_train')
-model = LogisticRegression(max_iter=200) # Number of iterations increased to allow the model to learn more
+
+# Train the logistic regression model
+model = LogisticRegression(max_iter=200, multi_class='ovr')   # 'ovr' stands for 'One-vs-Rest'
 model.fit(X_train, y_train)
-#</Train>
+#</PrepData>
 #<Predict>
-print('********** Define a function that can be used to make new predictions given one sample of data from X_test')
+print('********** Define a function to predict labels')
 def predict_label(one_sample):
     # Standardize the one_sample to match the data model was trained on
     one_sample = scaler.transform(np.array(one_sample).reshape(1, -1))
     # Return the class probabilities as a 1D array
-    return model.predict_proba(one_sample)[0]  
+    class_probabilities=model.predict_proba(one_sample)[0]
+    # Find the maximum class probability
+    class_index = np.argmax(class_probabilities)
+    # Return the class label predicted
+    return le.get_classes_[class_index]
 #</Predict>
