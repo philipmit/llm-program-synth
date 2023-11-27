@@ -49,8 +49,8 @@ print('********** Define a function to predict labels')
 def predict_label(one_sample):
     # Standardize the one_sample to match the data model was trained on
     one_sample = scaler.transform([one_sample])
-    # Output the class prediction (not probabilities)
-    prediction = model.predict(one_sample)
-    # Return the class label predicted as single integer not sequence 
-    return [int(prediction[0])] # The prediction should be returned as a list of single integer, making it iterable for the validation code
+    # Use predict_proba to get class probabilities, since roc_auc_score needs probabilities
+    probability_scores = model.predict_proba(one_sample)
+    # Return the class probabilities not the class label 
+    return list(probability_scores[0]) # The prediction should be returned as a list of probabilities, making it iterable for the validation code
 #</Predict>
