@@ -95,5 +95,5 @@ def predict_label(one_sample):
     # Scale the features of the one_sample to standardize them
     one_sample = sc.transform(one_sample)
     # Use predict_proba instead of predict to get probabilities 
-    return model.predict_proba(one_sample)
+    return model.predict_proba(one_sample)[0]  # Return the first element to keep it within 2 dimensions
 #</Predict>
