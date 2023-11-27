@@ -87,3 +87,12 @@ model = LogisticRegression(random_state=42, max_iter=1000)
 # Fit the model using training data.
 model.fit(X_train, y_train)
 #</Train>
+#<Predict>
+print('********** Define a function that can be used to make new predictions given one sample of data from X_test')
+# Define the prediction function
+def predict_label(one_sample):
+    # Scale the features of the one_sample to standardize them
+    one_sample = sc.transform(one_sample.reshape(1, -1))
+    # Predict and return the classified label
+    return model.predict(one_sample)[0]  
+#</Predict>
