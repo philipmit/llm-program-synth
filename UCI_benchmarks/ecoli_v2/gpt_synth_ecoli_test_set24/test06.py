@@ -52,5 +52,5 @@ def predict_label(one_sample):
     # Output the class prediction (not probabilities)
     prediction = model.predict(one_sample)
     # Return the class label predicted as single integer not sequence 
-    return prediction[0] # The prediction should be returned as a single integer, not a sequence
+    return [int(prediction[0])] # The prediction should be returned as a list of single integer, making it iterable for the validation code
 #</Predict>
