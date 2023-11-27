@@ -2,13 +2,13 @@
 print('********** Load and preview the dataset and datatypes')
 # Import necessary libraries
 import pandas as pd
-import numpy as pd
+import numpy as np
 from sklearn.linear_model import LogisticRegression
-from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.preprocessing import StandardScaler, LabelEncoder
 
 # Load dataset
-df = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', delim_whitespace=True, header=None)
+df = pd.read_csv('ecoli.data', delim_whitespace=True, header=None)
 df.columns = ['Sequence Name', 'mcg', 'gvh', 'lip', 'chg', 'aac', 'alm1', 'alm2', 'class']
 
 # Define features, X, and labels, y
