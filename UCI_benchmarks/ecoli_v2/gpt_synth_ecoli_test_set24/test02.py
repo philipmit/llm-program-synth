@@ -66,3 +66,13 @@ print('*******************')
 print('y_train[0:5]')
 print(y_train[0:5])
 #</PrepData>
+#<Train>
+print('********** Train the model using the training data, X_train and y_train')
+# Import necessary packages
+from sklearn.linear_model import LogisticRegression
+# Initialize and fit the model
+model = LogisticRegression()
+model.fit(X_train, y_train)
+
+
+#</Train>
