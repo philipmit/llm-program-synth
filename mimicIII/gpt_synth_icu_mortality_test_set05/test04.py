@@ -31,7 +31,7 @@ class ICUData(Dataset):
         data = data.fillna(self.replacement_values)
         data = data.select_dtypes(include=[np.number]) 
         label = self.labels[idx]
-        return torch.tensor(data.values, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
+        return torch.tensor(data.values, dtype=torch.float32), label
 df = ICUData(TRAIN_DATA_PATH, TRAIN_LABEL_FILE)
 
 # Preview dataset and datatypes
@@ -134,11 +134,11 @@ for epoch in range(num_epochs):
     for i, (sequences, lengths, labels) in enumerate(train_loader):
         # Move the sequences, lengths, and labels to the device
         sequences = sequences.to(device)
-        lengths = lengths.to(device)
+        lengths = torch.tensor(lengths, dtype=torch.long).to(device)
         labels = labels.to(device)
         # Forward pass
         outputs = model(sequences, lengths)
-        loss = criterion(outputs, labels)
+        loss = criterion(outputs, labels.unsqueeze(1))
         # Backward and optimize
         optimizer.zero_grad()
         loss.backward()
