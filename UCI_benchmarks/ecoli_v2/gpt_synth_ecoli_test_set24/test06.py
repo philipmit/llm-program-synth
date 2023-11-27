@@ -2,11 +2,10 @@
 print('********** Load and preview the dataset and datatypes')
 # Import necessary libraries
 import pandas as pd
-import numpy as np
+import numpy as pd
 from sklearn.linear_model import LogisticRegression
-from sklearn.preprocessing import StandardScaler
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import LabelEncoder
+from sklearn.model_selection import GridSearchCV
+from sklearn.preprocessing import StandardScaler, LabelEncoder
 
 # Load dataset
 df = pd.read_csv('/data/sls/scratch/pschro/p2/data/UCI_benchmarks/ecoli/ecoli.data', delim_whitespace=True, header=None)
@@ -32,16 +31,22 @@ y = le.fit_transform(y)
 X = X.values
 y = np.array(y) 
 
-# Split the dataset into training and testing sets
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, stratify=y, random_state=42)
+# Split the dataset into training and testing sets 
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, stratify=y, random_state=42)
 
 # Scale the features 
 scaler = StandardScaler()
 X_train = scaler.fit_transform(X_train)
-X_test = scaler.transform(X_test) # use the same scaler (from training data) to standardize test data
+X_test = scaler.transform(X_test)   # use the same scaler (from training data) to standardize test data
 
 # Train the logistic regression model
-model = LogisticRegression(max_iter=200, multi_class='ovr')   # 'ovr' stands for 'One-vs-Rest'
+# Use GridSearchCV to optimize hyperparameters C and max_iterations.
+param_grid = {"C":np.logspace(-3,3,7), "penalty":["l1","l2"], 'solver' : ['newton-cg', 'lbfgs', 'liblinear', 'sag', 'saga']}
+grid = GridSearchCV(LogisticRegression(), param_grid, cv=5)
+grid.fit(X_train, y_train)
+
+# Fetch best estimator
+model = grid.best_estimator_
 model.fit(X_train, y_train)
 #</PrepData>
 #<Predict>
