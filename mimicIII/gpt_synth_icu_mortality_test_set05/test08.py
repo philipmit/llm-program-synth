@@ -7,10 +7,7 @@ import numpy as np
 import torch
 import warnings
 warnings.filterwarnings('ignore')
-from torch.utils.data import Dataset, DataLoader
-from torch.nn.utils.rnn import pad_sequence
-import torch.nn as nn
-import torch.optim as optim
+from torch.utils.data import Dataset
 
 # File paths
 TRAIN_DATA_PATH = '/data/sls/scratch/pschro/p2/data/benchmark_output2/in-hospital-mortality/train/'
@@ -122,7 +119,7 @@ print('********** Define a function that can be used to make new predictions giv
 def predict_label(one_sample):
     model.eval()
     with torch.no_grad():
-        inputs = one_sample[0].unsqueeze(0).cuda()
+        inputs = one_sample.unsqueeze(0).cuda()
         outputs = model(inputs)
         predicted = torch.sigmoid(outputs).item()
     return predicted
