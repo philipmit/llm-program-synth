@@ -71,7 +71,7 @@ def collate_fn(batch):
     # Separate the sequences and the labels
     sequences, labels = zip(*batch)
     # Get the length of each sequence
-    lengths = [len(seq) for seq in sequences]
+    lengths = torch.tensor([len(seq) for seq in sequences], dtype=torch.long)
     # Pad the sequences to have the same length
     sequences = pad_sequence(sequences, batch_first=True)
     return sequences, lengths, torch.stack(labels)
