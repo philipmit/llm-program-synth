@@ -93,3 +93,78 @@ print('*******************')
 print('example_batch[2]')
 print(example_batch[2])
 #</PrepData>
+#<Train>
+print('********** Define the LSTM model and train it using the training data')
+# Define the LSTM model
+class LSTMModel(Module):
+    def __init__(self, input_size, hidden_size, num_layers, output_size):
+        super(LSTMModel, self).__init__()
+        self.hidden_size = hidden_size
+        self.num_layers = num_layers
+        self.lstm = LSTM(input_size, hidden_size, num_layers, batch_first=True)
+        self.fc = Linear(hidden_size, output_size)
+        self.sigmoid = Sigmoid()
+    def forward(self, x, lengths):
+        # Pack the sequences
+        x = pack_padded_sequence(x, lengths, batch_first=True)
+        # Run the LSTM
+        out, _ = self.lstm(x)
+        # Unpack the sequences
+        out, _ = pad_packed_sequence(out, batch_first=True)
+        # Get the output from the last non-padded element in each sequence
+        out = out[range(len(out)), lengths-1, :]
+        # Run the fully connected layer and the sigmoid activation function
+        out = self.fc(out)
+        out = self.sigmoid(out)
+        return out
+
+# Initialize the model
+model = LSTMModel(input_size=13, hidden_size=64, num_layers=2, output_size=1)
+
+# Use multiple GPUs if available
+if is_available() and torch.cuda.device_count() > 1:
+    print("Let's use", torch.cuda.device_count(), "GPUs!")
+    model = DataParallel(model)
+
+# Move the model to the GPU if available
+model.to('cuda' if is_available() else 'cpu')
+
+# Define the loss function and the optimizer
+criterion = BCELoss()
+optimizer = Adam(model.parameters())
+
+# Train the model
+num_epochs = 10
+for epoch in range(num_epochs):
+    for i, (sequences, lengths, labels) in enumerate(data_loader):
+        # Move the sequences, lengths, and labels to the GPU if available
+        sequences = sequences.to('cuda' if is_available() else 'cpu')
+        lengths = lengths.to('cuda' if is_available() else 'cpu')
+        labels = labels.to('cuda' if is_available() else 'cpu')
+        # Forward pass
+        outputs = model(sequences, lengths)
+        loss = criterion(outputs, labels)
+        # Backward and optimize
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+        # Print progress
+        if (i+1) % 100 == 0:
+            print ('Epoch [{}/{}], Step [{}/{}], Loss: {:.4f}' 
+                   .format(epoch+1, num_epochs, i+1, len(data_loader), loss.item()))
+#</Train>
+
+#<Predict>
+print('********** Define a function that can be used to make new predictions given one patient from the dataset provided by ICUData')
+def predict_label(patient):
+    # Move the patient to the GPU if available
+    patient = patient.to('cuda' if is_available() else 'cpu')
+    # Get the length of the sequence
+    length = torch.tensor([len(patient)], dtype=torch.long)
+    # Add an extra dimension to the patient tensor and move it to the GPU if available
+    patient = patient.unsqueeze(0).to('cuda' if is_available() else 'cpu')
+    # Forward pass
+    output = model(patient, length)
+    # Return the predicted probability of ICU mortality
+    return output.item()
+#</Predict>
