@@ -55,6 +55,7 @@ print('********** Prepare the dataset for training')
 # Import necessary packages
 from torch.utils.data import DataLoader
 from sklearn.model_selection import train_test_split
+from torch.nn.utils.rnn import pad_sequence
 
 # Split the dataset into training and testing sets
 train_idx, test_idx = train_test_split(np.arange(len(df)), test_size=0.2, random_state=42, stratify=df.labels.numpy())
@@ -70,11 +71,14 @@ def collate_fn(batch):
     return data, labels
 
 # Create data loaders for training and testing datasets
-train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True, collate_fn=collate_fn)
-test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False, collate_fn=collate_fn)
+train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True, collate_fn=collate_fn)
+test_loader = DataLoader(test_dataset, batch_size=64, shuffle=False, collate_fn=collate_fn)
 #</PrepData>
 #<Train>
 print('********** Define the LSTM model and train it using the training data')
+# Import necessary packages
+from torch import nn, optim
+
 # Define LSTM model
 class LSTM(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers, output_size):
@@ -91,15 +95,15 @@ class LSTM(nn.Module):
         return out
 
 # Initialize the LSTM model
-model = LSTM(input_size=13, hidden_size=50, num_layers=2, output_size=1)
+model = LSTM(input_size=13, hidden_size=100, num_layers=2, output_size=1)
 model = model.cuda() if torch.cuda.is_available() else model
 
 # Define loss function and optimizer
 criterion = nn.BCEWithLogitsLoss()
-optimizer = optim.Adam(model.parameters(), lr=0.001)
+optimizer = optim.Adam(model.parameters(), lr=0.0005)
 
 # Train the model
-num_epochs = 10
+num_epochs = 20
 for epoch in range(num_epochs):
     model.train()
     running_loss = 0.0
