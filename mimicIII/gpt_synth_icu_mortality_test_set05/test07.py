@@ -125,7 +125,7 @@ print('********** Define a function that can be used to make new predictions giv
 def predict_label(one_sample):
     model.eval()
     with torch.no_grad():
-        one_sample = one_sample.to(device)
+        one_sample = one_sample.unsqueeze(0).to(device)
         output = model(one_sample)
         prediction = torch.sigmoid(output).item()
     return prediction
