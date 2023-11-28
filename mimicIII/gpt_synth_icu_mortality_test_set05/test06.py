@@ -103,6 +103,8 @@ class LSTMModel(Module):
         self.fc = Linear(hidden_size, output_size)
         self.sigmoid = Sigmoid()
     def forward(self, x, lengths):
+        # Move lengths to CPU
+        lengths = lengths.cpu()
         # Run the LSTM
         packed_x = torch.nn.utils.rnn.pack_padded_sequence(x, lengths, batch_first=True, enforce_sorted=False)
         packed_out, _ = self.lstm(packed_x)
@@ -135,7 +137,6 @@ for epoch in range(num_epochs):
     for i, (sequences, lengths, labels) in enumerate(data_loader):
         # Move the sequences, lengths, and labels to the GPU if available
         sequences = sequences.to('cuda' if is_available() else 'cpu')
-        lengths = lengths.to('cuda' if is_available() else 'cpu')
         labels = labels.to('cuda' if is_available() else 'cpu')
         # Forward pass
         outputs = model(sequences, lengths)
