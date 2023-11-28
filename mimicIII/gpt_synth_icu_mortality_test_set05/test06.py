@@ -77,7 +77,7 @@ def collate_fn(batch):
     return sequences, lengths, torch.stack(labels)
 
 # Create a DataLoader
-data_loader = DataLoader(df, batch_size=32, shuffle=True, collate_fn=collate_fn)
+data_loader = DataLoader(df, batch_size=64, shuffle=True, collate_fn=collate_fn)
 
 # Preview dataset and datatypes
 example_batch = next(iter(data_loader))
@@ -117,7 +117,7 @@ class LSTMModel(Module):
         return out.squeeze()
 
 # Initialize the model
-model = LSTMModel(input_size=13, hidden_size=64, num_layers=2, output_size=1)
+model = LSTMModel(input_size=13, hidden_size=128, num_layers=3, output_size=1)
 
 # Use multiple GPUs if available
 if is_available() and torch.cuda.device_count() > 1:
@@ -129,10 +129,10 @@ model.to('cuda' if is_available() else 'cpu')
 
 # Define the loss function and the optimizer
 criterion = BCELoss()
-optimizer = Adam(model.parameters())
+optimizer = Adam(model.parameters(), lr=0.001)
 
 # Train the model
-num_epochs = 10
+num_epochs = 20
 for epoch in range(num_epochs):
     for i, (sequences, lengths, labels) in enumerate(data_loader):
         # Move the sequences, lengths, and labels to the GPU if available
