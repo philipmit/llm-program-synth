@@ -31,7 +31,7 @@ class ICUData(Dataset):
         data = data.fillna(self.replacement_values)
         data = data.select_dtypes(include=[np.number]) 
         label = self.labels[idx]
-        return torch.tensor(data.values, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
+        return torch.tensor(data.values, dtype=torch.float32), label
 df = ICUData(TRAIN_DATA_PATH, TRAIN_LABEL_FILE)
 
 # Preview dataset and datatypes
@@ -55,8 +55,6 @@ print('********** Prepare the dataset for training')
 # Import necessary packages
 from torch.utils.data import DataLoader
 from torch.nn.utils.rnn import pad_sequence
-from torch.nn.utils.rnn import pack_padded_sequence
-from torch.nn.utils.rnn import pad_packed_sequence
 from torch.nn import LSTM
 from torch.nn import Linear
 from torch.nn import Sigmoid
@@ -76,7 +74,7 @@ def collate_fn(batch):
     lengths = [len(seq) for seq in sequences]
     # Pad the sequences to have the same length
     sequences = pad_sequence(sequences, batch_first=True)
-    return sequences, lengths, torch.tensor(labels)
+    return sequences, lengths, torch.stack(labels)
 
 # Create a DataLoader
 data_loader = DataLoader(df, batch_size=32, shuffle=True, collate_fn=collate_fn)
@@ -105,18 +103,16 @@ class LSTMModel(Module):
         self.fc = Linear(hidden_size, output_size)
         self.sigmoid = Sigmoid()
     def forward(self, x, lengths):
-        # Pack the sequences
-        x = pack_padded_sequence(x, lengths, batch_first=True)
         # Run the LSTM
-        out, _ = self.lstm(x)
-        # Unpack the sequences
-        out, _ = pad_packed_sequence(out, batch_first=True)
+        packed_x = torch.nn.utils.rnn.pack_padded_sequence(x, lengths, batch_first=True, enforce_sorted=False)
+        packed_out, _ = self.lstm(packed_x)
+        out, _ = torch.nn.utils.rnn.pad_packed_sequence(packed_out, batch_first=True)
         # Get the output from the last non-padded element in each sequence
         out = out[range(len(out)), lengths-1, :]
         # Run the fully connected layer and the sigmoid activation function
         out = self.fc(out)
         out = self.sigmoid(out)
-        return out
+        return out.squeeze()
 
 # Initialize the model
 model = LSTMModel(input_size=13, hidden_size=64, num_layers=2, output_size=1)
@@ -153,16 +149,14 @@ for epoch in range(num_epochs):
             print ('Epoch [{}/{}], Step [{}/{}], Loss: {:.4f}' 
                    .format(epoch+1, num_epochs, i+1, len(data_loader), loss.item()))
 #</Train>
-
 #<Predict>
 print('********** Define a function that can be used to make new predictions given one patient from the dataset provided by ICUData')
 def predict_label(patient):
-    # Move the patient to the GPU if available
-    patient = patient.to('cuda' if is_available() else 'cpu')
     # Get the length of the sequence
     length = torch.tensor([len(patient)], dtype=torch.long)
     # Add an extra dimension to the patient tensor and move it to the GPU if available
     patient = patient.unsqueeze(0).to('cuda' if is_available() else 'cpu')
+    length = length.to('cuda' if is_available() else 'cpu')
     # Forward pass
     output = model(patient, length)
     # Return the predicted probability of ICU mortality
