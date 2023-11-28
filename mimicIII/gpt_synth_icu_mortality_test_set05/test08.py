@@ -7,7 +7,10 @@ import numpy as np
 import torch
 import warnings
 warnings.filterwarnings('ignore')
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, DataLoader
+from torch.nn.utils.rnn import pad_sequence
+import torch.nn as nn
+import torch.optim as optim
 
 # File paths
 TRAIN_DATA_PATH = '/data/sls/scratch/pschro/p2/data/benchmark_output2/in-hospital-mortality/train/'
@@ -61,16 +64,20 @@ train_idx, test_idx = train_test_split(np.arange(len(df)), test_size=0.2, random
 train_dataset = torch.utils.data.Subset(df, train_idx)
 test_dataset = torch.utils.data.Subset(df, test_idx)
 
+# Create custom collate_fn to handle variable sequence lengths
+def collate_fn(batch):
+    data = [item[0] for item in batch]
+    data = pad_sequence(data, batch_first=True)
+    labels = [item[1] for item in batch]
+    labels = torch.stack(labels)
+    return data, labels
+
 # Create data loaders for training and testing datasets
-train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
-test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False)
+train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True, collate_fn=collate_fn)
+test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False, collate_fn=collate_fn)
 #</PrepData>
 #<Train>
 print('********** Define the LSTM model and train it using the training data')
-# Import necessary packages
-import torch.nn as nn
-import torch.optim as optim
-
 # Define LSTM model
 class LSTM(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers, output_size):
