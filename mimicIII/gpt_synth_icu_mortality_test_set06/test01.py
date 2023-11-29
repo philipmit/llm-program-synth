@@ -72,8 +72,8 @@ def collate_fn(batch):
 file_names_train, file_names_val, labels_train, labels_val = train_test_split(df.file_names, df.labels, test_size=0.2, random_state=42, stratify=df.labels)
 
 # Create the training and validation datasets using the split
-df_train = ICUData(TRAIN_DATA_PATH, pd.DataFrame({'stay': file_names_train, 'y_true': labels_train}))
-df_val = ICUData(TRAIN_DATA_PATH, pd.DataFrame({'stay': file_names_val, 'y_true': labels_val}))
+df_train = ICUData(TRAIN_DATA_PATH, pd.DataFrame({'stay': file_names_train, 'y_true': labels_train.numpy()}))
+df_val = ICUData(TRAIN_DATA_PATH, pd.DataFrame({'stay': file_names_val, 'y_true': labels_val.numpy()}))
 
 # Create dataloaders
 batch_size = 64
