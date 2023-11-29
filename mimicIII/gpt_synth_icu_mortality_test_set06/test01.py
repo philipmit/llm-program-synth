@@ -70,10 +70,10 @@ def collate_fn(batch):
 
 # Split the dataset into training and testing sets
 file_names_train, file_names_val, labels_train, labels_val = train_test_split(df.file_names, df.labels, test_size=0.2, random_state=42, stratify=df.labels)
-train_data = pd.DataFrame({'stay':file_names_train, 'y_true':labels_train.numpy()}, columns=['stay', 'y_true'])
-val_data = pd.DataFrame({'stay':file_names_val, 'y_true':labels_val.numpy()}, columns=['stay', 'y_true'])
-df_train = ICUData(TRAIN_DATA_PATH, train_data)
-df_val = ICUData(TRAIN_DATA_PATH, val_data)
+
+# Create the training and validation datasets using the split
+df_train = ICUData(TRAIN_DATA_PATH, pd.DataFrame({'stay': file_names_train, 'y_true': labels_train}))
+df_val = ICUData(TRAIN_DATA_PATH, pd.DataFrame({'stay': file_names_val, 'y_true': labels_val}))
 
 # Create dataloaders
 batch_size = 64
@@ -141,7 +141,7 @@ print('********** Define a function that can be used to make new predictions giv
 def predict_label(one_patient):
     model.eval()
     with torch.no_grad():
-        one_patient = one_patient.unsqueeze(0).to(device)  # Add an extra dimension for batch
+        one_patient = one_patient.to(device).unsqueeze(0)  # Add an extra dimension for batch
         output = model(one_patient)
     return output.item()  # Return the predicted probability
 #</Predict>
