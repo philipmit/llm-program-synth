@@ -13,14 +13,11 @@ from torch.utils.data import Dataset
 TRAIN_DATA_PATH = '/data/sls/scratch/pschro/p2/data/benchmark_output2/in-hospital-mortality/train/'
 TRAIN_LABEL_FILE = '/data/sls/scratch/pschro/p2/data/benchmark_output2/in-hospital-mortality/train/listfile.csv'
 
-# Convert the label file into a DataFrame
-label_data = pd.read_csv(TRAIN_LABEL_FILE)
-label_data['stay'] = label_data['stay'].astype(str)
-
 # Read file
 class ICUData(Dataset):
-    def __init__(self, data_path, label_data):
+    def __init__(self, data_path, label_file):
         self.data_path = data_path
+        label_data = pd.read_csv(label_file)
         self.file_names = label_data['stay'].values
         self.labels = torch.tensor(label_data['y_true'].values, dtype=torch.float32)
         self.replacement_values={'Capillary refill rate': 0.0, 'Diastolic blood pressure': 59.0 , 'Fraction inspired oxygen': 0.21, 'Glucose': 128.0, 'Heart Rate': 86, 'Height': 170.0, 'Mean blood pressure': 77.0, 'Oxygen saturation': 98.0, 'Respiratory rate': 19, 'Systolic blood pressure': 118.0, 'Temperature': 36.6, 'Weight': 81.0, 'pH': 7.4}
@@ -34,8 +31,8 @@ class ICUData(Dataset):
         data = data.fillna(self.replacement_values)
         data = data.select_dtypes(include=[np.number]) 
         label = self.labels[idx]
-        return torch.tensor(data.values, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
-df = ICUData(TRAIN_DATA_PATH, label_data)
+        return torch.tensor(data.values, dtype=torch.float32), label
+df = ICUData(TRAIN_DATA_PATH, TRAIN_LABEL_FILE)
 
 # Preview dataset and datatypes
 example_patient0 = df[0][0]
@@ -66,7 +63,7 @@ def collate_fn(batch):
     data = [item[0] for item in batch]
     data = pad_sequence(data, batch_first=True)
     labels = [item[1] for item in batch]
-    labels = torch.tensor(labels, dtype=torch.float32)
+    labels = torch.stack(labels, dim=0)
     return data, labels
 
 # Split the dataset into training and testing sets
@@ -106,7 +103,7 @@ class LSTM(nn.Module):
         lstm_out, _ = self.lstm(input)
         y_pred = self.fc(lstm_out[:, -1, :]) 
         y_pred = self.sigmoid(y_pred)
-        return y_pred
+        return y_pred.squeeze()
 
 # Initialize the model, optimizer and loss function
 model = LSTM(input_dim=13, hidden_dim=64, batch_size=batch_size, output_dim=1, num_layers=2)
@@ -127,7 +124,7 @@ for epoch in range(num_epochs):
         labels = labels.to(device)
         optimizer.zero_grad()
         outputs = model(data)
-        loss = criterion(outputs.squeeze(), labels)
+        loss = criterion(outputs, labels)
         loss.backward()
         optimizer.step()
         running_loss += loss.item()
