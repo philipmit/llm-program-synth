@@ -91,13 +91,10 @@ else:
 #<Predict>
 print('********** Define a function that can be used to make new predictions given one sample of data from X_test')
 def predict_label(one_sample):
-    if np.array(one_sample).size != 0: # changed condition from X_train.shape[1] to np.array(one_sample).size
-        # Convert the list to a numpy array before reshaping
-        one_sample = np.array(one_sample).reshape(1, -1)
-        # Standardize the one_sample to match the data model was trained on
-        one_sample = sc.transform(one_sample)
-        # Return the class probabilities as a 1D array
-        return model.predict_proba(one_sample)[0]  
-    else:
-        print('Cannot make predictions as the feature set X_train is empty.')
+    # Convert the list to a numpy array before reshaping
+    one_sample = np.array(one_sample).reshape(1, -1)
+    # Standardize the one_sample to match the data model was trained on
+    one_sample = sc.transform(one_sample)
+    # Return the class probabilities as a 1D array
+    return model.predict_proba(one_sample)[0]  
 #</Predict>
