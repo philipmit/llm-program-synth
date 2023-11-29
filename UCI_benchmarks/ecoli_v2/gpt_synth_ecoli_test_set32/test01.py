@@ -46,13 +46,16 @@ y = df.iloc[:, -1].values   # All rows, only the last column
 # Label Encode y
 le = LabelEncoder()
 y = le.fit_transform(y)
-# Ensure there are at least two samples for each class, otherwise, reduce the test size
-if np.min(np.bincount(y)) < 2:
-    test_size = 0.1
-else:
-    test_size = 0.5
+
 # Split the dataset into training and testing sets
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, stratify=y, random_state=42)
+# If a class has only one sample, use leave one out cross validation
+if np.min(np.bincount(y)) > 1:
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, stratify=y, random_state=42)
+else:
+    from sklearn.model_selection import LeaveOneOut
+    loo = LeaveOneOut()
+    X_train, X_test, y_train, y_test = loo.split(X)
+
 # Scale the features 
 sc = StandardScaler()
 X_train = sc.fit_transform(X_train)
