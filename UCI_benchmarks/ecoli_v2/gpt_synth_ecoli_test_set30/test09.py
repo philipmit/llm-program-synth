@@ -32,39 +32,15 @@ print('*******************')
 print('df.isnull().sum()')
 print(df.isnull().sum())
 #</PrevData>
+
+
 #<PrepData>
 print('********** Prepare the dataset for training')
-
-# The data was loaded as a single column. The values need to be split into multiple columns
-df = df[0].str.split(expand=True)
-
-# Preview dataset and datatypes after splitting the columns
-print('*******************')
-print('df.shape')
-print(df.shape)
-print('*******************')
-print('df.head()')
-print(df.head())
-print('*******************')
-print('df.info()')
-print(df.info())
-print('*******************')
-print('df.dtypes')
-print(df.dtypes)
-print('*******************')
-for col in df.applymap(type).columns:
-    print('df.applymap(type)[{col}].unique()'.format(col=col))
-    print(df.applymap(type)[col].unique())
-print('*******************')
-print('df.isnull().sum()')
-print(df.isnull().sum())
-
 # Import necessary packages
 import numpy as np
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
-
 # Define features, X, and labels, y
 X = df.iloc[:, 1:-1]  # All rows, all columns except the first and last one
 X = X.apply(pd.to_numeric)  # convert all columns of DataFrame
@@ -98,11 +74,14 @@ print('********** Train the model using the training data, X_train and y_train')
 model = LogisticRegression()
 model.fit(X_train, y_train)
 #</Train>
+
 #<Predict>
 print('********** Define a function that can be used to make new predictions given one sample of data from X_test')
 def predict_label(one_sample):
+    # Convert list to numpy array and reshape
+    one_sample = np.array(one_sample).reshape(1, -1)
     # Standardize the one_sample to match the data model was trained on
-    one_sample = sc.transform(one_sample.reshape(1, -1))
+    one_sample = sc.transform(one_sample)
     # Return the class probabilities as a 1D array
     return model.predict_proba(one_sample)[0]  
 #</Predict>
