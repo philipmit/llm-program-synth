@@ -9,7 +9,7 @@ dataset_name=dataset_name.lower()
 TRAIN_DATA_FILE = "/data/sls/scratch/pschro/p2/data/UCI_benchmarks/"+dataset_name+"/"+dataset_name+".data"
 
 # Read file
-df = pd.read_csv(TRAIN_DATA_FILE, header=None)
+df = pd.read_csv(TRAIN_DATA_FILE, header=None, delim_whitespace=True)
 
 # Preview dataset and datatypes
 print('*******************')
@@ -37,32 +37,23 @@ print('********** Prepare the dataset for training')
 # Import necessary packages
 import numpy as np
 from sklearn.linear_model import LogisticRegression
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import LabelEncoder, StandardScaler
 from sklearn.model_selection import train_test_split
-
-# The data seems to be space separated and combined in one column, let's split it
-df = df[0].str.split(expand=True)
 
 # Define features, X, and labels, y
 X = df.iloc[:, :-1]  # All rows, all columns except the last one
 y = df.iloc[:, -1]   # All rows, only the last column
-y = y.replace(list(np.unique(y)), list(range(len(np.unique(y)))))
 
-# Convert data to numeric
-X = X.apply(pd.to_numeric, errors='coerce')
-y = y.apply(pd.to_numeric, errors='coerce')
+# Convert categorical labels to numerical
+le = LabelEncoder()
+y = le.fit_transform(y)
 
-# Drop any rows with NaN values
-X = X.dropna()
-y = y.dropna()
-
+# Convert data to numpy array
 X=X.to_numpy()
 y=y.to_numpy()
 
 # Split the dataset into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, stratify=y, random_state=42)
-X_train=X_train.tolist()
-X_test=X_test.tolist()
 
 # Scale the features 
 sc = StandardScaler()
