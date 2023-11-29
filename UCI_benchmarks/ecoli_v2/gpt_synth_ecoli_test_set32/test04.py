@@ -39,6 +39,7 @@ print('********** Prepare the dataset for training')
 # Import necessary packages
 import numpy as np
 from sklearn.linear_model import LogisticRegression
+from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 
@@ -57,7 +58,8 @@ if X.dtypes.any() == 'object' or y.dtypes == 'object':
 
     # Convert categorical labels in y to numeric
     if y.dtypes == 'object':
-        y = pd.Categorical(y).codes
+        labelencoder = LabelEncoder()
+        y = labelencoder.fit_transform(y)
 
 # Convert y to pandas Series to avoid AttributeError in the next step
 y = pd.Series(y)
