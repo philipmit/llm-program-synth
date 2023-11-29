@@ -90,6 +90,7 @@ if len(X) > 0 and len(y) > 0:
     print(y_train[0:5])
 else:
     print('Insufficient data for train and test split after removing classes with less than 2 instances. Please check the dataset.')
+    X_train, y_train = [], []
 #</PrepData>
 
 #<Train>
@@ -99,6 +100,7 @@ if len(X_train) > 0 and len(y_train) > 0:
     model.fit(X_train, y_train)
 else:
     print('Insufficient data for training the model. Please check the dataset.')
+    model = None
 #</Train>
 
 #<Predict>
