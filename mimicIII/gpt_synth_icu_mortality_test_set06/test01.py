@@ -15,15 +15,17 @@ TRAIN_LABEL_FILE = '/data/sls/scratch/pschro/p2/data/benchmark_output2/in-hospit
 
 # Read file
 class ICUData(Dataset):
-    def __init__(self, data_path, label_data):
+    def __init__(self, data_path, label_file):
         self.data_path = data_path
+        label_data = pd.read_csv(label_file)
         self.file_names = label_data['stay'].values
         self.labels = torch.tensor(label_data['y_true'].values, dtype=torch.float32)
         self.replacement_values={'Capillary refill rate': 0.0, 'Diastolic blood pressure': 59.0 , 'Fraction inspired oxygen': 0.21, 'Glucose': 128.0, 'Heart Rate': 86, 'Height': 170.0, 'Mean blood pressure': 77.0, 'Oxygen saturation': 98.0, 'Respiratory rate': 19, 'Systolic blood pressure': 118.0, 'Temperature': 36.6, 'Weight': 81.0, 'pH': 7.4}
     def __len__(self):
         return len(self.file_names)
     def __getitem__(self, idx):
-        file_path = os.path.join(self.data_path, self.file_names[idx])
+        file_name = self.file_names[idx]
+        file_path = os.path.join(self.data_path, file_name)
         data = pd.read_csv(file_path)
         data = data.drop(['Hours','Glascow coma scale eye opening','Glascow coma scale motor response','Glascow coma scale total','Glascow coma scale verbal response'], axis=1)  
         data = data.fillna(method='ffill').fillna(method='bfill')
@@ -32,8 +34,7 @@ class ICUData(Dataset):
         label = self.labels[idx]
         return torch.tensor(data.values, dtype=torch.float32), label
 
-label_data = pd.read_csv(TRAIN_LABEL_FILE)
-df = ICUData(TRAIN_DATA_PATH, label_data)
+df = ICUData(TRAIN_DATA_PATH, TRAIN_LABEL_FILE)
 
 # Preview dataset and datatypes
 example_patient0 = df[0][0]
@@ -142,5 +143,5 @@ def predict_label(one_patient):
     with torch.no_grad():
         one_patient = one_patient.unsqueeze(0).to(device)  # Add an extra dimension for batch
         output = model(one_patient)
-    return torch.sigmoid(output).item()  # Return the predicted probability
+    return output.item()  # Return the predicted probability
 #</Predict>
