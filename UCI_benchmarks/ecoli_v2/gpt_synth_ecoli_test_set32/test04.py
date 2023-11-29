@@ -33,6 +33,7 @@ print('df.isnull().sum()')
 print(df.isnull().sum())
 #</PrevData>
 
+
 #<PrepData>
 print('********** Prepare the dataset for training')
 # Import necessary packages
@@ -43,7 +44,12 @@ from sklearn.model_selection import train_test_split
 # Define features, X, and labels, y
 X = df.iloc[:, :-1]  # All rows, all columns except the last one
 y = df.iloc[:, -1]   # All rows, only the last column
-y = y.replace(list(np.unique(y)), list(range(len(np.unique(y)))))
+# Convert categorical attributes to numeric
+if X.dtypes.include('object'):
+    X = pd.get_dummies(X)
+# Convert categorical labels to numeric
+if y.dtype == 'object':
+    y = y.replace(list(np.unique(y)), list(range(len(np.unique(y)))))
 X=X.to_numpy()
 y=y.to_numpy()
 # Check if any class has only one member
@@ -58,11 +64,10 @@ else:
     stratify = y
 # Split the dataset into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, stratify=stratify, random_state=42)
-X_train=X_train.tolist()
-X_test=X_test.tolist()
 # Scale the features 
 sc = StandardScaler()
 X_train = sc.fit_transform(X_train)
+X_test = sc.transform(X_test)
 print('*******************')
 print('X_train.shape')
 print(X_train.shape)
