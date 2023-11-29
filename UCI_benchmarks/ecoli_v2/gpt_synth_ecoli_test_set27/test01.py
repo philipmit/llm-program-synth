@@ -39,6 +39,7 @@ import numpy as np
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
+from sklearn.decomposition import PCA
 
 # Split the dataset into features and labels
 data = df[0].str.split(expand=True)
@@ -49,6 +50,10 @@ y = y.replace(list(np.unique(y)), list(range(len(np.unique(y)))))
 # Convert to numpy arrays
 X = X.to_numpy()
 y = y.to_numpy()
+
+# Apply PCA for dimensionality reduction
+pca = PCA(n_components=0.95)
+X = pca.fit_transform(X)
 
 # Split the dataset into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, stratify=y, random_state=42)
@@ -65,15 +70,15 @@ print('y_train.shape')
 print(y_train.shape)
 print('*******************')
 print('X_train[0:5]')
-print(X_train[0:5])
+print(X_train[0:5)
 print('*******************')
 print('y_train[0:5]')
-print(y_train[0:5])
+print(y_train[0:5)
 #</PrepData>
 
 #<Train>
 print('********** Train the model using the training data, X_train and y_train')
-model = LogisticRegression(max_iter=1000)
+model = LogisticRegression(max_iter=2000, C=0.01, solver='liblinear')  # Increased iterations, changed solver and regularization strength
 model.fit(X_train, y_train)
 #</Train>
 #<Predict>
@@ -81,6 +86,8 @@ print('********** Define a function that can be used to make new predictions giv
 def predict_label(one_sample):
     # Convert the list to a numpy array and reshape it to match the data model was trained on
     one_sample = np.array(one_sample).reshape(1, -1)
+    # Apply PCA transformation
+    one_sample = pca.transform(one_sample)
     # Standardize the one_sample
     one_sample = sc.transform(one_sample)
     # Return the class probabilities as a 1D array
