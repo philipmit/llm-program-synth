@@ -11,6 +11,9 @@ TRAIN_DATA_FILE = "/data/sls/scratch/pschro/p2/data/UCI_benchmarks/"+dataset_nam
 # Read file
 df = pd.read_csv(TRAIN_DATA_FILE, header=None, sep="\s+")
 
+# Drop the sequence name column
+df = df.drop(df.columns[0], axis=1)
+
 # Preview dataset and datatypes
 print('*******************')
 print('df.shape')
