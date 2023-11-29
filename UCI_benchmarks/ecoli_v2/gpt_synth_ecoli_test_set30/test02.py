@@ -32,3 +32,61 @@ print('*******************')
 print('df.isnull().sum()')
 print(df.isnull().sum())
 #</PrevData>
+#<PrepData>
+print('********** Prepare the dataset for training')
+# Import necessary packages
+import numpy as np
+from sklearn.linear_model import LogisticRegression
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import train_test_split
+
+# The data seems to be in a single column and needs to be split into multiple columns
+df = df[0].str.split(expand=True)
+
+# Define features, X, and labels, y
+X = df.iloc[:, 1:-1]  # All rows, all columns except the first and last one
+y = df.iloc[:, -1]   # All rows, only the last column
+y = y.replace(list(np.unique(y)), list(range(len(np.unique(y)))))  # Convert categorical labels to numerical
+X = X.apply(pd.to_numeric, errors='coerce')  # Convert feature values to numerical
+
+# Check for any null values after conversion
+print('*******************')
+print('X.isnull().sum()')
+print(X.isnull().sum())
+print('*******************')
+print('y.isnull().sum()')
+print(y.isnull().sum())
+
+# Handle any null values if present
+X = X.fillna(X.mean())
+
+# Convert pandas dataframe to numpy array
+X = X.to_numpy()
+y = y.to_numpy()
+
+# Split the dataset into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, stratify=y, random_state=42)
+
+# Scale the features 
+sc = StandardScaler()
+X_train = sc.fit_transform(X_train)
+
+print('*******************')
+print('X_train.shape')
+print(X_train.shape)
+print('*******************')
+print('y_train.shape')
+print(y_train.shape)
+print('*******************')
+print('X_train[0:5]')
+print(X_train[0:5])
+print('*******************')
+print('y_train[0:5]')
+print(y_train[0:5])
+#</PrepData>
+
+#<Train>
+print('********** Train the model using the training data, X_train and y_train')
+model = LogisticRegression()
+model.fit(X_train, y_train)
+#</Train>
