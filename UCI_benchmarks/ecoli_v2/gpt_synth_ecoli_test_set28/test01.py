@@ -32,6 +32,7 @@ print('*******************')
 print('df.isnull().sum()')
 print(df.isnull().sum())
 #</PrevData>
+
 #<PrepData>
 print('********** Prepare the dataset for training')
 # Import necessary packages
@@ -66,7 +67,7 @@ print('y_train.shape')
 print(y_train.shape)
 print('*******************')
 print('X_train[0:5]')
-print(X_train[0:5)
+print(X_train[0:5])  # Fixed the syntax error by adding the closing parenthesis
 print('*******************')
 print('y_train[0:5]')
 print(y_train[0:5])
@@ -77,6 +78,7 @@ print('********** Train the model using the training data, X_train and y_train')
 model = LogisticRegression(solver='liblinear', C=0.5, multi_class='ovr', max_iter=1000)
 model.fit(X_train, y_train)
 #</Train>
+
 #<Predict>
 print('********** Define a function that can be used to make new predictions given one sample of data from X_test')
 def predict_label(one_sample):
