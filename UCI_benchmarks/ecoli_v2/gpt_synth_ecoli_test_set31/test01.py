@@ -46,6 +46,9 @@ X = df.iloc[:, :-1]  # All rows, all columns except the last one
 y = df.iloc[:, -1]   # All rows, only the last column
 y = y.replace(list(np.unique(y)), list(range(len(np.unique(y)))))
 
+# Ensure no missing values
+assert not X.isnull().values.any(), "Missing values found in X. Please handle before proceeding."
+
 # Checking the minimum number of samples in classes for stratify
 min_samples_in_class = y.value_counts().min()
 if min_samples_in_class < 2:
@@ -61,6 +64,10 @@ y_train = y_train.to_numpy()
 
 # Scale the features 
 sc = StandardScaler()
+
+# Ensure X_train is not empty
+assert X_train.size != 0, "X_train is empty. Please ensure your dataset contains features."
+
 X_train = sc.fit_transform(X_train)
 print('*******************')
 print('X_train.shape')
