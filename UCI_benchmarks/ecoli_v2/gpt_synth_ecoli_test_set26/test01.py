@@ -81,7 +81,8 @@ print(y_train[0:5])
 
 #<Train>
 print('********** Train the model using the training data, X_train and y_train')
-model = LogisticRegression(max_iter=500, C=0.9)
+# Increase the max_iter to 1000 and decrease the regularization strength C to 0.5
+model = LogisticRegression(max_iter=1000, C=0.5)
 model.fit(X_train, y_train)
 #</Train>
 #<Predict>
