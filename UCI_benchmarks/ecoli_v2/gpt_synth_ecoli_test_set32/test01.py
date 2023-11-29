@@ -91,9 +91,9 @@ else:
 #<Predict>
 print('********** Define a function that can be used to make new predictions given one sample of data from X_test')
 def predict_label(one_sample):
-    if X_train.shape[1] != 0:
+    if len(one_sample[0]) != 0: # changed condition from X_train.shape[1] to len(one_sample[0])
         # Standardize the one_sample to match the data model was trained on
-        one_sample = sc.transform(one_sample.reshape(1, -1))
+        one_sample = sc.transform(np.array(one_sample).reshape(1, -1)) # convert list to numpy array before reshaping
         # Return the class probabilities as a 1D array
         return model.predict_proba(one_sample)[0]  
     else:
