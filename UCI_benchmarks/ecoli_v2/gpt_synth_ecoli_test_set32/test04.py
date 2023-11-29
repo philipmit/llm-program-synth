@@ -33,7 +33,6 @@ print('df.isnull().sum()')
 print(df.isnull().sum())
 #</PrevData>
 
-
 #<PrepData>
 print('********** Prepare the dataset for training')
 # Import necessary packages
@@ -75,7 +74,7 @@ else:
 
 # Scale the features 
 sc = StandardScaler()
-X_train = sc.fit_transform(X_train.astype(np.float))
+X_train = sc.fit_transform(X_train.astype(float))
 print('*******************')
 print('X_train.shape')
 print(X_train.shape)
@@ -102,7 +101,7 @@ def predict_label(one_sample):
     # Standardize the one_sample to match the data model was trained on
     if one_sample.ndim == 1:
         one_sample = one_sample.reshape(1, -1)
-    one_sample = sc.transform(one_sample.astype(np.float))
+    one_sample = sc.transform(one_sample.astype(float))
     # Return the class probabilities as a 1D array
     return model.predict_proba(one_sample)[0]  
 #</Predict>
