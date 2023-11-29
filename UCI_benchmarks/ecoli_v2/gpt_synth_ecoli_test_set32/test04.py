@@ -78,6 +78,7 @@ if len(X) > 0 and len(y) > 0:
     sc = StandardScaler()
     sc.fit(X_train)  # Fit the scaler to the training data
     X_train = sc.transform(X_train)
+    X_test = sc.transform(X_test)  # Transform the testing data with the same scaler
     print('*******************')
     print('X_train.shape')
     print(X_train.shape)
