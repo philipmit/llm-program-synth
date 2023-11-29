@@ -58,9 +58,6 @@ if X.dtypes.any() == 'object' or y.dtypes == 'object':
     if y.dtypes == 'object':
         y = pd.Categorical(y).codes
 
-X=X.to_numpy()
-y=y.to_numpy()
-
 # Split the dataset into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, stratify=y, random_state=42)
 
