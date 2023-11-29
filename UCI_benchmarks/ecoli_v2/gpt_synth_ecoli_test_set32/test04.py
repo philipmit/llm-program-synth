@@ -75,7 +75,7 @@ else:
 
 # Scale the features 
 sc = StandardScaler()
-X_train = sc.fit_transform(X_train)
+X_train = sc.fit_transform(X_train.astype(np.float))
 print('*******************')
 print('X_train.shape')
 print(X_train.shape)
@@ -102,7 +102,7 @@ def predict_label(one_sample):
     # Standardize the one_sample to match the data model was trained on
     if one_sample.ndim == 1:
         one_sample = one_sample.reshape(1, -1)
-    one_sample = sc.transform(one_sample)
+    one_sample = sc.transform(one_sample.astype(np.float))
     # Return the class probabilities as a 1D array
     return model.predict_proba(one_sample)[0]  
 #</Predict>
