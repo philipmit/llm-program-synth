@@ -31,7 +31,7 @@ class ICUData(Dataset):
         data = data.fillna(self.replacement_values)
         data = data.select_dtypes(include=[np.number]) 
         label = self.labels[idx]
-        return torch.tensor(data.values, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
+        return torch.tensor(data.values, dtype=torch.float32), label
 df = ICUData(TRAIN_DATA_PATH, TRAIN_LABEL_FILE)
 
 # Preview dataset and datatypes
