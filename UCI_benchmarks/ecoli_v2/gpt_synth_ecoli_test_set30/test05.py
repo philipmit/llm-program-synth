@@ -48,10 +48,6 @@ y = df.iloc[:, -1]   # All rows, only the last column
 le = LabelEncoder()
 y = le.fit_transform(y)
 
-# Convert data to numpy array
-X=X.to_numpy()
-y=y.to_numpy()
-
 # Split the dataset into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, stratify=y, random_state=42)
 
