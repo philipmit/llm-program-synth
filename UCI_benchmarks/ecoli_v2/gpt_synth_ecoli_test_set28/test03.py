@@ -53,7 +53,7 @@ y = y.replace(list(np.unique(y)), list(range(len(np.unique(y)))))
 
 # Convert to numpy arrays
 X = X.to_numpy(dtype=np.float32)
-y = y.to_numpy(dtype=np.int)
+y = y.to_numpy(dtype=np.int32)  # corrected from np.int to np.int32 as per the error message
 
 # Split the dataset into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, stratify=y, random_state=42)
