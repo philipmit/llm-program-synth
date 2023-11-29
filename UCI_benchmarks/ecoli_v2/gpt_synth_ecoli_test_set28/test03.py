@@ -57,8 +57,8 @@ le = LabelEncoder()
 y = le.fit_transform(y)
 
 # Convert to numpy arrays
-X = X.to_numpy(dtype=np.float32)
-y = y.to_numpy(dtype=np.int32)  # corrected from np.int to np.int32 as per the error message
+X = X.astype(np.float32).values
+y = y.astype(np.int32).values
 
 # Split the dataset into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, stratify=y, random_state=42)
