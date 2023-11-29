@@ -9,7 +9,7 @@ dataset_name=dataset_name.lower()
 TRAIN_DATA_FILE = "/data/sls/scratch/pschro/p2/data/UCI_benchmarks/"+dataset_name+"/"+dataset_name+".data"
 
 # Read file
-df = pd.read_csv(TRAIN_DATA_FILE, header=None)
+df = pd.read_csv(TRAIN_DATA_FILE, delim_whitespace=True, header=None)
 
 # Preview dataset and datatypes
 print('*******************')
@@ -32,6 +32,7 @@ print('*******************')
 print('df.isnull().sum()')
 print(df.isnull().sum())
 #</PrevData>
+
 
 #<PrepData>
 print('********** Prepare the dataset for training')
@@ -63,7 +64,11 @@ X = X.to_numpy()
 y = y.to_numpy()
 
 # Split the dataset into training and testing sets
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, stratify=y, random_state=42)
+# Use stratify only when each class has at least 2 samples
+if all(y.value_counts() > 1):
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, stratify=y, random_state=42)
+else:
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
 
 # Scale the features 
 sc = StandardScaler()
