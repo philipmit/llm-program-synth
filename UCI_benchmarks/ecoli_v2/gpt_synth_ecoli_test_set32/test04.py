@@ -61,13 +61,12 @@ if X.dtypes.any() == 'object' or y.dtypes == 'object':
 
 # Check for classes with less than 2 instances and remove them
 y_counts = pd.Series(y).value_counts()
-remove_classes = y_counts[y_counts < 2].index
-mask = pd.Series(y).map(lambda x: x not in remove_classes)
-X, y = X[mask], y[mask]
 
-# Check if the dataset is empty after removing classes with less than 2 instances
-if len(X) == 0 or len(y) == 0:
-    raise ValueError("The dataset is empty after removing classes with less than 2 instances. Please check the input dataset.")
+if (y_counts < 2).any():
+    print('There are classes with less than 2 instances. These will be removed.')
+    remove_classes = y_counts[y_counts < 2].index
+    mask = pd.Series(y).map(lambda x: x not in remove_classes)
+    X, y = X[mask], y[mask]
 
 # Split the dataset into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, stratify=y, random_state=42)
