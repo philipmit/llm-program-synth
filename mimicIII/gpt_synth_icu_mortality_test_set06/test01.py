@@ -15,9 +15,9 @@ TRAIN_LABEL_FILE = '/data/sls/scratch/pschro/p2/data/benchmark_output2/in-hospit
 
 # Read file
 class ICUData(Dataset):
-    def __init__(self, data_path, label_file):
+    def __init__(self, data_path, label_file_path):
         self.data_path = data_path
-        label_data = pd.read_csv(label_file)
+        label_data = pd.read_csv(label_file_path)
         self.file_names = label_data['stay'].values
         self.labels = torch.tensor(label_data['y_true'].values, dtype=torch.float32)
         self.replacement_values={'Capillary refill rate': 0.0, 'Diastolic blood pressure': 59.0 , 'Fraction inspired oxygen': 0.21, 'Glucose': 128.0, 'Heart Rate': 86, 'Height': 170.0, 'Mean blood pressure': 77.0, 'Oxygen saturation': 98.0, 'Respiratory rate': 19, 'Systolic blood pressure': 118.0, 'Temperature': 36.6, 'Weight': 81.0, 'pH': 7.4}
@@ -50,6 +50,7 @@ print('*******************')
 print('example_patient1')
 print(example_patient1)
 #</PrevData>
+
 #<PrepData>
 print('********** Prepare the dataset for training')
 # Import necessary packages
@@ -75,6 +76,7 @@ batch_size = 64
 train_loader = DataLoader(df_train, batch_size=batch_size, shuffle=True, collate_fn=collate_fn, num_workers=4)
 val_loader = DataLoader(df_val, batch_size=batch_size, shuffle=False, collate_fn=collate_fn, num_workers=4)
 #</PrepData>
+
 #<Train>
 print('********** Define the model and train it using the training data')
 # Import necessary packages
