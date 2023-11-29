@@ -18,20 +18,20 @@ class ICUData(Dataset):
     def __init__(self, data_path, label_file):
         self.data_path = data_path
         label_data = pd.read_csv(label_file)
-        self.file_names = label_data['stay']
+        self.file_names = label_data['stay'].values
         self.labels = torch.tensor(label_data['y_true'].values, dtype=torch.float32)
         self.replacement_values={'Capillary refill rate': 0.0, 'Diastolic blood pressure': 59.0 , 'Fraction inspired oxygen': 0.21, 'Glucose': 128.0, 'Heart Rate': 86, 'Height': 170.0, 'Mean blood pressure': 77.0, 'Oxygen saturation': 98.0, 'Respiratory rate': 19, 'Systolic blood pressure': 118.0, 'Temperature': 36.6, 'Weight': 81.0, 'pH': 7.4}
     def __len__(self):
         return len(self.file_names)
     def __getitem__(self, idx):
-        file_path = os.path.join(self.data_path, self.file_names.iloc[idx])
+        file_path = os.path.join(self.data_path, self.file_names[idx])
         data = pd.read_csv(file_path)
         data = data.drop(['Hours','Glascow coma scale eye opening','Glascow coma scale motor response','Glascow coma scale total','Glascow coma scale verbal response'], axis=1)  
         data = data.fillna(method='ffill').fillna(method='bfill')
         data = data.fillna(self.replacement_values)
         data = data.select_dtypes(include=[np.number]) 
         label = self.labels[idx]
-        return torch.tensor(data.values, dtype=torch.float32), label
+        return torch.tensor(data.values, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
 df = ICUData(TRAIN_DATA_PATH, TRAIN_LABEL_FILE)
 
 # Preview dataset and datatypes
@@ -68,8 +68,8 @@ def collate_fn(batch):
 
 # Split the dataset into training and testing sets
 file_names_train, file_names_val, labels_train, labels_val = train_test_split(df.file_names, df.labels, test_size=0.2, random_state=42, stratify=df.labels)
-df_train = ICUData(TRAIN_DATA_PATH, pd.DataFrame({'stay':file_names_train.values, 'y_true':labels_train.numpy()}, columns=['stay', 'y_true']))
-df_val = ICUData(TRAIN_DATA_PATH, pd.DataFrame({'stay':file_names_val.values, 'y_true':labels_val.numpy()}, columns=['stay', 'y_true']))
+df_train = ICUData(TRAIN_DATA_PATH, pd.DataFrame({'stay':file_names_train, 'y_true':labels_train.numpy()}, columns=['stay', 'y_true']))
+df_val = ICUData(TRAIN_DATA_PATH, pd.DataFrame({'stay':file_names_val, 'y_true':labels_val.numpy()}, columns=['stay', 'y_true']))
 
 # Create dataloaders
 batch_size = 64
