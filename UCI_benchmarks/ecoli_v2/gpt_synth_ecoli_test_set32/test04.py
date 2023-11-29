@@ -60,12 +60,12 @@ if X.dtypes.any() == 'object' or y.dtypes == 'object':
         y = LabelEncoder().fit_transform(y)
 
 # Check for classes with less than 2 instances and remove them
-y_counts = y.value_counts()
+y_counts = pd.Series(y).value_counts()
 
 if (y_counts < 2).any():
     print('There are classes with less than 2 instances. These will be removed.')
     remove_classes = y_counts[y_counts < 2].index.tolist()
-    mask = y.isin(remove_classes)
+    mask = np.isin(y, remove_classes)
     X, y = X[~mask], y[~mask]
 
 # Ensure we have enough samples left for train and test split
