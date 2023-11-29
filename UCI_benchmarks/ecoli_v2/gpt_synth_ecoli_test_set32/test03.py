@@ -47,10 +47,18 @@ y = df.iloc[:, -1]   # All rows, only the last column
 y = y.replace(list(np.unique(y)), list(range(len(np.unique(y)))))
 X=X.to_numpy()
 y=y.to_numpy()
+
+# Check if there are classes with less than 2 samples
+class_counts = np.bincount(y)
+for i, count in enumerate(class_counts):
+    if count < 2:
+        print(f"Warning: Class {i} has only {count} sample(s). It's recommended to have at least 2 samples per class for stratified sampling.")
+
 # Split the dataset into training and testing sets
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, stratify=y, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, stratify=y if len(class_counts[class_counts>=2]) == len(np.unique(y)) else None, random_state=42)
 X_train=X_train.tolist()
 X_test=X_test.tolist()
+
 # Scale the features 
 sc = StandardScaler()
 X_train = sc.fit_transform(X_train)
