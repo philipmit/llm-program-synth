@@ -11,6 +11,9 @@ TRAIN_DATA_FILE = "/data/sls/scratch/pschro/p2/data/UCI_benchmarks/"+dataset_nam
 # Read file
 df = pd.read_csv(TRAIN_DATA_FILE, header=None, delim_whitespace=True)
 
+# Drop the string column that can't be converted to float
+df = df.drop(columns=[0])
+
 # Preview dataset and datatypes
 print('*******************')
 print('df.shape')
