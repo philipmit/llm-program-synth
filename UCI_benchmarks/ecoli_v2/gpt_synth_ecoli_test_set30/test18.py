@@ -80,3 +80,30 @@ print('********** Train the model using the training data, X_train and y_train')
 model = LogisticRegression()
 model.fit(X_train, y_train)
 #</Train>
+#<Predict>
+print('********** Evaluate the model performance')
+# Standardize the test data
+X_test = sc.transform(X_test)
+
+# Predict the labels for test data
+y_pred = model.predict(X_test)
+
+# Import necessary packages for evaluation
+from sklearn.metrics import classification_report
+from sklearn.metrics import confusion_matrix
+
+# Print classification report
+print('Classification Report:')
+print(classification_report(y_test, y_pred))
+
+# Compute confusion matrix
+print('Confusion Matrix:')
+print(confusion_matrix(y_test, y_pred))
+
+print('********** Define a function that can be used to make new predictions given one sample of data from X_test')
+def predict_label(one_sample):
+    # Standardize the one_sample to match the data model was trained on
+    one_sample = sc.transform(one_sample.reshape(1, -1))
+    # Return the class probabilities as a 1D array
+    return model.predict_proba(one_sample)[0]  
+#</Predict>
