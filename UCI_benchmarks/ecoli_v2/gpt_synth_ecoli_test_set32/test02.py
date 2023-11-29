@@ -44,6 +44,12 @@ from sklearn.model_selection import train_test_split
 # Define features, X, and labels, y
 X = df.iloc[:, :-1]  # All rows, all columns except the last one
 y = df.iloc[:, -1]   # All rows, only the last column
+
+# Check if any columns in X are non-numeric and convert them to numeric
+X = X.apply(pd.to_numeric, errors='coerce')
+# Fill any NaN values
+X.fillna(0, inplace=True)
+
 y = y.replace(list(np.unique(y)), list(range(len(np.unique(y)))))
 X=X.to_numpy()
 y=y.to_numpy()
