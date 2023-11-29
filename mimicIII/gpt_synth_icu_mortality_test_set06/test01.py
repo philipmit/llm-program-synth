@@ -77,3 +77,66 @@ batch_size = 64
 train_loader = DataLoader(df_train, batch_size=batch_size, shuffle=True, collate_fn=collate_fn, num_workers=4)
 val_loader = DataLoader(df_val, batch_size=batch_size, shuffle=False, collate_fn=collate_fn, num_workers=4)
 #</PrepData>
+#<Train>
+print('********** Define the model and train it using the training data')
+# Import necessary packages
+import torch.nn as nn
+import torch.optim as optim
+
+# Check for availability of GPU and move model to GPU if available
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+if torch.cuda.device_count() > 1:
+  print("Let's use", torch.cuda.device_count(), "GPUs!")
+
+# Define the model
+class LSTM(nn.Module):
+    def __init__(self, input_dim, hidden_dim, batch_size, output_dim=1, num_layers=2):
+        super(LSTM, self).__init__()
+        self.input_dim = input_dim
+        self.hidden_dim = hidden_dim
+        self.batch_size = batch_size
+        self.num_layers = num_layers
+        self.lstm = nn.LSTM(self.input_dim, self.hidden_dim, self.num_layers, batch_first=True)
+        self.fc = nn.Linear(self.hidden_dim, output_dim)
+        self.sigmoid = nn.Sigmoid()
+    def forward(self, input):
+        lstm_out, _ = self.lstm(input)
+        y_pred = self.fc(lstm_out[:, -1, :]) 
+        y_pred = self.sigmoid(y_pred)
+        return y_pred
+
+# Initialize the model, optimizer and loss function
+model = LSTM(input_dim=13, hidden_dim=64, batch_size=batch_size, output_dim=1, num_layers=2)
+model = nn.DataParallel(model)
+model.to(device)
+criterion = nn.BCELoss()
+optimizer = optim.Adam(model.parameters(), lr=0.001)
+
+# Train the model
+print('********** Start training')
+num_epochs = 10
+for epoch in range(num_epochs):
+    model.train()
+    running_loss = 0.0
+    for i, (data, labels) in enumerate(train_loader):
+        data = data.to(device)
+        labels = labels.to(device)
+        optimizer.zero_grad()
+        outputs = model(data)
+        loss = criterion(outputs, labels.unsqueeze(1))
+        loss.backward()
+        optimizer.step()
+        running_loss += loss.item()
+    print(f'Epoch {epoch+1}/{num_epochs}, Loss: {running_loss/len(train_loader)}')
+print('********** Finished training')
+#</Train>
+
+#<Predict>
+print('********** Define a function that can be used to make new predictions given one patient data')
+def predict_label(one_patient):
+    model.eval()
+    with torch.no_grad():
+        one_patient = one_patient.unsqueeze(0).to(device)  # Add an extra dimension for batch
+        output = model(one_patient)
+    return output.item()  # Return the predicted probability
+#</Predict>
