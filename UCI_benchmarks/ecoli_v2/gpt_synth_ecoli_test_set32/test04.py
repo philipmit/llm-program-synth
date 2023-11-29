@@ -70,7 +70,6 @@ else:
 # Scale the features 
 sc = StandardScaler()
 X_train = sc.fit_transform(X_train)
-y_train = y_train.values
 print('*******************')
 print('X_train.shape')
 print(X_train.shape)
