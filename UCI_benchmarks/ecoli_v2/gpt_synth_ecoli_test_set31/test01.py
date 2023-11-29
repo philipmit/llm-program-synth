@@ -66,38 +66,40 @@ else:
     X_train = X_train.to_numpy()
     y_train = y_train.to_numpy()
 
-    # Scale the features 
-    sc = StandardScaler()
-
     # Ensure X_train is not empty
-    assert X_train.size != 0, "X_train is empty. Please ensure your dataset contains features."
-
-    X_train = sc.fit_transform(X_train)
-    print('*******************')
-    print('X_train.shape')
-    print(X_train.shape)
-    print('*******************')
-    print('y_train.shape')
-    print(y_train.shape)
-    print('*******************')
-    print('X_train[0:5]')
-    print(X_train[0:5])
-    print('*******************')
-    print('y_train[0:5]')
-    print(y_train[0:5])
+    if X_train.size == 0:
+        print("X_train is empty. Please ensure your dataset contains features.")
+    else:
+        # Scale the features 
+        sc = StandardScaler()
+        X_train = sc.fit_transform(X_train)
+        print('*******************')
+        print('X_train.shape')
+        print(X_train.shape)
+        print('*******************')
+        print('y_train.shape')
+        print(y_train.shape)
+        print('*******************')
+        print('X_train[0:5]')
+        print(X_train[0:5])
+        print('*******************')
+        print('y_train[0:5]')
+        print(y_train[0:5])
 #</PrepData>
 
 #<Train>
-print('********** Train the model using the training data, X_train and y_train')
-model = LogisticRegression()
-model.fit(X_train, y_train)
+if X_train.size != 0:
+    print('********** Train the model using the training data, X_train and y_train')
+    model = LogisticRegression()
+    model.fit(X_train, y_train)
 #</Train>
 
 #<Predict>
-print('********** Define a function that can be used to make new predictions given one sample of data from X_test')
-def predict_label(one_sample):
-    # Standardize the one_sample to match the data model was trained on
-    one_sample = sc.transform(one_sample.reshape(1, -1))
-    # Return the class probabilities as a 1D array
-    return model.predict_proba(one_sample)[0]  
+if X_train.size != 0:
+    print('********** Define a function that can be used to make new predictions given one sample of data from X_test')
+    def predict_label(one_sample):
+        # Standardize the one_sample to match the data model was trained on
+        one_sample = sc.transform(one_sample.reshape(1, -1))
+        # Return the class probabilities as a 1D array
+        return model.predict_proba(one_sample)[0]  
 #</Predict>
