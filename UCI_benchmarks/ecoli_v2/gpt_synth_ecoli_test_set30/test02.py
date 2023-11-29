@@ -45,7 +45,7 @@ from sklearn.model_selection import train_test_split
 # Define features, X, and labels, y
 X = df.iloc[:, 1:-1]  # All rows, all columns except the first and last one
 y = df.iloc[:, -1]   # All rows, only the last column
-y = y.replace(list(np.unique(y)), list(range(len(np.unique(y)))))  # Convert categorical labels to numerical
+y = pd.Series(y).replace(list(np.unique(y)), list(range(len(np.unique(y)))))  # Convert categorical labels to numerical
 X = X.apply(pd.to_numeric, errors='coerce')  # Convert feature values to numerical
 
 # Check for any null values after conversion
@@ -65,7 +65,7 @@ y = y.to_numpy()
 
 # Split the dataset into training and testing sets
 # Use stratify only when each class has at least 2 samples
-if all(y.value_counts() > 1):
+if all(np.bincount(y) > 1):
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, stratify=y, random_state=42)
 else:
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
