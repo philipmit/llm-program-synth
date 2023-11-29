@@ -9,7 +9,7 @@ dataset_name=dataset_name.lower()
 TRAIN_DATA_FILE = "/data/sls/scratch/pschro/p2/data/UCI_benchmarks/"+dataset_name+"/"+dataset_name+".data"
 
 # Read file
-df = pd.read_csv(TRAIN_DATA_FILE, header=None)
+df = pd.read_csv(TRAIN_DATA_FILE, header=None, delimiter="\s+")
 
 # Preview dataset and datatypes
 print('*******************')
@@ -40,11 +40,8 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 
-# Splitting each row into separate columns
-df = df[0].str.split(expand=True)
-# Converting object type columns to numeric type
-for col in df.columns:
-    df[col] = pd.to_numeric(df[col], errors='ignore')
+# Drop the non-numeric columns
+df = df.drop(0, axis=1)
 
 # Define features, X, and labels, y
 X = df.iloc[:, :-1]  # All rows, all columns except the last one
