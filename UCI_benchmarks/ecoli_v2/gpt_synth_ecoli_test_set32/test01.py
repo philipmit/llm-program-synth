@@ -38,18 +38,19 @@ print('********** Prepare the dataset for training')
 # Import necessary packages
 import numpy as np
 from sklearn.linear_model import LogisticRegression
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import LabelEncoder, StandardScaler
 from sklearn.model_selection import train_test_split
 # Define features, X, and labels, y
-X = df.iloc[:, :-1]  # All rows, all columns except the last one
-y = df.iloc[:, -1]   # All rows, only the last column
-y = y.replace(list(np.unique(y)), list(range(len(np.unique(y)))))
-X=X.to_numpy()
-y=y.to_numpy()
+X = df.iloc[:, :-1].values  # All rows, all columns except the last one
+y = df.iloc[:, -1].values   # All rows, only the last column
+# Label Encode y
+le = LabelEncoder()
+y = le.fit_transform(y)
+# Check if the minimum number of groups for any class is less than 2
+if np.min(np.bincount(y)) < 2:
+    raise ValueError("The minimum number of groups for any class cannot be less than 2.")
 # Split the dataset into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, stratify=y, random_state=42)
-X_train=X_train.tolist()
-X_test=X_test.tolist()
 # Scale the features 
 sc = StandardScaler()
 X_train = sc.fit_transform(X_train)
