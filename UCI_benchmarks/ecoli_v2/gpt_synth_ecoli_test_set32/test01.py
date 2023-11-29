@@ -48,7 +48,7 @@ le = LabelEncoder()
 y = le.fit_transform(y)
 
 # Check if X is not empty
-if X.shape[1] != 0:
+if X.size != 0:
     # Split the dataset into training and testing sets
     # If a class has only one sample, use leave one out cross validation
     if np.min(np.bincount(y)) > 1:
@@ -81,7 +81,7 @@ else:
 
 #<Train>
 print('********** Train the model using the training data, X_train and y_train')
-if X_train.shape[1] != 0:
+if X_train.size != 0:
     model = LogisticRegression()
     model.fit(X_train, y_train)
 else:
@@ -91,7 +91,7 @@ else:
 #<Predict>
 print('********** Define a function that can be used to make new predictions given one sample of data from X_test')
 def predict_label(one_sample):
-    if len(one_sample) != 0: # changed condition from X_train.shape[1] to len(one_sample)
+    if np.array(one_sample).size != 0: # changed condition from X_train.shape[1] to np.array(one_sample).size
         # Convert the list to a numpy array before reshaping
         one_sample = np.array(one_sample).reshape(1, -1)
         # Standardize the one_sample to match the data model was trained on
