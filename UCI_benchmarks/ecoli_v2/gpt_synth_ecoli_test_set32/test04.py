@@ -59,28 +59,24 @@ if X.dtypes.any() == 'object' or y.dtypes == 'object':
     if y.dtypes == 'object':
         y = LabelEncoder().fit_transform(y)
 
-# Check if X is empty after encoding
-if X.empty:
-    raise ValueError("No features left in the dataset after encoding. Please check the dataset.")
-else:
-    # Split the dataset into training and testing sets
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, stratify=y, random_state=42)
+# Split the dataset into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, stratify=y, random_state=42)
 
-    # Scale the features 
-    sc = StandardScaler()
-    X_train = sc.fit_transform(X_train)
-    print('*******************')
-    print('X_train.shape')
-    print(X_train.shape)
-    print('*******************')
-    print('y_train.shape')
-    print(y_train.shape)
-    print('*******************')
-    print('X_train[0:5]')
-    print(X_train[0:5])
-    print('*******************')
-    print('y_train[0:5]')
-    print(y_train[0:5])
+# Scale the features 
+sc = StandardScaler()
+X_train = sc.fit_transform(X_train)
+print('*******************')
+print('X_train.shape')
+print(X_train.shape)
+print('*******************')
+print('y_train.shape')
+print(y_train.shape)
+print('*******************')
+print('X_train[0:5]')
+print(X_train[0:5])
+print('*******************')
+print('y_train[0:5]')
+print(y_train[0:5])
 #</PrepData>
 
 #<Train>
