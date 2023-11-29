@@ -72,8 +72,6 @@ X=X.to_numpy()
 y=y.to_numpy()
 # Split the dataset into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, stratify=y, random_state=42)
-X_train=X_train.tolist()
-X_test=X_test.tolist()
 # Scale the features 
 sc = StandardScaler()
 X_train = sc.fit_transform(X_train)
@@ -114,6 +112,8 @@ print(classification_report(y_test, y_pred))
 #<Predict>
 print('********** Define a function that can be used to make new predictions given one sample of data from X_test')
 def predict_label(one_sample):
+    # Convert the sample to numpy array
+    one_sample = np.array(one_sample)
     # Standardize the one_sample to match the data model was trained on
     one_sample = sc.transform(one_sample.reshape(1, -1))
     # Return the class probabilities as a 1D array
