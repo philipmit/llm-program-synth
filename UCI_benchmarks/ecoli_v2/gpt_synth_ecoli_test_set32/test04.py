@@ -74,10 +74,9 @@ if len(X) > 0 and len(y) > 0:
     # Split the dataset into training and testing sets
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, stratify=y, random_state=42)
 
-    # Scale the features 
+    # Create a new scaler and scale the features 
     sc = StandardScaler()
-    sc.fit(X)  # Fit the scaler to the entire data
-    X_train = sc.transform(X_train) 
+    X_train = sc.fit_transform(X_train) 
     X_test = sc.transform(X_test)  # Transform the testing data with the same scaler
     print('*******************')
     print('X_train.shape')
@@ -112,7 +111,8 @@ if model:
     def predict_label(one_sample):
         # Standardize the one_sample to match the data model was trained on
         one_sample = np.array(one_sample).reshape(1, -1)
-        if sc is not None:
+        # Make sure the scaler is fitted before transforming
+        if sc is not None and hasattr(sc, 'scale_'):
             one_sample = sc.transform(one_sample)
         # Return the class probabilities as a 1D array
         return model.predict_proba(one_sample)[0]  
