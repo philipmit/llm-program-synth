@@ -73,16 +73,16 @@ print('y_train.shape')
 print(y_train.shape)
 print('*******************')
 print('X_train[0:5]')
-print(X_train[0:5])
+print(X_train[0:5)
 print('*******************')
 print('y_train[0:5]')
-print(y_train[0:5])
+print(y_train[0:5)
 #</PrepData>
 
 #<Train>
 print('********** Train the model using the training data, X_train and y_train')
-# Increase the max_iter to 1000 and decrease the regularization strength C to 0.5
-model = LogisticRegression(max_iter=1000, C=0.5)
+# Increase the max_iter to 5000, decrease the regularization strength C to 0.1 and use a 'newton-cg' solver for better accuracy
+model = LogisticRegression(max_iter=5000, C=0.1, solver='newton-cg')
 model.fit(X_train, y_train)
 #</Train>
 #<Predict>
