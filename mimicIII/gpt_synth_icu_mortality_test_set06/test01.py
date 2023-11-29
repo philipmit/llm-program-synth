@@ -18,13 +18,13 @@ class ICUData(Dataset):
     def __init__(self, data_path, label_file):
         self.data_path = data_path
         label_data = pd.read_csv(label_file)
-        self.file_names = label_data['stay'].values
+        self.file_names = label_data['stay']
         self.labels = torch.tensor(label_data['y_true'].values, dtype=torch.float32)
         self.replacement_values={'Capillary refill rate': 0.0, 'Diastolic blood pressure': 59.0 , 'Fraction inspired oxygen': 0.21, 'Glucose': 128.0, 'Heart Rate': 86, 'Height': 170.0, 'Mean blood pressure': 77.0, 'Oxygen saturation': 98.0, 'Respiratory rate': 19, 'Systolic blood pressure': 118.0, 'Temperature': 36.6, 'Weight': 81.0, 'pH': 7.4}
     def __len__(self):
         return len(self.file_names)
     def __getitem__(self, idx):
-        file_path = os.path.join(self.data_path, self.file_names[idx])
+        file_path = os.path.join(self.data_path, self.file_names.iloc[idx]) # changed from self.file_names[idx] to self.file_names.iloc[idx]
         data = pd.read_csv(file_path)
         data = data.drop(['Hours','Glascow coma scale eye opening','Glascow coma scale motor response','Glascow coma scale total','Glascow coma scale verbal response'], axis=1)  
         data = data.fillna(method='ffill').fillna(method='bfill')
