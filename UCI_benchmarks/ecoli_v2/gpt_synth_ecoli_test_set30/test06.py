@@ -87,5 +87,5 @@ def predict_label(one_sample):
     # Standardize the one_sample to match the data model was trained on
     one_sample = sc.transform(one_sample.reshape(1, -1))
     # Return the class probabilities as a 1D array
-    return model.predict_proba(one_sample)[0]  
+    return model.predict_proba(one_sample)[0]
 #</Predict>
