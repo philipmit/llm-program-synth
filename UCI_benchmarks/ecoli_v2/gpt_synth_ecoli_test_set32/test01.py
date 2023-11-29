@@ -81,7 +81,7 @@ else:
 
 #<Train>
 print('********** Train the model using the training data, X_train and y_train')
-if X_train.size != 0:
+if len(X_train) > 0:
     model = LogisticRegression()
     model.fit(X_train, y_train)
 else:
@@ -91,7 +91,7 @@ else:
 #<Predict>
 print('********** Define a function that can be used to make new predictions given one sample of data from X_test')
 def predict_label(one_sample):
-    # Convert the list to a numpy array before reshaping
+    # Convert the sample to numpy array before reshaping
     one_sample = np.array(one_sample).reshape(1, -1)
     # Standardize the one_sample to match the data model was trained on
     one_sample = sc.transform(one_sample)
