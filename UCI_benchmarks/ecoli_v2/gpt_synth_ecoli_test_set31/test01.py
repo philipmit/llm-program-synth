@@ -47,8 +47,14 @@ y = df.iloc[:, -1]   # All rows, only the last column
 y = y.replace(list(np.unique(y)), list(range(len(np.unique(y)))))
 X=X.to_numpy()
 y=y.to_numpy()
+# Checking the minimum number of samples in classes for stratify
+min_samples_in_class = y.value_counts().min()
+if min_samples_in_class < 2:
+    stratify = None
+else:
+    stratify = y
 # Split the dataset into training and testing sets
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, stratify=y, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, stratify=stratify, random_state=42)
 X_train=X_train.tolist()
 X_test=X_test.tolist()
 # Scale the features 
