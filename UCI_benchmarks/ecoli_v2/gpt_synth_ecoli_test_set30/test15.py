@@ -42,7 +42,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 
 # Define features, X, and labels, y
-X = df.iloc[:, :-1]  # All rows, all columns except the last one
+X = df.iloc[:, 1:-1]  # All rows, all columns except the first and the last one
 y = df.iloc[:, -1]   # All rows, only the last column
 y = y.replace(list(np.unique(y)), list(range(len(np.unique(y)))))
 X=X.to_numpy()
