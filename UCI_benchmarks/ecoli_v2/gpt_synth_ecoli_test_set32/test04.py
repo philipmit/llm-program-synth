@@ -65,7 +65,7 @@ y_counts = pd.Series(y).value_counts()
 if (y_counts < 2).any():
     print('There are classes with less than 2 instances. These will be removed.')
     remove_classes = y_counts[y_counts < 2].index
-    mask = pd.Series(y).map(lambda x: x not in remove_classes)
+    mask = y.values not in remove_classes
     X, y = X[mask], y[mask]
 
 # Ensure we have enough samples left for train and test split
