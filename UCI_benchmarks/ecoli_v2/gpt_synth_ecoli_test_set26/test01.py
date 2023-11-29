@@ -73,10 +73,10 @@ print('y_train.shape')
 print(y_train.shape)
 print('*******************')
 print('X_train[0:5]')
-print(X_train[0:5)
+print(X_train[0:5])  # Corrected the error here (missing closing parenthesis)
 print('*******************')
 print('y_train[0:5]')
-print(y_train[0:5)
+print(y_train[0:5])
 #</PrepData>
 
 #<Train>
