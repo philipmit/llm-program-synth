@@ -45,7 +45,7 @@ from sklearn.model_selection import train_test_split
 X = df.iloc[:, :-1]  # All rows, all columns except the last one
 y = df.iloc[:, -1]   # All rows, only the last column
 # Convert categorical attributes to numeric
-if X.dtypes.include('object'):
+if X.dtypes.any() == 'object':
     X = pd.get_dummies(X)
 # Convert categorical labels to numeric
 if y.dtype == 'object':
