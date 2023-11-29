@@ -67,15 +67,15 @@ print('y_train.shape')
 print(y_train.shape)
 print('*******************')
 print('X_train[0:5]')
-print(X_train[0:5])
+print(X_train[0:5)
 print('*******************')
 print('y_train[0:5]')
 print(y_train[0:5])
 #</PrepData>
 #<Train>
 print('********** Train the model using the training data, X_train and y_train')
-# Increase the maximum number of iterations and use the liblinear solver
-model = LogisticRegression(max_iter=1000, solver='liblinear', C=0.5)
+# Increase the maximum number of iterations, use the liblinear solver, and reduce regularization with a higher C value
+model = LogisticRegression(max_iter=2000, solver='liblinear', C=1.0)
 model.fit(X_train, y_train)
 #</Train>
 #<Predict>
