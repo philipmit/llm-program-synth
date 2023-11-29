@@ -62,7 +62,8 @@ if X.size != 0:
 
     # Scale the features 
     sc = StandardScaler()
-    X_train = sc.fit_transform(X_train)
+    sc.fit(X_train)
+    X_train = sc.transform(X_train)
     print('*******************')
     print('X_train.shape')
     print(X_train.shape)
@@ -93,8 +94,11 @@ print('********** Define a function that can be used to make new predictions giv
 def predict_label(one_sample):
     # Convert the sample to numpy array before reshaping
     one_sample = np.array(one_sample).reshape(1, -1)
-    # Standardize the one_sample to match the data model was trained on
-    one_sample = sc.transform(one_sample)
+    # Check if sc is fitted before transforming
+    if hasattr(sc, 'scale_'):
+        one_sample = sc.transform(one_sample)
+    else:
+        print('The StandardScaler instance is not fitted yet. Call "fit" with appropriate arguments before using this estimator.')
     # Return the class probabilities as a 1D array
     return model.predict_proba(one_sample)[0]  
 #</Predict>
