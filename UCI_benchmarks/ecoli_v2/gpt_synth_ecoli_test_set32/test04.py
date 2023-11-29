@@ -59,8 +59,14 @@ if X.dtypes.any() == 'object' or y.dtypes == 'object':
     if y.dtypes == 'object':
         y = LabelEncoder().fit_transform(y)
 
+# Check for classes with less than 2 instances and remove them
+y_counts = y.value_counts()
+remove_classes = y_counts[y_counts < 2].index
+mask = y.map(lambda x: x not in remove_classes)
+X, y = X[mask], y[mask]
+
 # Split the dataset into training and testing sets
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, stratify=y, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, stratify=y, random_state=42)
 
 # Scale the features 
 sc = StandardScaler()
