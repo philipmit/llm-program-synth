@@ -74,7 +74,7 @@ else:
 
 # Scale the features 
 sc = StandardScaler()
-X_train = sc.fit_transform(X_train.astype(float))
+X_train = sc.fit_transform(X_train.values.astype(float))
 print('*******************')
 print('X_train.shape')
 print(X_train.shape)
