@@ -139,5 +139,5 @@ def predict_label(one_patient):
     with torch.no_grad():
         one_patient = one_patient.unsqueeze(0).to(device)  # Add an extra dimension for batch
         output = model(one_patient)
-    return output.item()  # Return the predicted probability
+    return torch.sigmoid(output).item()  # Return the predicted probability
 #</Predict>
