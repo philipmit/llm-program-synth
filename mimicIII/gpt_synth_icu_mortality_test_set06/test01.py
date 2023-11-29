@@ -105,7 +105,8 @@ class LSTM(nn.Module):
 
 # Initialize the model, optimizer and loss function
 model = LSTM(input_dim=13, hidden_dim=64, batch_size=batch_size, output_dim=1, num_layers=2)
-model = nn.DataParallel(model)
+if torch.cuda.device_count() > 1:
+  model = nn.DataParallel(model)
 model.to(device)
 criterion = nn.BCELoss()
 optimizer = optim.Adam(model.parameters(), lr=0.001)
