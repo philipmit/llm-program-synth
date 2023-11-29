@@ -54,7 +54,7 @@ if X.dtypes.any() == 'object' or y.dtypes == 'object':
     if X.dtypes.any() == 'object':
         for col in X.columns[X.dtypes == 'object']:
             X[col] = LabelEncoder().fit_transform(X[col])
-
+            
     # Convert categorical labels in y to numeric
     if y.dtypes == 'object':
         y = LabelEncoder().fit_transform(y)
