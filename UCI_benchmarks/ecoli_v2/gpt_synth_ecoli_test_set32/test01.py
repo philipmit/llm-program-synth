@@ -54,7 +54,9 @@ if np.min(np.bincount(y)) > 1:
 else:
     from sklearn.model_selection import LeaveOneOut
     loo = LeaveOneOut()
-    X_train, X_test, y_train, y_test = loo.split(X)
+    for train_index, test_index in loo.split(X):
+        X_train, X_test = X[train_index], X[test_index]
+        y_train, y_test = y[train_index], y[test_index]
 
 # Scale the features 
 sc = StandardScaler()
