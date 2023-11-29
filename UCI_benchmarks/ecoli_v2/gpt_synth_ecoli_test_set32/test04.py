@@ -52,10 +52,12 @@ least_populated_class_members = np.min(class_counts)
 # If any class has only one member, modify the test size to avoid error in train-test split
 if least_populated_class_members < 2:
     test_size = 0.1
+    stratify = None
 else:
     test_size = 0.5
+    stratify = y
 # Split the dataset into training and testing sets
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, stratify=y, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, stratify=stratify, random_state=42)
 X_train=X_train.tolist()
 X_test=X_test.tolist()
 # Scale the features 
