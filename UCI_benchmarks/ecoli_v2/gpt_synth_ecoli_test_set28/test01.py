@@ -53,7 +53,7 @@ X=X.to_numpy(dtype=float)
 y=y.to_numpy(dtype=int)
 
 # Split the dataset into training and testing sets
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, stratify=y, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, stratify=y, random_state=42)
 
 # Scale the features 
 sc = StandardScaler()
@@ -66,7 +66,7 @@ print('y_train.shape')
 print(y_train.shape)
 print('*******************')
 print('X_train[0:5]')
-print(X_train[0:5])
+print(X_train[0:5)
 print('*******************')
 print('y_train[0:5]')
 print(y_train[0:5])
@@ -74,7 +74,7 @@ print(y_train[0:5])
 
 #<Train>
 print('********** Train the model using the training data, X_train and y_train')
-model = LogisticRegression()
+model = LogisticRegression(solver='liblinear', C=0.5, multi_class='ovr', max_iter=1000)
 model.fit(X_train, y_train)
 #</Train>
 #<Predict>
