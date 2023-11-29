@@ -32,6 +32,7 @@ print('*******************')
 print('df.isnull().sum()')
 print(df.isnull().sum())
 #</PrevData>
+
 #<PrepData>
 print('********** Prepare the dataset for training')
 # Import necessary packages
@@ -76,9 +77,12 @@ print('********** Train the model using the training data, X_train and y_train')
 model = LogisticRegression()
 model.fit(X_train, y_train)
 #</Train>
+
 #<Predict>
 print('********** Define a function that can be used to make new predictions given one sample of data from X_test')
 def predict_label(one_sample):
+    # Convert the list to a numpy array
+    one_sample = np.array(one_sample)
     # Standardize the one_sample to match the data model was trained on
     one_sample = sc.transform(one_sample.reshape(1, -1))
     # Return the class probabilities as a 1D array
