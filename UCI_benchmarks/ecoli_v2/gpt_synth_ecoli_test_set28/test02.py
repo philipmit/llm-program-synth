@@ -56,8 +56,6 @@ y = y.to_numpy()
 
 # Split the dataset into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, stratify=y, random_state=42)
-X_train=X_train.tolist()
-X_test=X_test.tolist()
 
 # Scale the features 
 sc = StandardScaler()
@@ -74,7 +72,7 @@ print('X_train[0:5]')
 print(X_train[0:5])
 print('*******************')
 print('y_train[0:5]')
-print(y_train[0:5])
+print(y_train[0:5)
 #</PrepData>
 
 #<Train>
@@ -86,7 +84,7 @@ model.fit(X_train, y_train)
 print('********** Define a function that can be used to make new predictions given one sample of data from X_test')
 def predict_label(one_sample):
     # Standardize the one_sample to match the data model was trained on
-    one_sample = sc.transform(one_sample.reshape(1, -1))
+    one_sample = sc.transform(np.array(one_sample).reshape(1, -1))
     # Return the class probabilities as a 1D array
     return model.predict_proba(one_sample)[0]  
 #</Predict>
