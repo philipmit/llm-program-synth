@@ -24,7 +24,7 @@ class ICUData(Dataset):
     def __len__(self):
         return len(self.file_names)
     def __getitem__(self, idx):
-        file_path = os.path.join(self.data_path, self.file_names.iloc[idx]) # changed from self.file_names[idx] to self.file_names.iloc[idx]
+        file_path = os.path.join(self.data_path, self.file_names.iloc[idx])
         data = pd.read_csv(file_path)
         data = data.drop(['Hours','Glascow coma scale eye opening','Glascow coma scale motor response','Glascow coma scale total','Glascow coma scale verbal response'], axis=1)  
         data = data.fillna(method='ffill').fillna(method='bfill')
