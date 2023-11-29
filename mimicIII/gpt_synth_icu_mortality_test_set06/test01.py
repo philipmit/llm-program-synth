@@ -124,7 +124,7 @@ for epoch in range(num_epochs):
         labels = labels.to(device)
         optimizer.zero_grad()
         outputs = model(data)
-        loss = criterion(outputs, labels.unsqueeze(1))
+        loss = criterion(outputs.squeeze(), labels)
         loss.backward()
         optimizer.step()
         running_loss += loss.item()
