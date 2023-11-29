@@ -44,30 +44,29 @@ from sklearn.model_selection import train_test_split
 # Define features, X, and labels, y
 X = df.iloc[:, :-1]  # All rows, all columns except the last one
 y = df.iloc[:, -1]   # All rows, only the last column
-# Convert categorical attributes to numeric
-if X.dtypes.any() == 'object':
-    X = pd.get_dummies(X)
-# Convert categorical labels to numeric
-if y.dtype == 'object':
-    y = y.replace(list(np.unique(y)), list(range(len(np.unique(y)))))
+
+# Check if dataset contains non-numeric data
+if X.dtypes.any() == 'object' or y.dtypes == 'object':
+    print('Dataset contains non-numeric data. Converting all non-numeric data to numeric...')
+    
+    # Convert categorical attributes in X to numeric
+    if X.dtypes.any() == 'object':
+        for col in X.columns[X.dtypes == 'object']:
+            X[col] = pd.Categorical(X[col]).codes
+
+    # Convert categorical labels in y to numeric
+    if y.dtypes == 'object':
+        y = pd.Categorical(y).codes
+
 X=X.to_numpy()
 y=y.to_numpy()
-# Check if any class has only one member
-class_counts = np.bincount(y)
-least_populated_class_members = np.min(class_counts)
-# If any class has only one member, modify the test size to avoid error in train-test split
-if least_populated_class_members < 2:
-    test_size = 0.1
-    stratify = None
-else:
-    test_size = 0.5
-    stratify = y
+
 # Split the dataset into training and testing sets
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, stratify=stratify, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, stratify=y, random_state=42)
+
 # Scale the features 
 sc = StandardScaler()
 X_train = sc.fit_transform(X_train)
-X_test = sc.transform(X_test)
 print('*******************')
 print('X_train.shape')
 print(X_train.shape)
