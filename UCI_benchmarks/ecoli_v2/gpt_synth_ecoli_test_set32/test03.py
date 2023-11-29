@@ -9,7 +9,10 @@ dataset_name=dataset_name.lower()
 TRAIN_DATA_FILE = "/data/sls/scratch/pschro/p2/data/UCI_benchmarks/"+dataset_name+"/"+dataset_name+".data"
 
 # Read file
-df = pd.read_csv(TRAIN_DATA_FILE, header=None)
+df = pd.read_csv(TRAIN_DATA_FILE, header=None, delim_whitespace=True)
+
+# Drop columns with no variance
+df = df.loc[:, df.apply(pd.Series.nunique) != 1]
 
 # Preview dataset and datatypes
 print('*******************')
