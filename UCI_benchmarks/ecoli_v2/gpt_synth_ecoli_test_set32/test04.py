@@ -76,7 +76,7 @@ if len(X) > 0 and len(y) > 0:
 
     # Scale the features 
     sc = StandardScaler()
-    sc.fit(np.vstack((X_train, X_test)))  # Fit the scaler to the whole data (training + testing)
+    sc.fit(X)  # Fit the scaler to the whole data (training + testing)
     X_train = sc.transform(X_train)
     X_test = sc.transform(X_test)  # Transform the testing data with the same scaler
     print('*******************')
