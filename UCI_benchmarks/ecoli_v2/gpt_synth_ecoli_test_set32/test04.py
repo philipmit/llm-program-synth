@@ -58,8 +58,14 @@ if X.dtypes.any() == 'object' or y.dtypes == 'object':
     if y.dtypes == 'object':
         y = pd.Categorical(y).codes
 
-# Split the dataset into training and testing sets
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, stratify=y, random_state=42)
+# Verify if the least populated class in y has at least 2 members
+if y.value_counts().min() >= 2:
+    # Split the dataset into training and testing sets
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, stratify=y, random_state=42)
+else:
+    # Split the dataset without stratifying if the least populated class in y has less than 2 members
+    print("The least populated class in y has less than 2 members. The dataset will be split without stratification.")
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
 
 # Scale the features 
 sc = StandardScaler()
