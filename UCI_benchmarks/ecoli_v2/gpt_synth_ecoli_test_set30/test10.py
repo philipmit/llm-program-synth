@@ -9,7 +9,7 @@ dataset_name=dataset_name.lower()
 TRAIN_DATA_FILE = "/data/sls/scratch/pschro/p2/data/UCI_benchmarks/"+dataset_name+"/"+dataset_name+".data"
 
 # Read file
-df = pd.read_csv(TRAIN_DATA_FILE, header=None)
+df = pd.read_csv(TRAIN_DATA_FILE, delim_whitespace=True, header=None)
 
 # Preview dataset and datatypes
 print('*******************')
@@ -32,6 +32,8 @@ print('*******************')
 print('df.isnull().sum()')
 print(df.isnull().sum())
 #</PrevData>
+
+
 #<PrepData>
 print('********** Prepare the dataset for training')
 # Import necessary packages
@@ -40,18 +42,12 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 
-# The data is in one column, split it into multiple columns
-df = df[0].str.split(expand=True)
-
 # Define features, X, and labels, y
-X = df.iloc[:, :-1]  # All rows, all columns except the last one
+X = df.iloc[:, 1:-1]  # All rows, all columns except the last one
 y = df.iloc[:, -1]   # All rows, only the last column
 
 # Convert categorical labels to numbers
 y = y.replace(list(np.unique(y)), list(range(len(np.unique(y)))))
-
-# convert first column (which contains non-numeric values) to numeric values
-X[0] = X[0].factorize()[0]
 
 # Convert dataframe to numpy array
 X=X.to_numpy()
@@ -83,6 +79,7 @@ print('********** Train the model using the training data, X_train and y_train')
 model = LogisticRegression()
 model.fit(X_train, y_train)
 #</Train>
+
 #<Predict>
 print('********** Define a function that can be used to make new predictions given one sample of data from X_test')
 def predict_label(one_sample):
