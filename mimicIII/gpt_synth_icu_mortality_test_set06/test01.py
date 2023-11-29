@@ -13,11 +13,14 @@ from torch.utils.data import Dataset
 TRAIN_DATA_PATH = '/data/sls/scratch/pschro/p2/data/benchmark_output2/in-hospital-mortality/train/'
 TRAIN_LABEL_FILE = '/data/sls/scratch/pschro/p2/data/benchmark_output2/in-hospital-mortality/train/listfile.csv'
 
+# Convert the label file into a DataFrame
+label_data = pd.read_csv(TRAIN_LABEL_FILE)
+label_data['stay'] = label_data['stay'].astype(str)
+
 # Read file
 class ICUData(Dataset):
-    def __init__(self, data_path, label_file):
+    def __init__(self, data_path, label_data):
         self.data_path = data_path
-        label_data = pd.read_csv(label_file)
         self.file_names = label_data['stay'].values
         self.labels = torch.tensor(label_data['y_true'].values, dtype=torch.float32)
         self.replacement_values={'Capillary refill rate': 0.0, 'Diastolic blood pressure': 59.0 , 'Fraction inspired oxygen': 0.21, 'Glucose': 128.0, 'Heart Rate': 86, 'Height': 170.0, 'Mean blood pressure': 77.0, 'Oxygen saturation': 98.0, 'Respiratory rate': 19, 'Systolic blood pressure': 118.0, 'Temperature': 36.6, 'Weight': 81.0, 'pH': 7.4}
@@ -32,7 +35,7 @@ class ICUData(Dataset):
         data = data.select_dtypes(include=[np.number]) 
         label = self.labels[idx]
         return torch.tensor(data.values, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
-df = ICUData(TRAIN_DATA_PATH, TRAIN_LABEL_FILE)
+df = ICUData(TRAIN_DATA_PATH, label_data)
 
 # Preview dataset and datatypes
 example_patient0 = df[0][0]
