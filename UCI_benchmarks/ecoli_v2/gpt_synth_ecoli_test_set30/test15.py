@@ -9,7 +9,7 @@ dataset_name=dataset_name.lower()
 TRAIN_DATA_FILE = "/data/sls/scratch/pschro/p2/data/UCI_benchmarks/"+dataset_name+"/"+dataset_name+".data"
 
 # Read file
-df = pd.read_csv(TRAIN_DATA_FILE, header=None)
+df = pd.read_csv(TRAIN_DATA_FILE, header=None, delim_whitespace=True)
 
 # Preview dataset and datatypes
 print('*******************')
@@ -32,6 +32,7 @@ print('*******************')
 print('df.isnull().sum()')
 print(df.isnull().sum())
 #</PrevData>
+
 #<PrepData>
 print('********** Prepare the dataset for training')
 # Import necessary packages
@@ -39,9 +40,6 @@ import numpy as np
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
-
-# The data is not in the correct format, we need to split the strings into columns
-df = df[0].str.split(expand=True)
 
 # Define features, X, and labels, y
 X = df.iloc[:, :-1]  # All rows, all columns except the last one
@@ -52,8 +50,6 @@ y=y.to_numpy()
 
 # Split the dataset into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, stratify=y, random_state=42)
-X_train=X_train.tolist()
-X_test=X_test.tolist()
 
 # Scale the features 
 sc = StandardScaler()
