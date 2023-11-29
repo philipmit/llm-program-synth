@@ -39,7 +39,7 @@ print('********** Prepare the dataset for training')
 # Import necessary packages
 import numpy as np
 from sklearn.linear_model import LogisticRegression
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.model_selection import train_test_split
 
 # Preprocess the data
@@ -51,14 +51,17 @@ df = df.iloc[:, 1:]
 # Define features, X, and labels, y
 X = df.iloc[:, :-1]  # All rows, all columns except the last one
 y = df.iloc[:, -1]   # All rows, only the last column
-y = y.replace(list(np.unique(y)), list(range(len(np.unique(y)))))
+
+# Convert categorical labels to numerical
+le = LabelEncoder()
+y = le.fit_transform(y)
 
 # Convert to numpy arrays
 X = X.to_numpy(dtype=np.float32)
 y = y.to_numpy(dtype=np.int32)  # corrected from np.int to np.int32 as per the error message
 
 # Split the dataset into training and testing sets
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, stratify=y, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, stratify=y, random_state=42)
 
 # Scale the features 
 sc = StandardScaler()
@@ -80,7 +83,7 @@ print(y_train[0:5])
 
 #<Train>
 print('********** Train the model using the training data, X_train and y_train')
-model = LogisticRegression(penalty='l2', C=0.5, max_iter=200, random_state=42)
+model = LogisticRegression(penalty='l2', C=1.0, max_iter=500, random_state=42, solver='saga')
 model.fit(X_train, y_train)
 #</Train>
 
