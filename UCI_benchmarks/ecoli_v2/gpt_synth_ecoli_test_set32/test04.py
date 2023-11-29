@@ -59,6 +59,9 @@ if X.dtypes.any() == 'object' or y.dtypes == 'object':
     if y.dtypes == 'object':
         y = pd.Categorical(y).codes
 
+# Convert y to pandas Series to avoid AttributeError in the next step
+y = pd.Series(y)
+
 # Verify if the least populated class in y has at least 2 members
 if y.value_counts().min() >= 2:
     # Split the dataset into training and testing sets
