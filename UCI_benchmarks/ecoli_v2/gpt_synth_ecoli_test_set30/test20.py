@@ -9,7 +9,7 @@ dataset_name=dataset_name.lower()
 TRAIN_DATA_FILE = "/data/sls/scratch/pschro/p2/data/UCI_benchmarks/"+dataset_name+"/"+dataset_name+".data"
 
 # Read file
-df = pd.read_csv(TRAIN_DATA_FILE, header=None)
+df = pd.read_csv(TRAIN_DATA_FILE, header=None, sep="\s+")
 
 # Preview dataset and datatypes
 print('*******************')
@@ -37,27 +37,24 @@ print('********** Prepare the dataset for training')
 # Import necessary packages
 import numpy as np
 from sklearn.linear_model import LogisticRegression
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.model_selection import train_test_split
 
 # The dataset is not in the correct format, it needs to be cleaned before we can proceed
-# Split the single column into multiple columns
-df = df[0].str.split(expand=True)
 # The first column is the name of the protein, which is not a feature or label
 df = df.drop(0, axis=1)
-# Convert all columns to numeric
-df = df.apply(pd.to_numeric, errors='coerce')
 
 # Define features, X, and labels, y
 X = df.iloc[:, :-1]  # All rows, all columns except the last one
 y = df.iloc[:, -1]   # All rows, only the last column
-y = y.replace(list(np.unique(y)), list(range(len(np.unique(y)))))
-X=X.to_numpy()
-y=y.to_numpy()
+
+# Convert labels to numeric
+le = LabelEncoder()
+y = le.fit_transform(y)
+
 # Split the dataset into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, stratify=y, random_state=42)
-X_train=X_train.tolist()
-X_test=X_test.tolist()
+
 # Scale the features 
 sc = StandardScaler()
 X_train = sc.fit_transform(X_train)
