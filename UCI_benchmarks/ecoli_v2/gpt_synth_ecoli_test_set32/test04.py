@@ -68,39 +68,49 @@ if (y_counts < 2).any():
     mask = pd.Series(y).map(lambda x: x not in remove_classes)
     X, y = X[mask], y[mask]
 
-# Split the dataset into training and testing sets
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, stratify=y, random_state=42)
+# Ensure we have enough samples left for train and test split
+if len(X) > 0 and len(y) > 0:
+    # Split the dataset into training and testing sets
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, stratify=y, random_state=42)
 
-# Scale the features 
-sc = StandardScaler()
-X_train = sc.fit_transform(X_train)
-print('*******************')
-print('X_train.shape')
-print(X_train.shape)
-print('*******************')
-print('y_train.shape')
-print(y_train.shape)
-print('*******************')
-print('X_train[0:5]')
-print(X_train[0:5])
-print('*******************')
-print('y_train[0:5]')
-print(y_train[0:5])
+    # Scale the features 
+    sc = StandardScaler()
+    X_train = sc.fit_transform(X_train)
+    print('*******************')
+    print('X_train.shape')
+    print(X_train.shape)
+    print('*******************')
+    print('y_train.shape')
+    print(y_train.shape)
+    print('*******************')
+    print('X_train[0:5]')
+    print(X_train[0:5])
+    print('*******************')
+    print('y_train[0:5]')
+    print(y_train[0:5])
+else:
+    print('Insufficient data for train and test split after removing classes with less than 2 instances. Please check the dataset.')
 #</PrepData>
 
 #<Train>
-print('********** Train the model using the training data, X_train and y_train')
-model = LogisticRegression()
-model.fit(X_train, y_train)
+if len(X_train) > 0 and len(y_train) > 0:
+    print('********** Train the model using the training data, X_train and y_train')
+    model = LogisticRegression()
+    model.fit(X_train, y_train)
+else:
+    print('Insufficient data for training the model. Please check the dataset.')
 #</Train>
 
 #<Predict>
-print('********** Define a function that can be used to make new predictions given one sample of data from X_test')
-def predict_label(one_sample):
-    # Standardize the one_sample to match the data model was trained on
-    if one_sample.ndim == 1:
-        one_sample = one_sample.reshape(1, -1)
-    one_sample = sc.transform(one_sample)
-    # Return the class probabilities as a 1D array
-    return model.predict_proba(one_sample)[0]  
+if model:
+    print('********** Define a function that can be used to make new predictions given one sample of data from X_test')
+    def predict_label(one_sample):
+        # Standardize the one_sample to match the data model was trained on
+        if one_sample.ndim == 1:
+            one_sample = one_sample.reshape(1, -1)
+        one_sample = sc.transform(one_sample)
+        # Return the class probabilities as a 1D array
+        return model.predict_proba(one_sample)[0]  
+else:
+    print('No model to make predictions. Please check the dataset.')
 #</Predict>
