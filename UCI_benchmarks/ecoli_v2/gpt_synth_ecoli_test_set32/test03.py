@@ -11,6 +11,9 @@ TRAIN_DATA_FILE = "/data/sls/scratch/pschro/p2/data/UCI_benchmarks/"+dataset_nam
 # Read file
 df = pd.read_csv(TRAIN_DATA_FILE, header=None, delim_whitespace=True)
 
+# Drop the first column (sequence name) that does not contain numerical values
+df = df.drop(0, axis=1)
+
 # Drop columns with no variance
 df = df.loc[:, df.apply(pd.Series.nunique) != 1]
 
