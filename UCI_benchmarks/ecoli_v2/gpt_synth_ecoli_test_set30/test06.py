@@ -71,7 +71,7 @@ print('X_train[0:5]')
 print(X_train[0:5])
 print('*******************')
 print('y_train[0:5]')
-print(y_train[0:5))
+print(y_train[0:5])
 #</PrepData>
 
 #<Train>
