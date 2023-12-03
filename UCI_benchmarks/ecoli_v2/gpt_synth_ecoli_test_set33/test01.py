@@ -48,7 +48,8 @@ y = y.replace(list(np.unique(y)), list(range(len(np.unique(y)))))
 X=X.to_numpy()
 y=y.to_numpy()
 # Split the dataset into training and testing sets
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, stratify=y, random_state=42)
+# As the error suggests that the least populated class in y has only 1 member, we will not stratify the split by y
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
 X_train=X_train.tolist()
 X_test=X_test.tolist()
 # Scale the features 
