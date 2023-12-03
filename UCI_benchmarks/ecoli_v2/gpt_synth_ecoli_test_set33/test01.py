@@ -9,7 +9,7 @@ dataset_name=dataset_name.lower()
 TRAIN_DATA_FILE = "/data/sls/scratch/pschro/p2/data/UCI_benchmarks/"+dataset_name+"/"+dataset_name+".data"
 
 # Read file
-df = pd.read_csv(TRAIN_DATA_FILE, header=None)
+df = pd.read_csv(TRAIN_DATA_FILE, header=None, sep='\s+')
 
 # Preview dataset and datatypes
 print('*******************')
@@ -42,7 +42,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 # Define features, X, and labels, y
-X = df.iloc[:, :-1]  # All rows, all columns except the last one
+X = df.iloc[:, 1:-1]  # All rows, all columns except the first and last one
 y = df.iloc[:, -1]   # All rows, only the last column
 y = y.replace(list(np.unique(y)), list(range(len(np.unique(y)))))
 X=X.to_numpy()
@@ -50,8 +50,6 @@ y=y.to_numpy()
 # Split the dataset into training and testing sets
 # As the error suggests that the least populated class in y has only 1 member, we will not stratify the split by y
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
-X_train=X_train.tolist()
-X_test=X_test.tolist()
 # Scale the features 
 sc = StandardScaler()
 X_train = sc.fit_transform(X_train)
