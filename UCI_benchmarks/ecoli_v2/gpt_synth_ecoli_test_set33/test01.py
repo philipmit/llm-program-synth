@@ -45,8 +45,9 @@ from sklearn.model_selection import train_test_split
 X = df.iloc[:, 1:-1]  # All rows, all columns except the first and last one
 y = df.iloc[:, -1]   # All rows, only the last column
 y = y.replace(list(np.unique(y)), list(range(len(np.unique(y)))))
-X=X.to_numpy()
-y=y.to_numpy()
+# Convert the dataframe to numpy arrays
+X = X.values
+y = y.values
 # Split the dataset into training and testing sets
 # As the error suggests that the least populated class in y has only 1 member, we will not stratify the split by y
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
@@ -76,8 +77,10 @@ model.fit(X_train, y_train)
 #<Predict>
 print('********** Define a function that can be used to make new predictions given one sample of data from X_test')
 def predict_label(one_sample):
+    # Convert the list to numpy array and reshape
+    one_sample_np = np.array(one_sample).reshape(1, -1)
     # Standardize the one_sample to match the data model was trained on
-    one_sample = sc.transform(one_sample.reshape(1, -1))
+    one_sample_scaled = sc.transform(one_sample_np)
     # Return the class probabilities as a 1D array
-    return model.predict_proba(one_sample)[0]  
+    return model.predict_proba(one_sample_scaled)[0]  
 #</Predict>
