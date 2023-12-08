@@ -69,3 +69,19 @@ else:
     natural_language_answer=f'The {variable_text} in {city1} was lower than in {city2}.'
 print(natural_language_answer)
 #</Analysis>
+#<Visualize>
+import matplotlib.pyplot as plt
+
+print('********** Create visualization that demonstrates the answer to the question in the prompt')
+
+cities = [city1, city2]
+values = [value1, value2]
+
+plt.figure(figsize=(6, 6))
+plt.bar(cities, values, color=['blue', 'green'])
+plt.title(question + '\n' + 'Answer: ' + natural_language_answer)
+plt.xlabel('Cities')
+plt.ylabel('Prevalence of Poor Mental Health')
+plt.ylim([0, max(values)+5])
+plt.show()
+#</Visualize>
