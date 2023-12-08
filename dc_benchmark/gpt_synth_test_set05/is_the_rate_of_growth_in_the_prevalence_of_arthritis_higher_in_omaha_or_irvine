@@ -10,36 +10,45 @@ city2='Irvine'
 ##### collect data from Data Commons for city1
 query1=variable_text+' in '+city1
 url = f"https://datacommons.org/api/explore/detect?q={query1}"
-response = requests.post(url, headers=headers, json=data)
-res_data = json.loads(response.text)
-entity1 = res_data['entities'][0]
-variable = res_data['variables'][0]
-params = {
+headers = {
+    "Content-Type": "application/json"
+}
+data = {
+    "contextHistory": [],
+    "dc": ""
+}
+response1 = requests.post(url, headers=headers, json=data)
+res_data1 = json.loads(response1.text)
+entity1 = res_data1['entities'][0]
+variable = res_data1['variables'][0]
+url = "https://api.datacommons.org/v2/observation"
+params1 = {
 "key": API_KEY,
 "entity.dcids": entity1, 
 "select": ["entity", "variable", "value", "date"],
 "variable.dcids": variable
 }
-response1 = requests.get(url, params=params)
+response1 = requests.get(url, params=params1)
 print('response1.text')
 print(response1.text)
 
 ##### collect data from Data Commons for city2
 query2=variable_text+' in '+city2
 url = f"https://datacommons.org/api/explore/detect?q={query2}"
-response = requests.post(url, headers=headers, json=data)
-res_data = json.loads(response.text)
-entity2 = res_data['entities'][0]
-params = {
+response2 = requests.post(url, headers=headers, json=data)
+res_data2 = json.loads(response2.text)
+entity2 = res_data2['entities'][0]
+params2 = {
 "key": API_KEY,
 "entity.dcids": entity2, 
 "select": ["entity", "variable", "value", "date"],
 "variable.dcids": variable
 }
-response2 = requests.get(url, params=params)
+response2 = requests.get(url, params=params2)
 print('response2.text')
 print(response2.text)
 #</PrevData>
+
 #<PrepData>
 print('********** Prepare the dataset for analysis and visualization')
 ##### extract the data from the response for city1
