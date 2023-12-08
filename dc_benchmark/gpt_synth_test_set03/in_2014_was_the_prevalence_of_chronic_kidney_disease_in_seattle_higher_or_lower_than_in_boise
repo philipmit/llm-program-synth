@@ -118,3 +118,18 @@ else:
     natural_language_answer='Data not available for comparison.'
 print(natural_language_answer)
 #</Analysis>
+#<Visualize>
+import matplotlib.pyplot as plt
+print('********** Create visualization that demonstrates the answer to the question in the prompt')
+values = [value_city1, value_city2]
+cities = [city1, city2]
+plt.figure(figsize=(8,5))
+plt.bar(cities, values, color=['blue', 'orange'])
+plt.title('Prevalence of Chronic Kidney Disease in '+city1+' and '+city2+' in '+time)
+plt.xlabel('City')
+plt.ylabel('Prevalence (%)')
+plt.ylim([0, max(values)+1])
+for i in range(len(values)):
+    plt.text(i, values[i]+0.2, round(values[i],2), ha = 'center')
+plt.show()
+#</Visualize>
