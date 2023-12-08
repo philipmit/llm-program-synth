@@ -51,3 +51,25 @@ response2 = requests.get(url, params=params)
 print('response2.text')
 print(response2.text)
 #</PrevData>
+#<PrepData>
+print('********** Prepare the dataset for analysis and visualization')
+##### extract the data from the response
+obs_data1 = json.loads(response1.text)
+print('obs_data1')
+print(obs_data1)
+entity_data1 = obs_data1["byVariable"][variable]["byEntity"][entity1]
+print('entity_data1')
+print(entity_data1)
+print('type(entity_data1)')
+print(type(entity_data1))
+seq_data1 = entity_data1["orderedFacets"][0]['observations']
+print('seq_data1')
+print(seq_data1)
+print('type(seq_data1)')
+print(type(seq_data1))
+print('len(seq_data1)')
+print(len(seq_data1))
+
+# Since we didn't get a valid response for city2 (Boise), we can't continue with the data preparation or analysis for city2.
+# We should add error handling to the data collection code to handle such situations.
+#</PrepData>
