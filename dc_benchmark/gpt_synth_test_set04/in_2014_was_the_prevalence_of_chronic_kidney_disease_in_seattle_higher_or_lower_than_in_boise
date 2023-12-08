@@ -40,3 +40,20 @@ def get_data(city):
 city1_data = get_data(city1)
 city2_data = get_data(city2)
 #</PrevData>
+#<PrepData>
+print('********** Prepare the dataset for analysis')
+##### extract the data from the response
+def get_value(data, time):
+    obs_data = data
+    variable = list(obs_data["byVariable"].keys())[0]
+    entity = list(obs_data["byVariable"][variable]["byEntity"].keys())[0]
+    entity_data = obs_data["byVariable"][variable]["byEntity"][entity]
+    seq_data = entity_data["orderedFacets"][0]['observations']
+    seq_data_in_timeframe=[x for x in seq_data if x['date'] == time]
+    return seq_data_in_timeframe[0]['value']
+
+value_city1 = get_value(city1_data, time)
+value_city2 = get_value(city2_data, time)
+print('value_city1:', value_city1)
+print('value_city2:', value_city2)
+#</PrepData>
