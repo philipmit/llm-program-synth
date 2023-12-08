@@ -21,18 +21,21 @@ data = {
 }
 response = requests.post(url, headers=headers, json=data)
 res_data = json.loads(response.text)
-entity1 = res_data['entities'][0]
-variable = res_data['variables'][0]
-url = "https://api.datacommons.org/v2/observation"
-params = {
-"key": "AIzaSyDZ7TUirJBt2BSVf7jNuPpk29XzvAeeONI",
-"entity.dcids": entity1, # e.g. "country/USA",
-"select": ["entity", "variable", "value", "date"],
-"variable.dcids": variable
-}
-response = requests.get(url, params=params)
-print('response.text for city1')
-print(response.text)
+entity1 = res_data['entities'][0] if 'entities' in res_data else None
+variable = res_data['variables'][0] if 'variables' in res_data else None
+if entity1 and variable:
+    url = "https://api.datacommons.org/v2/observation"
+    params = {
+    "key": "AIzaSyDZ7TUirJBt2BSVf7jNuPpk29XzvAeeONI",
+    "entity.dcids": entity1, # e.g. "country/USA",
+    "select": ["entity", "variable", "value", "date"],
+    "variable.dcids": variable
+    }
+    response = requests.get(url, params=params)
+    print('response.text for city1')
+    print(response.text)
+else: 
+    print(f"Entity1 or variable not found for {city1}")
 
 ##### collect data for city2 from Data Commons
 query=variable_text+' in '+city2+' in '+time
@@ -46,18 +49,22 @@ data = {
 }
 response = requests.post(url, headers=headers, json=data)
 res_data = json.loads(response.text)
-entity2 = res_data['entities'][0]
-url = "https://api.datacommons.org/v2/observation"
-params = {
-"key": "AIzaSyDZ7TUirJBt2BSVf7jNuPpk29XzvAeeONI",
-"entity.dcids": entity2, # e.g. "country/USA",
-"select": ["entity", "variable", "value", "date"],
-"variable.dcids": variable
-}
-response = requests.get(url, params=params)
-print('response.text for city2')
-print(response.text)
+entity2 = res_data['entities'][0] if 'entities' in res_data else None
+if entity2 and variable:
+    url = "https://api.datacommons.org/v2/observation"
+    params = {
+    "key": "AIzaSyDZ7TUirJBt2BSVf7jNuPpk29XzvAeeONI",
+    "entity.dcids": entity2, # e.g. "country/USA",
+    "select": ["entity", "variable", "value", "date"],
+    "variable.dcids": variable
+    }
+    response = requests.get(url, params=params)
+    print('response.text for city2')
+    print(response.text)
+else: 
+    print(f"Entity2 or variable not found for {city2}")
 #</PrevData>
+
 #<PrepData>
 print('********** Prepare the dataset for analysis')
 ##### extract the data from the response for city1
