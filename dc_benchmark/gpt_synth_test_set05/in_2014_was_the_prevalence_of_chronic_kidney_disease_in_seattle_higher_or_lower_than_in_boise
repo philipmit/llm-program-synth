@@ -69,3 +69,14 @@ print(value1)
 print('value2')
 print(value2)
 #</PrepData>
+#<Analysis>
+print('********** Perform the analysis to answer the question in the prompt')
+##### compare the values
+if value1>value2:
+    natural_language_answer=city1+' had higher '+variable_text+' than '+city2+' in '+year+'.'
+elif value1<value2:
+    natural_language_answer=city1+' had lower '+variable_text+' than '+city2+' in '+year+'.'
+else:
+    natural_language_answer=city1+' and '+city2+' had same '+variable_text+' in '+year+'.'
+print(natural_language_answer)
+#</Analysis>
