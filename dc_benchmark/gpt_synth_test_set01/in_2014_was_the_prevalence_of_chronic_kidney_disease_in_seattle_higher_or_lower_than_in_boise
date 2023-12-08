@@ -73,3 +73,47 @@ print(len(seq_data1))
 # Since we didn't get a valid response for city2 (Boise), we can't continue with the data preparation or analysis for city2.
 # We should add error handling to the data collection code to handle such situations.
 #</PrepData>
+#<ErrorHandling>
+print('********** Add error handling to the data collection code')
+##### If the response for city2 is not a dictionary or does not contain the necessary data, print an error message.
+try:
+    obs_data2 = json.loads(response2.text)
+    print('obs_data2')
+    print(obs_data2)
+    entity_data2 = obs_data2["byVariable"][variable]["byEntity"][entity2]
+    print('entity_data2')
+    print(entity_data2)
+    print('type(entity_data2)')
+    print(type(entity_data2))
+    seq_data2 = entity_data2["orderedFacets"][0]['observations']
+    print('seq_data2')
+    print(seq_data2)
+    print('type(seq_data2)')
+    print(type(seq_data2))
+    print('len(seq_data2)')
+    print(len(seq_data2))
+except Exception as e:
+    print('Error: Could not collect data for city 2. Please check the city name or try again later.')
+    print(str(e))
+#</ErrorHandling>
+
+#<Analysis>
+print('********** Perform the analysis to answer the question in the prompt')
+##### If the data for both cities is available, compare the values for the specified year.
+try:
+    city1_value = [x['value'] for x in seq_data1 if x['date'] == year][0]
+    print('city1_value')
+    print(city1_value)
+    city2_value = [x['value'] for x in seq_data2 if x['date'] == year][0]
+    print('city2_value')
+    print(city2_value)
+    ##### the answer options are 'higher' or 'lower'
+    if city1_value > city2_value:
+        natural_language_answer = 'higher'
+    else:
+        natural_language_answer = 'lower'
+    print(natural_language_answer)
+except Exception as e:
+    print('Error: Could not compare data for the two cities. Please check the year or try again later.')
+    print(str(e))
+#</Analysis>
