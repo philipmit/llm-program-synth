@@ -71,3 +71,25 @@ print(len(seq_data1))
 print('len(seq_data2)')
 print(len(seq_data2))
 #</PrepData>
+#<Analysis>
+print('********** Perform the analysis to answer the question in the prompt')
+##### extract data from the timeframe specified in the prompt
+seq_data1_in_time=[x for x in seq_data1 if x['date'] == time]
+seq_data2_in_time=[x for x in seq_data2 if x['date'] == time]
+print('seq_data1_in_time')
+print(seq_data1_in_time)
+print('seq_data2_in_time')
+print(seq_data2_in_time)
+value1=seq_data1_in_time[0]['value']
+value2=seq_data2_in_time[0]['value']
+print('value1')
+print(value1)
+print('value2')
+print(value2)
+##### the answer options are 'higher' or 'lower'
+if value1>value2:
+    natural_language_answer='higher'
+else:
+    natural_language_answer='lower'
+print(natural_language_answer)
+#</Analysis>
