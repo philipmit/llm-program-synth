@@ -7,7 +7,6 @@ year='2014'
 city1='Seattle'
 city2='Boise'
 
-
 ##### collect data from Data Commons for City 1
 import requests
 import json
@@ -40,17 +39,22 @@ query=variable_text+' in '+city2
 url = f"https://datacommons.org/api/explore/detect?q={query}"
 response = requests.post(url, headers=headers, json=data)
 res_data = json.loads(response.text)
-entity2 = res_data['entities'][0]
-params = {
-"key": API_KEY,
-"entity.dcids": entity2, 
-"select": ["entity", "variable", "value", "date"],
-"variable.dcids": variable
-}
-response2 = requests.get(url, params=params)
-print('response2.text')
-print(response2.text)
+try:
+    entity2 = res_data['entities'][0]
+    params = {
+    "key": API_KEY,
+    "entity.dcids": entity2, 
+    "select": ["entity", "variable", "value", "date"],
+    "variable.dcids": variable
+    }
+    response2 = requests.get(url, params=params)
+    print('response2.text')
+    print(response2.text)
+except Exception as e:
+    print('Error: Could not collect data for city 2. Please check the city name or try again later.')
+    print(str(e))
 #</PrevData>
+
 #<PrepData>
 print('********** Prepare the dataset for analysis and visualization')
 ##### extract the data from the response
@@ -73,6 +77,7 @@ print(len(seq_data1))
 # Since we didn't get a valid response for city2 (Boise), we can't continue with the data preparation or analysis for city2.
 # We should add error handling to the data collection code to handle such situations.
 #</PrepData>
+
 #<ErrorHandling>
 print('********** Add error handling to the data collection code')
 ##### If the response for city2 is not a dictionary or does not contain the necessary data, print an error message.
@@ -116,4 +121,4 @@ try:
 except Exception as e:
     print('Error: Could not compare data for the two cities. Please check the year or try again later.')
     print(str(e))
-#</Analysis>
+#</Analysis></Visualize>
