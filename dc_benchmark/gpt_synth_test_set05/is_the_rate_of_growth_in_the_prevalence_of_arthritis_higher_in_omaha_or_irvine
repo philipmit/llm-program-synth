@@ -1,0 +1,42 @@
+#<PrevData>
+print('********** Load and preview the dataset and datatypes')
+##### define variables based on prompt
+question='Is the rate of growth in the prevalence of arthritis higher in Omaha or Irvine?'
+variable_text='the prevalence of arthritis'
+city1='Omaha'
+city2='Irvine'
+
+
+##### collect data from Data Commons for city1
+query1=variable_text+' in '+city1
+url = f"https://datacommons.org/api/explore/detect?q={query1}"
+response = requests.post(url, headers=headers, json=data)
+res_data = json.loads(response.text)
+entity1 = res_data['entities'][0]
+variable = res_data['variables'][0]
+params = {
+"key": API_KEY,
+"entity.dcids": entity1, 
+"select": ["entity", "variable", "value", "date"],
+"variable.dcids": variable
+}
+response1 = requests.get(url, params=params)
+print('response1.text')
+print(response1.text)
+
+##### collect data from Data Commons for city2
+query2=variable_text+' in '+city2
+url = f"https://datacommons.org/api/explore/detect?q={query2}"
+response = requests.post(url, headers=headers, json=data)
+res_data = json.loads(response.text)
+entity2 = res_data['entities'][0]
+params = {
+"key": API_KEY,
+"entity.dcids": entity2, 
+"select": ["entity", "variable", "value", "date"],
+"variable.dcids": variable
+}
+response2 = requests.get(url, params=params)
+print('response2.text')
+print(response2.text)
+#</PrevData>
