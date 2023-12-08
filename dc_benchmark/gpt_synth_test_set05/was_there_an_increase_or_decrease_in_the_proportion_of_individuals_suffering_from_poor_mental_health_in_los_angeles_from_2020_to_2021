@@ -1,0 +1,37 @@
+#<PrevData>
+print('********** Load and preview the dataset and datatypes')
+##### define variables based on prompt
+question='Was there an increase or decrease in the proportion of individuals suffering from poor mental health in Los Angeles from 2020 to 2021?'
+variable_text='the proportion of individuals suffering from poor mental health'
+time1='2020'
+time2='2021'
+city='Los Angeles'
+
+
+##### collect data from Data Commons
+import requests
+import json
+query=variable_text+' in '+city
+url = f"https://datacommons.org/api/explore/detect?q={query}"
+headers = {
+    "Content-Type": "application/json"
+}
+data = {
+    "contextHistory": [],
+    "dc": ""
+}
+response = requests.post(url, headers=headers, json=data)
+res_data = json.loads(response.text)
+entity = res_data['entities'][0]
+variable = res_data['variables'][0]
+url = "https://api.datacommons.org/v2/observation"
+params = {
+"key": API_KEY,
+"entity.dcids": entity, # e.g. "country/USA",
+"select": ["entity", "variable", "value", "date"],
+"variable.dcids": variable
+}
+response = requests.get(url, params=params)
+print('response.text')
+print(response.text)
+#</PrevData>
