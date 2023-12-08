@@ -66,3 +66,16 @@ else:
     natural_language_answer='lower'
 print(natural_language_answer)
 #</Analysis>
+#<Visualize>
+import matplotlib.pyplot as plt
+print('********** Create visualization that demonstrates the answer to the question in the prompt')
+data = {city1: value_city1, city2: value_city2}
+plt.figure(figsize=(10, 6))
+plt.bar(data.keys(), data.values(), color=['navy', 'darkred'])
+plt.title(question+'\nAnswer: The prevalence in '+city1+' was '+natural_language_answer+' than in '+city2)
+plt.xlabel("City")
+plt.ylabel(variable_text.capitalize())
+plt.xticks(rotation=45)
+plt.tight_layout()
+plt.show()
+#</Visualize>
