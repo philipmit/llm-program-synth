@@ -32,6 +32,7 @@ if entity1 and variable:
     "variable.dcids": variable
     }
     response = requests.get(url, params=params)
+    obs_data_city1 = json.loads(response.text)
     print('response.text for city1')
     print(response.text)
 else: 
@@ -59,6 +60,7 @@ if entity2 and variable:
     "variable.dcids": variable
     }
     response = requests.get(url, params=params)
+    obs_data_city2 = json.loads(response.text)
     print('response.text for city2')
     print(response.text)
 else: 
@@ -68,24 +70,24 @@ else:
 #<PrepData>
 print('********** Prepare the dataset for analysis')
 ##### extract the data from the response for city1
-obs_data_city1 = json.loads(response.text)
-print('obs_data_city1')
-print(obs_data_city1)
-entity_data_city1 = obs_data_city1["byVariable"][variable]["byEntity"][entity1]
-print('entity_data_city1')
-print(entity_data_city1)
-seq_data_city1 = entity_data_city1["orderedFacets"][0]['observations']
-print('seq_data_city1')
-print(seq_data_city1)
+if "byVariable" in obs_data_city1 and variable in obs_data_city1["byVariable"] and "byEntity" in obs_data_city1["byVariable"][variable] and entity1 in obs_data_city1["byVariable"][variable]["byEntity"]:
+    entity_data_city1 = obs_data_city1["byVariable"][variable]["byEntity"][entity1]
+    print('entity_data_city1')
+    print(entity_data_city1)
+    seq_data_city1 = entity_data_city1["orderedFacets"][0]['observations']
+    print('seq_data_city1')
+    print(seq_data_city1)
+else:
+    print(f"No data found for {city1} in the specified time frame")
 
 ##### extract the data from the response for city2
-obs_data_city2 = json.loads(response.text)
-print('obs_data_city2')
-print(obs_data_city2)
-entity_data_city2 = obs_data_city2["byVariable"][variable]["byEntity"][entity2]
-print('entity_data_city2')
-print(entity_data_city2)
-seq_data_city2 = entity_data_city2["orderedFacets"][0]['observations']
-print('seq_data_city2')
-print(seq_data_city2)
+if "byVariable" in obs_data_city2 and variable in obs_data_city2["byVariable"] and "byEntity" in obs_data_city2["byVariable"][variable] and entity2 in obs_data_city2["byVariable"][variable]["byEntity"]:
+    entity_data_city2 = obs_data_city2["byVariable"][variable]["byEntity"][entity2]
+    print('entity_data_city2')
+    print(entity_data_city2)
+    seq_data_city2 = entity_data_city2["orderedFacets"][0]['observations']
+    print('seq_data_city2')
+    print(seq_data_city2)
+else:
+    print(f"No data found for {city2} in the specified time frame")
 #</PrepData>
