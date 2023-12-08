@@ -91,3 +91,30 @@ if "byVariable" in obs_data_city2 and variable in obs_data_city2["byVariable"] a
 else:
     print(f"No data found for {city2} in the specified time frame")
 #</PrepData>
+#<Analysis>
+print('********** Perform the analysis to answer the question in the prompt')
+##### extract data for the specified year
+seq_data_city1_in_time=[x for x in seq_data_city1 if x['date'] == time]
+print('seq_data_city1_in_time')
+print(seq_data_city1_in_time)
+seq_data_city2_in_time=[x for x in seq_data_city2 if x['date'] == time]
+print('seq_data_city2_in_time')
+print(seq_data_city2_in_time)
+
+if seq_data_city1_in_time and seq_data_city2_in_time:
+    value_city1 = seq_data_city1_in_time[0]['value']
+    value_city2 = seq_data_city2_in_time[0]['value']
+    print('value_city1')
+    print(value_city1)
+    print('value_city2')
+    print(value_city2)
+
+    ##### the answer options are 'higher' or 'lower'
+    if value_city1 > value_city2:
+        natural_language_answer=city1+' had a higher '+variable_text+' than '+city2+' in '+time
+    else:
+        natural_language_answer=city1+' had a lower '+variable_text+' than '+city2+' in '+time
+else:
+    natural_language_answer='Data not available for comparison.'
+print(natural_language_answer)
+#</Analysis>
