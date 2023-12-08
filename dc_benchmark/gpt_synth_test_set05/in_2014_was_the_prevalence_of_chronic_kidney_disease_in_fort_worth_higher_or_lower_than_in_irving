@@ -123,3 +123,28 @@ else:
     natural_language_answer=city1+' and '+city2+' had the same '+variable_text+' in '+time
 print(natural_language_answer)
 #</Analysis>
+#<Visualize>
+print('********** Create visualization that demonstrates the answer to the question in the prompt')
+import matplotlib.pyplot as plt
+import numpy as np
+
+# Plotting the data for city1
+X1 = [int(x['date']) for x in seq_data1]
+y1 = [x['value'] for x in seq_data1]
+plt.plot(X1, y1, label=city1, color="blue")
+
+# Plotting the data for city2
+X2 = [int(x['date']) for x in seq_data2]
+y2 = [x['value'] for x in seq_data2]
+plt.plot(X2, y2, label=city2, color="green")
+
+# Highlighting the year from the prompt
+plt.axvline(x=int(time), color='r', linestyle='--', label="Year: "+time)
+
+plt.title(question+'\n Answer: '+natural_language_answer)
+plt.xlabel("Year")
+plt.ylabel(variable_text.capitalize())
+plt.legend()
+plt.grid(True)
+plt.show()
+#</Visualize>
