@@ -93,3 +93,33 @@ print(type(seq_data2))
 print('len(seq_data2)')
 print(len(seq_data2))
 #</PrepData>
+#<Analysis>
+print('********** Perform the analysis to answer the question in the prompt')
+##### extract data from the year specified in the prompt
+seq_data1_in_timeframe=[x for x in seq_data1 if int(x['date']) == int(time)]
+print('seq_data_in_timeframe for '+city1)
+print(seq_data1_in_timeframe)
+print('len(seq_data_in_timeframe for '+city1+')')
+print(len(seq_data1_in_timeframe))
+seq_data2_in_timeframe=[x for x in seq_data2 if int(x['date']) == int(time)]
+print('seq_data_in_timeframe for '+city2)
+print(seq_data2_in_timeframe)
+print('len(seq_data_in_timeframe for '+city2+')')
+print(len(seq_data2_in_timeframe))
+
+##### compare the data for the two cities
+value_city1=seq_data1_in_timeframe[0]['value']
+print('value for '+city1)
+print(value_city1)
+value_city2=seq_data2_in_timeframe[0]['value']
+print('value for '+city2)
+print(value_city2)
+
+if value_city1>value_city2:
+    natural_language_answer=city1+' had a higher '+variable_text+' than '+city2+' in '+time
+elif value_city1<value_city2:
+    natural_language_answer=city1+' had a lower '+variable_text+' than '+city2+' in '+time
+else:
+    natural_language_answer=city1+' and '+city2+' had the same '+variable_text+' in '+time
+print(natural_language_answer)
+#</Analysis>
