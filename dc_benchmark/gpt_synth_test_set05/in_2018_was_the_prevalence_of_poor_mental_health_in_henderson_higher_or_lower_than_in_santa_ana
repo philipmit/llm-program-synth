@@ -58,3 +58,14 @@ print(f'value for {city1} is {value1}')
 value2 = extract_data(data2, city2)
 print(f'value for {city2} is {value2}')
 #</PrepData>
+#<Analysis>
+print('********** Perform the analysis to answer the question in the prompt')
+##### compare the values for the two cities
+if value1 is None or value2 is None:
+    natural_language_answer='Data not available for comparison.'
+elif value1 > value2:
+    natural_language_answer=f'The {variable_text} in {city1} was higher than in {city2}.'
+else:
+    natural_language_answer=f'The {variable_text} in {city1} was lower than in {city2}.'
+print(natural_language_answer)
+#</Analysis>
