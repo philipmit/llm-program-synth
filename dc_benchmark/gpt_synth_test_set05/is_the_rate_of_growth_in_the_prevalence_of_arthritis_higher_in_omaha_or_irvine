@@ -22,7 +22,7 @@ WHERE {{
   ?city containedInPlace ?state .
   ?state typeOf State .
   ?state containedInPlace country/USA .
-  ?city population ?pop .
+  ?city arthritisPrevalence ?pop .
   ?pop asOf ?date .
   ?pop count ?value
 }}
@@ -42,7 +42,7 @@ WHERE {{
   ?city containedInPlace ?state .
   ?state typeOf State .
   ?state containedInPlace country/USA .
-  ?city population ?pop .
+  ?city arthritisPrevalence ?pop .
   ?pop asOf ?date .
   ?pop count ?value
 }}
@@ -56,8 +56,8 @@ print(data2)
 
 #<PrepData>
 print('********** Prepare the dataset for analysis and visualization')
-X1 = [int(d['date']) for d in data1['rows']]
-y1 = [float(d['value']) for d in data1['rows']]
-X2 = [int(d['date']) for d in data2['rows']]
-y2 = [float(d['value']) for d in data2['rows']]
+X1 = [int(d['cells'][0]['value']) for d in data1['rows']]
+y1 = [float(d['cells'][1]['value']) for d in data1['rows']]
+X2 = [int(d['cells'][0]['value']) for d in data2['rows']]
+y2 = [float(d['cells'][1]['value']) for d in data2['rows']]
 #</PrepData>
