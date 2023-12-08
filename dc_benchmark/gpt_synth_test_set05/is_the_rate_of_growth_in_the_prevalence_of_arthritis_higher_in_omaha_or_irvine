@@ -1,86 +1,63 @@
 #<PrevData>
+import requests, json, matplotlib.pyplot as plt
+from scipy import stats
+import numpy as np
+
 print('********** Load and preview the dataset and datatypes')
 ##### define variables based on prompt
 question='Is the rate of growth in the prevalence of arthritis higher in Omaha or Irvine?'
-variable_text='the prevalence of arthritis'
+variable_text='prevalence of arthritis'
 city1='Omaha'
 city2='Irvine'
 
+API_KEY = "<Your-API-Key>"
 
 ##### collect data from Data Commons for city1
-query1=variable_text+' in '+city1
-url = f"https://datacommons.org/api/explore/detect?q={query1}"
-headers = {
-    "Content-Type": "application/json"
+url = "https://api.datacommons.org/query"
+query = """
+SELECT ?value ?date 
+WHERE {
+  ?city typeOf City .
+  ?city name @en '{0}' .
+  ?city containedInPlace ?state .
+  ?state typeOf State .
+  ?state containedInPlace country/USA .
+  ?city population ?pop .
+  ?pop asOf ?date .
+  ?pop count ?value
 }
-data = {
-    "contextHistory": [],
-    "dc": ""
-}
-response1 = requests.post(url, headers=headers, json=data)
-res_data1 = json.loads(response1.text)
-entity1 = res_data1['entities'][0]
-variable = res_data1['variables'][0]
-url = "https://api.datacommons.org/v2/observation"
-params1 = {
-"key": API_KEY,
-"entity.dcids": entity1, 
-"select": ["entity", "variable", "value", "date"],
-"variable.dcids": variable
-}
-response1 = requests.get(url, params=params1)
-print('response1.text')
-print(response1.text)
+""".format(city1)
+
+response1 = requests.post(url, {"query": query, "key": API_KEY})
+data1 = response1.json()
+print('data1')
+print(data1)
 
 ##### collect data from Data Commons for city2
-query2=variable_text+' in '+city2
-response2 = requests.post(url, headers=headers, json={"q": query2})
-res_data2 = json.loads(response2.text)
-entity2 = res_data2['entities'][0]
-params2 = {
-"key": API_KEY,
-"entity.dcids": entity2, 
-"select": ["entity", "variable", "value", "date"],
-"variable.dcids": variable
+query = """
+SELECT ?value ?date 
+WHERE {
+  ?city typeOf City .
+  ?city name @en '{0}' .
+  ?city containedInPlace ?state .
+  ?state typeOf State .
+  ?state containedInPlace country/USA .
+  ?city population ?pop .
+  ?pop asOf ?date .
+  ?pop count ?value
 }
-response2 = requests.get(url, params=params2)
-print('response2.text')
-print(response2.text)
+""".format(city2)
+
+response2 = requests.post(url, {"query": query, "key": API_KEY})
+data2 = response2.json()
+print('data2')
+print(data2)
 #</PrevData>
 
 #<PrepData>
 print('********** Prepare the dataset for analysis and visualization')
-##### extract the data from the response for city1
-obs_data1 = json.loads(response1.text)
-print('obs_data1')
-print(obs_data1)
-entity_data1 = obs_data1["byVariable"][variable]["byEntity"][entity1]
-print('entity_data1')
-print(entity_data1)
-print('type(entity_data1)')
-print(type(entity_data1))
-seq_data1 = entity_data1["orderedFacets"][0]['observations']
-print('seq_data1')
-print(seq_data1)
-print('type(seq_data1)')
-print(type(seq_data1))
-print('len(seq_data1)')
-print(len(seq_data1))
-
-##### extract the data from the response for city2
-obs_data2 = json.loads(response2.text)
-print('obs_data2')
-print(obs_data2)
-entity_data2 = obs_data2["byVariable"][variable]["byEntity"][entity2]
-print('entity_data2')
-print(entity_data2)
-print('type(entity_data2)')
-print(type(entity_data2))
-seq_data2 = entity_data2["orderedFacets"][0]['observations']
-print('seq_data2')
-print(seq_data2)
-print('type(seq_data2)')
-print(type(seq_data2))
-print('len(seq_data2)')
-print(len(seq_data2))
+X1 = [int(d['date']) for d in data1['rows']]
+y1 = [float(d['value']) for d in data1['rows']]
+X2 = [int(d['date']) for d in data2['rows']]
+y2 = [float(d['value']) for d in data2['rows']]
 #</PrepData>
