@@ -34,8 +34,7 @@ print(response1.text)
 
 ##### collect data from Data Commons for city2
 query2=variable_text+' in '+city2
-url = f"https://datacommons.org/api/explore/detect?q={query2}"
-response2 = requests.post(url, headers=headers, json=data)
+response2 = requests.post(url, headers=headers, json={"q": query2})
 res_data2 = json.loads(response2.text)
 entity2 = res_data2['entities'][0]
 params2 = {
