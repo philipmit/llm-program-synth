@@ -102,8 +102,7 @@ for i in range(len(cities)):
     plt.scatter(X, y, label=cities[i].capitalize(), alpha=0.5)
     plt.plot(X, intercept + slopes[i] * np.array(X), label=f"Trend line for {cities[i]}")
 
-plt.title(question+'
-Answer: '+natural_language_answer)
+plt.title(question+'\nAnswer: '+natural_language_answer)
 plt.xlabel("Year")
 plt.ylabel(variable_text.capitalize())
 plt.legend()
