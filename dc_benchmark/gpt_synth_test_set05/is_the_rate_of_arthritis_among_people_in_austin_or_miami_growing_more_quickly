@@ -1,0 +1,38 @@
+#<PrevData>
+print('********** Load and preview the dataset and datatypes')
+##### define variables based on prompt
+question='Is the rate of arthritis among people in Austin or Miami growing more quickly?'
+variable_text='the rate of arthritis among people'
+city1='Austin'
+city2='Miami'
+time1='2016'
+time2='2021'
+
+
+##### collect data from Data Commons for both cities
+import requests
+import json
+cities=[city1, city2]
+variables=[]
+entities=[]
+
+for city in cities:
+    query=variable_text+' in '+city
+    url = f"https://datacommons.org/api/explore/detect?q={query}"
+    headers = {
+        "Content-Type": "application/json"
+    }
+    data = {
+        "contextHistory": [],
+        "dc": ""
+    }
+    response = requests.post(url, headers=headers, json=data)
+    res_data = json.loads(response.text)
+    entities.append(res_data['entities'][0])
+    variables.append(res_data['variables'][0])
+
+print('entities')
+print(entities)
+print('variables')
+print(variables)
+#</PrevData>
