@@ -79,3 +79,18 @@ else:
     natural_language_answer='decreasing'
 print(natural_language_answer)
 #</Analysis>
+#<Visualize>
+import matplotlib.pyplot as plt
+print('********** Create visualization that demonstrates the answer to the question in the prompt')
+plt.figure(figsize=(10, 6))
+plt.scatter(X, y, label=variable_text.capitalize(), color="navy")
+plt.plot(X, intercept + slope * np.array(X), color="darkred", label="Trend line")
+plt.title(query+'
+Answer: '+natural_language_answer)
+plt.xlabel("Year")
+plt.ylabel(variable_text.capitalize())
+plt.legend()
+plt.xticks(rotation=45)
+plt.tight_layout()
+plt.show()
+#</Visualize>
