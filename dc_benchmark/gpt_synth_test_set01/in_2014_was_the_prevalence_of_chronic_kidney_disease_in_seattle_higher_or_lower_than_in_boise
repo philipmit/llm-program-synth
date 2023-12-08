@@ -45,3 +45,26 @@ print(response1.text)
 print('response2.text')
 print(response2.text)
 #</PrevData>
+#<PrepData>
+print('********** Prepare the dataset for analysis and visualization')
+##### extract the data from the response
+obs_data1 = json.loads(response1.text)
+obs_data2 = json.loads(response2.text)
+
+entity_data1 = obs_data1["byVariable"][variable]["byEntity"][entity]
+entity_data2 = obs_data2["byVariable"][variable]["byEntity"][entity]
+
+seq_data1 = entity_data1["orderedFacets"][0]['observations']
+seq_data2 = entity_data2["orderedFacets"][0]['observations']
+
+year_data1 = [x for x in seq_data1 if x['date'] == year]
+year_data2 = [x for x in seq_data2 if x['date'] == year]
+
+value1 = year_data1[0]['value']
+value2 = year_data2[0]['value']
+
+print('value1')
+print(value1)
+print('value2')
+print(value2)
+#</PrepData>
