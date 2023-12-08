@@ -16,16 +16,16 @@ API_KEY = "<Your-API-Key>"
 url = "https://api.datacommons.org/query"
 query = """
 SELECT ?value ?date 
-WHERE {
+WHERE {{
   ?city typeOf City .
-  ?city name @en '{0}' .
+  ?city name @en '{}' .
   ?city containedInPlace ?state .
   ?state typeOf State .
   ?state containedInPlace country/USA .
   ?city population ?pop .
   ?pop asOf ?date .
   ?pop count ?value
-}
+}}
 """.format(city1)
 
 response1 = requests.post(url, {"query": query, "key": API_KEY})
@@ -36,16 +36,16 @@ print(data1)
 ##### collect data from Data Commons for city2
 query = """
 SELECT ?value ?date 
-WHERE {
+WHERE {{
   ?city typeOf City .
-  ?city name @en '{0}' .
+  ?city name @en '{}' .
   ?city containedInPlace ?state .
   ?state typeOf State .
   ?state containedInPlace country/USA .
   ?city population ?pop .
   ?pop asOf ?date .
   ?pop count ?value
-}
+}}
 """.format(city2)
 
 response2 = requests.post(url, {"query": query, "key": API_KEY})
