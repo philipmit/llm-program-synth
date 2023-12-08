@@ -36,3 +36,29 @@ print(entities)
 print('variables')
 print(variables)
 #</PrevData>
+#<PrepData>
+print('********** Prepare the dataset for analysis and visualization')
+##### collect observations for each city
+seq_datas=[]
+for i in range(len(cities)):
+    entity=entities[i]
+    variable=variables[i]
+    url = "https://api.datacommons.org/v2/observation"
+    params = {
+    "key": API_KEY,
+    "entity.dcids": entity, # e.g. "country/USA",
+    "select": ["entity", "variable", "value", "date"],
+    "variable.dcids": variable
+    }
+    response = requests.get(url, params=params)
+    obs_data = json.loads(response.text)
+    entity_data = obs_data["byVariable"][variable]["byEntity"][entity]
+    seq_data = entity_data["orderedFacets"][0]['observations']
+    seq_datas.append(seq_data)
+print('seq_datas')
+print(seq_datas)
+print('type(seq_datas)')
+print(type(seq_datas))
+print('len(seq_datas)')
+print(len(seq_datas))
+#</PrepData>
