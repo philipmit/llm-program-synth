@@ -57,3 +57,12 @@ value_city2 = get_value(city2_data, time)
 print('value_city1:', value_city1)
 print('value_city2:', value_city2)
 #</PrepData>
+#<Analysis>
+print('********** Perform the analysis to answer the question in the prompt')
+##### the answer options are 'higher' or 'lower'
+if value_city1 > value_city2:
+    natural_language_answer='higher'
+else:
+    natural_language_answer='lower'
+print(natural_language_answer)
+#</Analysis>
