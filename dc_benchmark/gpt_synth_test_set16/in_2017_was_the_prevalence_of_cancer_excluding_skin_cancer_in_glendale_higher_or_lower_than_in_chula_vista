@@ -31,24 +31,31 @@ params = {
 "select": ["entity", "variable", "value", "date"],
 "variable.dcids": variable
 }
-response = requests.get(url, params=params)
+response1 = requests.get(url, params=params)
 print('response.text')
-print(response.text)
+print(response1.text)
 
 ##### collect data from Data Commons for city2
 query=variable_text+' in '+city2
 url = f"https://datacommons.org/api/explore/detect?q={query}"
-response = requests.post(url, headers=headers, json=data)
-res_data = json.loads(response.text)
-entity2 = res_data['entities'][0]
-response = requests.get(url, params=params)
+response2 = requests.post(url, headers=headers, json=data)
+res_data2 = json.loads(response2.text)
+entity2 = res_data2['entities'][0]
+params2 = {
+"key": API_KEY,
+"entity.dcids": entity2, # e.g. "country/USA",
+"select": ["entity", "variable", "value", "date"],
+"variable.dcids": variable
+}
+response2 = requests.get(url, params=params2)
 print('response.text')
-print(response.text)
+print(response2.text)
 #</PrevData>
+
 #<PrepData>
 print('********** Prepare the dataset for analysis and visualization')
 ##### extract the data from the response for city1
-obs_data1 = json.loads(response.text)
+obs_data1 = json.loads(response1.text)
 print('obs_data1')
 print(obs_data1)
 entity_data1 = obs_data1["byVariable"][variable]["byEntity"][entity1]
@@ -65,7 +72,7 @@ print('len(seq_data1)')
 print(len(seq_data1))
 
 ##### extract the data from the response for city2
-obs_data2 = json.loads(response.text)
+obs_data2 = json.loads(response2.text)
 print('obs_data2')
 print(obs_data2)
 entity_data2 = obs_data2["byVariable"][variable]["byEntity"][entity2]
