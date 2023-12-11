@@ -66,3 +66,35 @@ if obs_data2:
 else:
     seq_data2 = []
 #</PrepData>
+#<Analysis>
+print('********** Perform the analysis to answer the question in the prompt')
+##### extract data from the timeframe specified in the prompt for city1
+seq_data1_in_time=[x for x in seq_data1 if int(x['date']) == int(time)]
+print('seq_data1_in_time')
+print(seq_data1_in_time)
+print('len(seq_data1_in_time)')
+print(len(seq_data1_in_time))
+value1=seq_data1_in_time[0]['value'] if len(seq_data1_in_time)>0 else None
+print('value1')
+print(value1)
+
+##### extract data from the timeframe specified in the prompt for city2
+seq_data2_in_time=[x for x in seq_data2 if int(x['date']) == int(time)]
+print('seq_data2_in_time')
+print(seq_data2_in_time)
+print('len(seq_data2_in_time)')
+print(len(seq_data2_in_time))
+value2=seq_data2_in_time[0]['value'] if len(seq_data2_in_time)>0 else None
+print('value2')
+print(value2)
+
+##### the answer options are 'higher' or 'lower'
+if value1 is not None and value2 is not None:
+    if value1>value2:
+        natural_language_answer='higher'
+    else:
+        natural_language_answer='lower'
+else:
+    natural_language_answer='Data not available for comparison'
+print(natural_language_answer)
+#</Analysis>
