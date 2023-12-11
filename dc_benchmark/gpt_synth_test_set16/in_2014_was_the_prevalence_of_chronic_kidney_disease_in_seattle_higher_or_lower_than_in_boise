@@ -20,66 +20,69 @@ data = {
     "dc": ""
 }
 response = requests.post(url, headers=headers, json=data)
-res_data = json.loads(response.text)
-entity1 = res_data['entities'][0]
-variable = res_data['variables'][0]
-url = "https://api.datacommons.org/v2/observation"
-params = {
-"key": API_KEY,
-"entity.dcids": entity1, # e.g. "country/USA",
-"select": ["entity", "variable", "value", "date"],
-"variable.dcids": variable
-}
-response = requests.get(url, params=params)
+if response.text.strip():  # to avoid JSONDecodeError if the response is an empty string
+    res_data = json.loads(response.text)
+    entity1 = res_data['entities'][0]
+    variable = res_data['variables'][0]
+    url = "https://api.datacommons.org/v2/observation"
+    params = {
+    "key": API_KEY,
+    "entity.dcids": entity1, # e.g. "country/USA",
+    "select": ["entity", "variable", "value", "date"],
+    "variable.dcids": variable
+    }
+    response = requests.get(url, params=params)
 
-print('response.text')
-print(response.text)
+    print('response.text')
+    print(response.text)
 
-##### extract the data from the response
-obs_data = json.loads(response.text)
-print('obs_data')
-print(obs_data)
+    ##### extract the data from the response
+    if response.text.strip():  # to avoid JSONDecodeError if the response is an empty string
+        obs_data = json.loads(response.text)
+        print('obs_data')
+        print(obs_data)
+        entity_data1 = obs_data["byVariable"][variable]["byEntity"][entity1]
+        print('entity_data1')
+        print(entity_data1)
+        seq_data1 = entity_data1["orderedFacets"][0]['observations']
+        print('seq_data1')
+        print(seq_data1)
 
-entity_data1 = obs_data["byVariable"][variable]["byEntity"][entity1]
-print('entity_data1')
-print(entity_data1)
-
-seq_data1 = entity_data1["orderedFacets"][0]['observations']
-print('seq_data1')
-print(seq_data1)
-
+##### The issue in the initial code is that it tries to make a json decode even if the response is empty.  
 ##### collect data from Data Commons for city2
 query=variable_text+' in '+city2
 url = f"https://datacommons.org/api/explore/detect?q={query}"
 response = requests.post(url, headers=headers, json=data)
-res_data = json.loads(response.text)
-entity2 = res_data['entities'][0]
+if response.text.strip():  # to avoid JSONDecodeError if the response is an empty string
+    res_data = json.loads(response.text)
+    entity2 = res_data['entities'][0]
 
-params = {
-"key": API_KEY,
-"entity.dcids": entity2, 
-"select": ["entity", "variable", "value", "date"],
-"variable.dcids": variable
-}
-response = requests.get(url, params=params)
-print('response.text')
-print(response.text)
+    params = {
+    "key": API_KEY,
+    "entity.dcids": entity2, 
+    "select": ["entity", "variable", "value", "date"],
+    "variable.dcids": variable
+    }
+    response = requests.get(url, params=params)
+    print('response.text')
+    print(response.text)
 #</PrevData>
 
 #<PrepData>
 print('********** Prepare the dataset for analysis and visualization')
 ##### extract the data for city2 from the response
-obs_data2 = json.loads(response.text)
-print('obs_data2')
-print(obs_data2)
+if response.text.strip():  # to avoid JSONDecodeError if the response is an empty string
+    obs_data2 = json.loads(response.text)
+    print('obs_data2')
+    print(obs_data2)
 
-entity_data2 = obs_data2["byVariable"][variable]["byEntity"][entity2]
-print('entity_data2')
-print(entity_data2)
+    entity_data2 = obs_data2["byVariable"][variable]["byEntity"][entity2]
+    print('entity_data2')
+    print(entity_data2)
 
-seq_data2 = entity_data2["orderedFacets"][0]['observations']
-print('seq_data2')
-print(seq_data2)
+    seq_data2 = entity_data2["orderedFacets"][0]['observations']
+    print('seq_data2')
+    print(seq_data2)
 #</PrepData>
 
 #<Analysis>
