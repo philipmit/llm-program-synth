@@ -1,8 +1,3 @@
-The error message indicates that the variable 'natural_language_answer' is not defined. Thus, before we assess the values of city1 and city2, we should declare this variable with a default value. 
-
-Here is the corrected code:
-
-
 #<PrevData>
 print('********** Load and preview the dataset and datatypes')
 ##### define variables based on prompt
