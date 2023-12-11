@@ -100,3 +100,25 @@ else:
     natural_language_answer = 'lower'
 print(natural_language_answer)
 #</Analysis>
+#<Visualize>
+import matplotlib.pyplot as plt
+import numpy as np
+
+print('********** Create visualization that demonstrates the answer to the question in the prompt')
+
+# Prepare data for visualization
+cities = [city1, city2]
+values = [value1, value2]
+
+# Check if data is available for both cities
+if None not in values:
+    # Create bar chart
+    plt.figure(figsize=(10, 6))
+    plt.bar(cities, values, color=['blue', 'orange'])
+    plt.xlabel('City')
+    plt.ylabel(variable_text.capitalize())
+    plt.title(f'Comparison of {variable_text} in {city1} and {city2} in {time}')
+    plt.show()
+else:
+    print('Data not available for one or both cities. Unable to create visualization.')
+#</Visualize>
