@@ -1,0 +1,37 @@
+#<PrevData>
+print('********** Load and preview the dataset and datatypes')
+##### define variables based on prompt
+question='Is the rate of growth in the prevalence of arthritis higher in Omaha or Irvine?'
+variable_text='the prevalence of arthritis'
+city1='Omaha'
+city2='Irvine'
+
+##### collect data from Data Commons for both cities
+cities = [city1, city2]
+slope_values = {}
+
+for city in cities:
+    query = variable_text + ' in ' + city
+    url = f"https://datacommons.org/api/explore/detect?q={query}"
+    headers = {
+        "Content-Type": "application/json"
+    }
+    data = {
+        "contextHistory": [],
+        "dc": ""
+    }
+    response = requests.post(url, headers=headers, json=data)
+    res_data = json.loads(response.text)
+    entity = res_data['entities'][0]
+    variable = res_data['variables'][0]
+
+    url = "https://api.datacommons.org/v2/observation"
+    params = {
+        "key": API_KEY,
+        "entity.dcids": entity,
+        "select": ["entity", "variable", "value", "date"],
+        "variable.dcids": variable
+    }
+    response = requests.get(url, params=params)
+    print(response.text)
+#</PrevData>
