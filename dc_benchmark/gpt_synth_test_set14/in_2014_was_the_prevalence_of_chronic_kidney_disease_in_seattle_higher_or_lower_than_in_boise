@@ -81,3 +81,28 @@ print(len(seq1_data))
 print('len(seq2_data)')
 print(len(seq2_data))
 #</PrepData>
+#<Analysis>
+print('********** Perform the analysis to answer the question in the prompt')
+##### extract data from the specific year specified in the prompt
+seq1_data_in_time=[x for x in seq1_data if x['date'] == time]
+seq2_data_in_time=[x for x in seq2_data if x['date'] == time]
+print('seq1_data_in_time')
+print(seq1_data_in_time)
+print('seq2_data_in_time')
+print(seq2_data_in_time)
+value_city1 = seq1_data_in_time[0]['value'] if len(seq1_data_in_time) > 0 else None
+value_city2 = seq2_data_in_time[0]['value'] if len(seq2_data_in_time) > 0 else None
+print('value_city1')
+print(value_city1)
+print('value_city2')
+print(value_city2)
+##### the answer options are 'higher' or 'lower'
+if value_city1 is not None and value_city2 is not None:
+    if value_city1 > value_city2:
+        natural_language_answer='higher'
+    else:
+        natural_language_answer='lower'
+else:
+    natural_language_answer = "Data not available for one or both cities in the specified year."
+print(natural_language_answer)
+#</Analysis>
