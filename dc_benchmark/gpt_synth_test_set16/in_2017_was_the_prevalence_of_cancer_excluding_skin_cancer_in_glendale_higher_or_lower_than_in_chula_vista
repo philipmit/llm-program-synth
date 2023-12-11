@@ -47,7 +47,10 @@ params = {
     "variable.dcids": variable
 }
 response = requests.get(url, params=params)
-obs_data2 = json.loads(response.text)
+if response.status_code == 200:
+    obs_data2 = json.loads(response.text)
+else:
+    obs_data2 = None
 #</PrevData>
 
 #<PrepData>
@@ -57,6 +60,9 @@ entity_data1 = obs_data1["byVariable"][variable]["byEntity"][entity1]
 seq_data1 = entity_data1["orderedFacets"][0]['observations']
 
 ##### extract the data from the response for city2
-entity_data2 = obs_data2["byVariable"][variable]["byEntity"][entity2]
-seq_data2 = entity_data2["orderedFacets"][0]['observations']
+if obs_data2:
+    entity_data2 = obs_data2["byVariable"][variable]["byEntity"][entity2]
+    seq_data2 = entity_data2["orderedFacets"][0]['observations']
+else:
+    seq_data2 = []
 #</PrepData>
