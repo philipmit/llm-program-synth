@@ -31,9 +31,9 @@ for city in cities:
     url = "https://api.datacommons.org/v2/observation"
     params = {
     "key": API_KEY,
-    "entity.dcids": entity, # e.g. "country/USA",
+    "entity.dcids": [entity], # e.g. "country/USA",
     "select": ["entity", "variable", "value", "date"],
-    "variable.dcids": variable
+    "variable.dcids": [variable]
     }
     response = requests.get(url, params=params)
     print('response.text')
