@@ -91,3 +91,37 @@ if len(seq_data1_in_time)>0 and len(seq_data2_in_time)>0:
 else:
     print("Data for 2014 not found for one or both cities")
 #</Analysis>
+#<Visualize>
+print('********** Create visualization that demonstrates the answer to the question in the prompt')
+import matplotlib.pyplot as plt
+import numpy as np
+
+# Prepare data for visualization
+years1 = [int(x['date']) for x in seq_data1]
+values1 = [x['value'] for x in seq_data1]
+years2 = [int(x['date']) for x in seq_data2]
+values2 = [x['value'] for x in seq_data2]
+
+# Create a figure and a set of subplots
+fig, ax = plt.subplots()
+
+# Plot data for city1
+ax.plot(years1, values1, label=city1, color="navy")
+
+# Plot data for city2
+ax.plot(years2, values2, label=city2, color="darkred")
+
+# Highlight the year from the prompt
+ax.axvline(x=int(time), color='gray', linestyle='--')
+
+# Add labels and title
+ax.set_xlabel('Year')
+ax.set_ylabel(variable_text.capitalize())
+ax.set_title(f'{variable_text.capitalize()} in {city1} and {city2} over time')
+
+# Add a legend
+ax.legend()
+
+# Show the plot
+plt.show()
+#</Visualize>
