@@ -64,12 +64,12 @@ seq_data_in_year1=[x for x in seq_data1 if x['date'] == year]
 seq_data_in_year2=[x for x in seq_data2 if x['date'] == year]
 
 if len(seq_data_in_year1)>0:
-    value1=seq_data_in_year1[0]['value']
+    value1=float(seq_data_in_year1[0]['value'])
 else:
     print('No data for '+city1+' in '+year)
 
 if len(seq_data_in_year2)>0:
-    value2=seq_data_in_year2[0]['value']
+    value2=float(seq_data_in_year2[0]['value'])
 else:
     print('No data for '+city2+' in '+year)
 
