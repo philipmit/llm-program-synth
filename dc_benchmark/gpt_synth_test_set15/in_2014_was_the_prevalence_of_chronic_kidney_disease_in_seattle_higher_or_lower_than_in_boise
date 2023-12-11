@@ -26,7 +26,7 @@ variable = res_data['variables'][0]
 url = "https://api.datacommons.org/v2/observation"
 params = {
 "key": API_KEY,
-"entity.dcids": entity1, # e.g. "country/USA",
+"entity.dcids": entity1,
 "select": ["entity", "variable", "value", "date"],
 "variable.dcids": variable
 }
@@ -43,7 +43,7 @@ entity2 = res_data['entities'][0]
 url = "https://api.datacommons.org/v2/observation"
 params = {
 "key": API_KEY,
-"entity.dcids": entity2, # e.g. "country/USA",
+"entity.dcids": entity2,
 "select": ["entity", "variable", "value", "date"],
 "variable.dcids": variable
 }
@@ -54,6 +54,9 @@ print(response2.text)
 
 #<PrepData>
 print('********** Prepare the dataset for analysis')
+##### declare the required variables to avoid 'name 'entity_data1' is not defined' error
+entity_data1 = None
+entity_data2 = None
 ##### extract the data from the response for city1
 obs_data1 = json.loads(response.text)
 print('obs_data1')
