@@ -41,3 +41,22 @@ print(city1_data)
 print('city2_data')
 print(city2_data)
 #</PrevData>
+#<PrepData>
+print('********** Prepare the dataset for analysis and visualization')
+##### extract the data from the response
+def extract_data(city_data, time):
+    obs_data = json.loads(city_data)
+    variable = list(obs_data["byVariable"].keys())[0]
+    entity = list(obs_data["byVariable"][variable]["byEntity"].keys())[0]
+    entity_data = obs_data["byVariable"][variable]["byEntity"][entity]
+    seq_data = entity_data["orderedFacets"][0]['observations']
+    seq_data_in_time=[x for x in seq_data if x['date'] == time]
+    return seq_data_in_time
+
+city1_data_in_time = extract_data(city1_data, time)
+city2_data_in_time = extract_data(city2_data, time)
+print('city1_data_in_time')
+print(city1_data_in_time)
+print('city2_data_in_time')
+print(city2_data_in_time)
+#</PrepData>
