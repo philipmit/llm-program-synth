@@ -1,3 +1,8 @@
+The error message indicates that the variable 'natural_language_answer' is not defined. Thus, before we assess the values of city1 and city2, we should declare this variable with a default value. 
+
+Here is the corrected code:
+
+
 #<PrevData>
 print('********** Load and preview the dataset and datatypes')
 ##### define variables based on prompt
@@ -81,6 +86,8 @@ else:
 #</PrepData>
 #<Analysis>
 print('********** Perform the analysis to answer the question in the prompt')
+##### declare the natural language answer to avoid 'name 'natural_language_answer' is not defined' error
+natural_language_answer = "Data not available for comparison"
 ##### extract data for the specified year for city1
 value1 = None
 if entity_data1:
