@@ -39,7 +39,7 @@ else:
     params1 = {
         "key": API_KEY,
         "entity.dcids": entity1,
-        "select": ["entity", "variable", "value", "date"],
+        "select": ["date", "value"],
         "variable.dcids": variable
     }
 
@@ -49,18 +49,19 @@ else:
     params2 = {
         "key": API_KEY,
         "entity.dcids": entity2,
-        "select": ["entity", "variable", "value", "date"],
+        "select": ["date", "value"],
         "variable.dcids": variable
     }
 
     response = requests.get(url, params=params2)
     entity2_data = json.loads(response.text)
 #</PrevData>
+
 #<PrepData>
 print('********** Prepare the dataset for analysis')
 ##### filter the data to get the data for the year and cities specified in the prompt
-def get_value_for_year(entity_data, year):
-    for observation in entity_data["byVariable"][variable]["byEntity"][entity]["orderedFacets"]:
+def get_value_for_year(observations, year):
+    for observation in observations:
         if observation['date'] == year:
             return float(observation['value'])
     return None
