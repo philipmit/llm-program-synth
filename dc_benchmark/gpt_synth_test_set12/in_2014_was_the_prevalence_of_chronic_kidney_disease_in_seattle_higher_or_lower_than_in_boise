@@ -58,3 +58,26 @@ else:
     natural_language_answer='Data for ' + time + ' is not available for both cities.'
 print(natural_language_answer)
 # </Analysis>
+#<Visualize>
+print('********** Create visualization that demonstrates the answer to the question in the prompt')
+import matplotlib.pyplot as plt
+import numpy as np
+
+plt.figure(figsize=(10, 6))
+x = list(values_city_year[cities[0]].keys())
+y_cities = []
+colors = ["navy", "darkred"]
+for i, city in enumerate(cities):
+    y = list(values_city_year[city].values())
+    y_cities.append(y)
+    plt.plot(x, y, label=f'{city} {variable_text}',
+             color=colors[i])
+
+plt.xlabel("Year")
+plt.ylabel(f'{variable_text.capitalize()} (%)')
+plt.title(f'Comparison of {variable_text} in {cities[0]} and {cities[1]}')
+plt.xticks(rotation=45)
+plt.legend()
+plt.tight_layout()
+plt.show()
+#</Visualize>
