@@ -43,6 +43,7 @@ url = f"https://datacommons.org/api/explore/detect?q={query}"
 response = requests.post(url, headers=headers, json=data)
 res_data = json.loads(response.text)
 entity2 = res_data['entities'][0]
+url = "https://api.datacommons.org/v2/observation"
 params["entity.dcids"] = entity2
 response = requests.get(url, params=params)
 print('response.text for city2')
