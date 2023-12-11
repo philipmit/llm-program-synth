@@ -81,3 +81,20 @@ else:
         natural_language_answer='lower'
     print(natural_language_answer)
 #</Analysis></PrepData>
+#<Visualize>
+import matplotlib.pyplot as plt
+import numpy as np
+
+print('********** Create visualization that demonstrates the answer to the question in the prompt')
+data=[value1[0] if value1 else None, value2[0] if value2 else None]
+labels = [city1, city2]
+x = np.arange(len(labels))
+
+plt.figure(figsize=(10, 6))
+plt.bar(x, data, color=["navy", "darkred"])
+plt.xlabel('Cities')
+plt.ylabel(variable_text.capitalize())
+plt.title(f'Comparison of {variable_text} in {city1} and {city2} in {time}')
+plt.xticks(x, labels)
+plt.show()
+#</Visualize></Analysis>
