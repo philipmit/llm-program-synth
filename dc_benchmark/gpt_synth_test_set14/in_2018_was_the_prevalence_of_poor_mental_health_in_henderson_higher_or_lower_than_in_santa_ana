@@ -7,7 +7,7 @@ time='2018'
 city1='Henderson'
 city2='Santa Ana'
 
-
+#<!---- Corrected: Fix the data collection from Data Commons, in order to get the specific data for required parameter ----->
 ##### collect data from Data Commons
 import requests
 import json
@@ -26,22 +26,26 @@ response = requests.post(url, headers=headers, json=data)
 res_data = json.loads(response.text)
 entity1 = res_data['entities'][0]
 variable = res_data['variables'][0]
-url = "https://api.datacommons.org/v2/observation"
+
+##### Change the API URL to correct one in order to get the proper datasets from google data commons
+url = "https://api.datacommons.org/data/observation"
 params = {
-"key": API_KEY,
-"entity.dcids": entity1, 
-"select": ["entity", "variable", "value", "date"],
-"variable.dcids": variable
+    "key": API_KEY,
+    "entity.dcids": entity1, 
+    "select": ["entity", "variable", "value", "date"],
+    "variable.dcids": variable
 }
 response = requests.get(url, params=params)
 entity1_data = json.loads(response.text)
 
 # Collect data for second city
 query=variable_text+' in '+city2
-url = f"https://datacommons.org/api/explore/detect?q={query}"
 response = requests.post(url, headers=headers, json=data)
 res_data = json.loads(response.text)
 entity2 = res_data['entities'][0]
+
+##### Correct post request to get request in order to get the proper datasets from google data commons
+params['entity.dcids'] = entity2
 response = requests.get(url, params=params)
 entity2_data = json.loads(response.text)
 #</PrevData>
