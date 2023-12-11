@@ -82,3 +82,35 @@ print(len(seq_data1))
 print('len(seq_data2)')
 print(len(seq_data2))
 #</PrepData>
+#<Analysis>
+from scipy import stats
+import numpy as np
+print('********** Perform the analysis to answer the question in the prompt')
+##### extract data from the timeframe specified in the prompt
+X1=[int(x['date']) for x in seq_data1]
+print('X1')
+print(X1)
+y1=[x['value'] for x in seq_data1]
+print('y1')
+print(y1)
+slope1, intercept1, r_value1, p_value1, std_err1 = stats.linregress(X1, y1)
+print('slope1')
+print(slope1)
+
+X2=[int(x['date']) for x in seq_data2]
+print('X2')
+print(X2)
+y2=[x['value'] for x in seq_data2]
+print('y2')
+print(y2)
+slope2, intercept2, r_value2, p_value2, std_err2 = stats.linregress(X2, y2)
+print('slope2')
+print(slope2)
+
+##### the answer options are 'Austin' or 'Miami'
+if slope1>slope2:
+    natural_language_answer='Austin'
+else:
+    natural_language_answer='Miami'
+print(natural_language_answer)
+#</Analysis>
