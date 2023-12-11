@@ -35,3 +35,14 @@ for city in cities:
     obs_data = json.loads(response.text)
     disease_data.append(obs_data)
 #</PrevData>
+#<PrepData>
+print('********** Prepare the dataset for analysis and visualization')
+##### extract the data for each city
+city_data=[]
+for obs_data, city in zip(disease_data, cities):
+    entity_data = obs_data["byVariable"][variable]["byEntity"][entity]
+    seq_data = entity_data["orderedFacets"][0]['observations']
+    city_data.append({"city":city, "seq_data":seq_data})
+print('city_data')
+print(city_data)
+#</PrepData>
