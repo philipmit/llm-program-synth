@@ -20,19 +20,19 @@ data = {
     "contextHistory": [],
     "dc": ""
 }
-response = requests.post(url, headers=headers, json=data)
-res_data = json.loads(response.text)
-entity1 = res_data['entities'][0]
-variable = res_data['variables'][0]
+response1 = requests.post(url, headers=headers, json=data)
+res_data1 = json.loads(response1.text)
+entity1 = res_data1['entities'][0]
+variable = res_data1['variables'][0]
 url = "https://api.datacommons.org/v2/observation"
 params = {
-"key": API_KEY,
-"entity.dcids": entity1, # e.g. "country/USA",
-"select": ["entity", "variable", "value", "date"],
-"variable.dcids": variable
+    "key": API_KEY,
+    "entity.dcids": entity1, 
+    "select": ["entity", "variable", "value", "date"],
+    "variable.dcids": variable
 }
 response1 = requests.get(url, params=params)
-print('response.text')
+print('response1.text')
 print(response1.text)
 
 ##### collect data from Data Commons for city2
@@ -42,13 +42,13 @@ response2 = requests.post(url, headers=headers, json=data)
 res_data2 = json.loads(response2.text)
 entity2 = res_data2['entities'][0]
 params2 = {
-"key": API_KEY,
-"entity.dcids": entity2, # e.g. "country/USA",
-"select": ["entity", "variable", "value", "date"],
-"variable.dcids": variable
+    "key": API_KEY,
+    "entity.dcids": entity2,
+    "select": ["entity", "variable", "value", "date"],
+    "variable.dcids": variable
 }
 response2 = requests.get(url, params=params2)
-print('response.text')
+print('response2.text')
 print(response2.text)
 #</PrevData>
 
@@ -61,15 +61,9 @@ print(obs_data1)
 entity_data1 = obs_data1["byVariable"][variable]["byEntity"][entity1]
 print('entity_data1')
 print(entity_data1)
-print('type(entity_data1)')
-print(type(entity_data1))
 seq_data1 = entity_data1["orderedFacets"][0]['observations']
 print('seq_data1')
 print(seq_data1)
-print('type(seq_data1)')
-print(type(seq_data1))
-print('len(seq_data1)')
-print(len(seq_data1))
 
 ##### extract the data from the response for city2
 obs_data2 = json.loads(response2.text)
@@ -78,13 +72,7 @@ print(obs_data2)
 entity_data2 = obs_data2["byVariable"][variable]["byEntity"][entity2]
 print('entity_data2')
 print(entity_data2)
-print('type(entity_data2)')
-print(type(entity_data2))
 seq_data2 = entity_data2["orderedFacets"][0]['observations']
 print('seq_data2')
 print(seq_data2)
-print('type(seq_data2)')
-print(type(seq_data2))
-print('len(seq_data2)')
-print(len(seq_data2))
 #</PrepData>
