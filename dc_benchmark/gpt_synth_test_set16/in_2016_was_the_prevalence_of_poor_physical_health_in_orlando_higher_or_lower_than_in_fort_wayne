@@ -7,10 +7,10 @@ time='2016'
 city1='Orlando'
 city2='Fort Wayne'
 
-
 ##### collect data from Data Commons for city1
 import requests
 import json
+
 query=variable_text+' in '+city1
 url = f"https://datacommons.org/api/explore/detect?q={query}"
 headers = {
@@ -26,14 +26,14 @@ entity1 = res_data['entities'][0]
 variable = res_data['variables'][0]
 url = "https://api.datacommons.org/v2/observation"
 params = {
-"key": API_KEY,
-"entity.dcids": entity1, # e.g. "country/USA",
-"select": ["entity", "variable", "value", "date"],
-"variable.dcids": variable
+    "key": API_KEY,
+    "entity.dcids": entity1, 
+    "select": ["entity", "variable", "value", "date"],
+    "variable.dcids": variable
 }
-response = requests.get(url, params=params)
+response1 = requests.get(url, params=params)
 print('response.text for city1')
-print(response.text)
+print(response1.text)
 
 ##### collect data from Data Commons for city2
 query=variable_text+' in '+city2
@@ -42,42 +42,34 @@ response = requests.post(url, headers=headers, json=data)
 res_data = json.loads(response.text)
 entity2 = res_data['entities'][0]
 params = {
-"key": API_KEY,
-"entity.dcids": entity2, # e.g. "country/USA",
-"select": ["entity", "variable", "value", "date"],
-"variable.dcids": variable
+    "key": API_KEY,
+    "entity.dcids": entity2, 
+    "select": ["entity", "variable", "value", "date"],
+    "variable.dcids": variable
 }
-response = requests.get(url, params=params)
+response2 = requests.get(url, params=params)
 print('response.text for city2')
-print(response.text)
+print(response2.text)
 #</PrevData>
+
 #<PrepData>
 print('********** Prepare the dataset for analysis and visualization')
 ##### extract the data from the response for city1
-obs_data1 = json.loads(response.text)
-print('obs_data1')
-print(obs_data1)
-entity_data1 = obs_data1["byVariable"][variable]["byEntity"][entity1]
-print('entity_data1')
-print(entity_data1)
-print('type(entity_data1)')
-print(type(entity_data1))
-seq_data1 = entity_data1["orderedFacets"][0]['observations']
-print('seq_data1')
-print(seq_data1)
-print('type(seq_data1)')
-print(type(seq_data1))
-print('len(seq_data1)')
-print(len(seq_data1))
+try:
+    obs_data1 = json.loads(response1.text)
+    entity_data1 = obs_data1["byVariable"][variable]["byEntity"][entity1]
+    seq_data1 = entity_data1["orderedFacets"][0]['observations']
+except json.JSONDecodeError:
+    print(f"No data available for {city1} in the given timeframe.")
+    seq_data1 = []
 
 ##### extract the data from the response for city2
-# As the response for city2 is a 404 error, we can't extract data for city2. 
-# We need to handle this exception and print an appropriate message.
+
 try:
-    obs_data2 = json.loads(response.text)
+    obs_data2 = json.loads(response2.text)
     entity_data2 = obs_data2["byVariable"][variable]["byEntity"][entity2]
     seq_data2 = entity_data2["orderedFacets"][0]['observations']
-except:
+except json.JSONDecodeError:
     print(f"No data available for {city2} in the given timeframe.")
     seq_data2 = []
 #</PrepData>
