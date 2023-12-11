@@ -31,18 +31,17 @@ if response.text.strip():
     "select": ["entity", "variable", "value", "date"],
     "variable.dcids": variable
     }
-    try:
-        response = requests.get(url, params=params)
+    response = requests.get(url, params=params)
+    if response.text.strip():
         print('response.text for city1')
         print(response.text)
-    except:
+    else:
         print(f"No data found for {city1}")
 seq_data1 = []
 if response.text.strip():  
     obs_data = json.loads(response.text)
     entity_data1 = obs_data["byVariable"][variable]["byEntity"][entity1]
     seq_data1 = entity_data1["orderedFacets"][0]['observations']
-
 
 ##### collect data from Data Commons for city2
 query=variable_text+' in '+city2
@@ -51,18 +50,18 @@ response = requests.post(url, headers=headers, json=data)
 if response.text.strip():  
     res_data = json.loads(response.text)
     entity2 = res_data['entities'][0]
-
+    url = "https://api.datacommons.org/v2/observation"
     params = {
     "key": API_KEY,
     "entity.dcids": entity2, 
     "select": ["entity", "variable", "value", "date"],
     "variable.dcids": variable
-    }
-    try:
-        response = requests.get(url, params=params)
+    }    
+    response = requests.get(url, params=params)
+    if response.text.strip():
         print('response.text for city2')
         print(response.text)
-    except:
+    else:
         print(f"No data found for {city2}")
 #</PrevData>
 
