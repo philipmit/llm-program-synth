@@ -56,3 +56,23 @@ else:
     response = requests.get(url, params=params2)
     entity2_data = json.loads(response.text)
 #</PrevData>
+#<PrepData>
+print('********** Prepare the dataset for analysis')
+##### filter the data to get the data for the year and cities specified in the prompt
+def get_value_for_year(entity_data, year):
+    for observation in entity_data["byVariable"][variable]["byEntity"][entity]["orderedFacets"]:
+        if observation['date'] == year:
+            return float(observation['value'])
+    return None
+
+value_city1 = get_value_for_year(entity1_data, time)
+value_city2 = get_value_for_year(entity2_data, time)
+
+if value_city1 is None:
+    print(f"No data for {city1} in the year {time}")
+if value_city2 is None:
+    print(f"No data for {city2} in the year {time}")
+
+if value_city1 is not None and value_city2 is not None:
+    print(f"{city1}: {value_city1}, {city2}: {value_city2}")
+#</PrepData>
