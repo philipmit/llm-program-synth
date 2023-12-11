@@ -24,8 +24,8 @@ data = {
 }
 response1 = requests.post(url, headers=headers, json=data)
 res_data1 = json.loads(response1.text)
-entity1 = res_data1['entities'][0]
-variable = res_data1['variables'][0]
+entity1 = res_data1['entities'][0]['dcid']
+variable = res_data1['variables'][0]['dcid']
 url = "https://api.datacommons.org/v2/observation"
 params1 = {
 "key": API_KEY,
@@ -43,7 +43,7 @@ query2=variable_text+' in '+city2
 url = f"https://datacommons.org/api/explore/detect?q={query2}"
 response2 = requests.post(url, headers=headers, json=data)
 res_data2 = json.loads(response2.text)
-entity2 = res_data2['entities'][0]
+entity2 = res_data2['entities'][0]['dcid']
 params2 = {
 "key": API_KEY,
 "entity.dcids": entity2,
