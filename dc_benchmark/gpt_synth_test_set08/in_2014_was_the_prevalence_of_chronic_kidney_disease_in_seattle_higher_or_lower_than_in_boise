@@ -84,3 +84,18 @@ else:
 
 print(f"In 2014, the prevalence of chronic kidney disease in {city1} was {natural_language_answer} than in {city2}.")
 #</Analysis>
+#<Visualize>
+import matplotlib.pyplot as plt
+import numpy as np
+print('********** Create visualization that demonstrates the answer to the question in the prompt')
+##### create a bar chart to compare the values
+cities = [city1, city2]
+values = [value1, value2]
+
+plt.figure(figsize=(8, 5))
+plt.bar(cities, values, color=["blue", "orange"])
+plt.title("Prevalence of chronic kidney disease in 2014")
+plt.xlabel("City")
+plt.ylabel("Prevalence")
+plt.show()
+#</Visualize>
