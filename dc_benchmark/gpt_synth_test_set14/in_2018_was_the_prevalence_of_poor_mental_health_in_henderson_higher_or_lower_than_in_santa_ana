@@ -7,45 +7,52 @@ time='2018'
 city1='Henderson'
 city2='Santa Ana'
 
-#<!---- Corrected: Fix the data collection from Data Commons, in order to get the specific data for required parameter ----->
 ##### collect data from Data Commons
 import requests
 import json
 
-# Collect data for first city
-query=variable_text+' in '+city1
-url = f"https://datacommons.org/api/explore/detect?q={query}"
-headers = {
-    "Content-Type": "application/json"
-}
-data = {
-    "contextHistory": [],
-    "dc": ""
-}
-response = requests.post(url, headers=headers, json=data)
-res_data = json.loads(response.text)
-entity1 = res_data['entities'][0]
-variable = res_data['variables'][0]
+def get_entity_variable_from_data_commons(query):
+    url = f"https://datacommons.org/api/explore/detect?q={query}"
+    headers = {
+        "Content-Type": "application/json"
+    }
+    data = {
+        "contextHistory": [],
+        "dc": ""
+    }
+    response = requests.post(url, headers=headers, json=data)
+    res_data = json.loads(response.text)
+    if 'entities' in res_data and 'variables' in res_data:
+        entity = res_data['entities'][0]
+        variable = res_data['variables'][0]
+        return entity, variable
+    else:
+        return None, None
 
-##### Change the API URL to correct one in order to get the proper datasets from google data commons
-url = "https://api.datacommons.org/data/observation"
-params = {
-    "key": API_KEY,
-    "entity.dcids": entity1, 
-    "select": ["entity", "variable", "value", "date"],
-    "variable.dcids": variable
-}
-response = requests.get(url, params=params)
-entity1_data = json.loads(response.text)
+entity1, variable = get_entity_variable_from_data_commons(variable_text+' in '+city1)
+entity2, _ = get_entity_variable_from_data_commons(variable_text+' in '+city2)
 
-# Collect data for second city
-query=variable_text+' in '+city2
-response = requests.post(url, headers=headers, json=data)
-res_data = json.loads(response.text)
-entity2 = res_data['entities'][0]
+if not entity1 or not entity2:
+    print("Error in API call to Data Commons. The Entities or Variables not found. Please check the query.")
+else:
+    url = "https://api.datacommons.org/data/observation"
+    params1 = {
+        "key": API_KEY,
+        "entity.dcids": entity1,
+        "select": ["entity", "variable", "value", "date"],
+        "variable.dcids": variable
+    }
 
-##### Correct post request to get request in order to get the proper datasets from google data commons
-params['entity.dcids'] = entity2
-response = requests.get(url, params=params)
-entity2_data = json.loads(response.text)
+    response = requests.get(url, params=params1)
+    entity1_data = json.loads(response.text)
+
+    params2 = {
+        "key": API_KEY,
+        "entity.dcids": entity2,
+        "select": ["entity", "variable", "value", "date"],
+        "variable.dcids": variable
+    }
+
+    response = requests.get(url, params=params2)
+    entity2_data = json.loads(response.text)
 #</PrevData>
