@@ -81,3 +81,18 @@ else:
     natural_language_answer='decreasing'
 print(natural_language_answer)
 #</Analysis>
+#<Visualize>
+import matplotlib.pyplot as plt
+import numpy as np
+
+print('********** Create the visualization')
+
+plt.figure(figsize=(10, 6))
+plt.scatter(X, y, label=variable_text, color="blue")
+plt.plot(X, [slope*xi + intercept for xi in X], color="red", label='Linear fit')
+plt.title("Change in proportion of individuals in St. Louis suffering from poor physical health between 2018 and 2021")
+plt.xlabel('Year')
+plt.ylabel('Proportion (%)')
+plt.legend()
+plt.show()
+#</Visualize>
