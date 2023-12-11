@@ -1,0 +1,50 @@
+#<PrevData>
+print('********** Load and preview the dataset and datatypes')
+##### define variables based on prompt
+question='Is the rate of arthritis among people in Austin or Miami growing more quickly?'
+variable_text='the rate of arthritis among people'
+city1='Austin'
+city2='Miami'
+
+
+##### collect data from Data Commons
+import requests
+import json
+query1=variable_text+' in '+city1
+query2=variable_text+' in '+city2
+url1 = f"https://datacommons.org/api/explore/detect?q={query1}"
+url2 = f"https://datacommons.org/api/explore/detect?q={query2}"
+headers = {
+    "Content-Type": "application/json"
+}
+data = {
+    "contextHistory": [],
+    "dc": ""
+}
+response1 = requests.post(url1, headers=headers, json=data)
+response2 = requests.post(url2, headers=headers, json=data)
+res_data1 = json.loads(response1.text)
+res_data2 = json.loads(response2.text)
+entity1 = res_data1['entities'][0]
+entity2 = res_data2['entities'][0]
+variable = res_data1['variables'][0]
+url = "https://api.datacommons.org/v2/observation"
+params1 = {
+"key": API_KEY,
+"entity.dcids": entity1, 
+"select": ["entity", "variable", "value", "date"],
+"variable.dcids": variable
+}
+params2 = {
+"key": API_KEY,
+"entity.dcids": entity2, 
+"select": ["entity", "variable", "value", "date"],
+"variable.dcids": variable
+}
+response1 = requests.get(url, params=params1)
+response2 = requests.get(url, params=params2)
+print('response1.text')
+print(response1.text)
+print('response2.text')
+print(response2.text)
+#</PrevData>
