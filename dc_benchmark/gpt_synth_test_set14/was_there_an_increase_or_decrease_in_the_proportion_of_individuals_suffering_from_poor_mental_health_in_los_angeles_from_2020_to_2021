@@ -81,3 +81,16 @@ else:
     natural_language_answer='decreasing'
 print(natural_language_answer)
 #</Analysis>
+#<Visualize>
+print('********** Create visualization that demonstrates the answer to the question in the prompt')
+plt.figure(figsize=(10, 6))
+plt.scatter(X, y, label=variable_text.capitalize(), color="navy")
+plt.plot(X, intercept + slope * np.array(X), color="darkred", label="Trend line")
+plt.xlabel("Year")
+plt.ylabel(variable_text.capitalize())
+plt.legend()
+plt.xticks(rotation=45)
+plt.tight_layout()
+plt.title(f"Trend of {variable_text} in {city} from {time1} to {time2}")
+plt.show()
+#</Visualize>
