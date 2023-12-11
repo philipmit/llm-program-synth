@@ -86,3 +86,14 @@ print(type(seq_data_city2))
 print('len(seq_data_city2)')
 print(len(seq_data_city2))
 #</PrepData>
+#<Analysis>
+print('********** Perform the analysis to answer the question in the prompt')
+##### the answer options are 'higher' or 'lower'
+value_city1 = seq_data_city1[0]['value']
+value_city2 = seq_data_city2[0]['value']
+if value_city1 > value_city2:
+    natural_language_answer='higher'
+else:
+    natural_language_answer='lower'
+print('The prevalence of chronic kidney disease in '+city1+' was '+natural_language_answer+' than in '+city2+' in '+time+'.')
+#</Analysis>
