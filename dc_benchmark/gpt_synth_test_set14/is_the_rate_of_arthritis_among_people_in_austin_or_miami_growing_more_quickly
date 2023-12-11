@@ -54,3 +54,23 @@ for obs_data, city in zip(disease_data, cities):
 print('city_data')
 print(city_data)
 #</PrepData>
+#<Analysis>
+from scipy import stats
+import numpy as np
+print('********** Perform the analysis to answer the question in the prompt')
+##### calculate the slope for each city
+city_slopes=[]
+for data in city_data:
+    city=data['city']
+    X=[int(x['date']) for x in data['seq_data']]
+    y=[float(x['value']) for x in data['seq_data']]
+    slope, intercept, r_value, p_value, std_err = stats.linregress(X, y)
+    city_slopes.append({"city":city, "slope":slope})
+print('city_slopes')
+print(city_slopes)
+
+##### compare the slopes
+city_slopes.sort(key = lambda x: x["slope"], reverse=True)
+natural_language_answer= city_slopes[0]['city']
+print(natural_language_answer)
+#</Analysis>
