@@ -80,3 +80,30 @@ if city_slopes:  # will only compare the slopes if there are data
 else:
     print("No data to compare.")
 #</Analysis>
+#<Visualize>
+import matplotlib.pyplot as plt
+print('********** Create visualization that demonstrates the answer to the question in the prompt')
+
+#plotting rates for each city separately
+for data in city_data:
+    X =[int(x['date']) for x in data['seq_data']]
+    Y =[float(x['value']) for x in data['seq_data']]
+    plt.plot(X, Y, label = data['city'])
+    
+#Adding slope lines
+for slope in city_slopes:
+    city_name=slope['city']
+    slope_value=slope['slope']
+    data_dict=[x for x in city_data if x['city']==city_name][0]
+    X =[int(x['date']) for x in data_dict['seq_data']]
+    Y =[float(x['value']) for x in data_dict['seq_data']]
+    poly_coeff = np.polyfit(X, Y, 1)
+    poly_fit = np.poly1d(poly_coeff)
+    plt.plot(X,poly_fit(X),label=city_name+' slope', linestyle='--')
+
+plt.xlabel('Year')
+plt.ylabel(variable_text.capitalize())
+plt.title('Changes in '+variable_text.capitalize()+' over time')
+plt.legend()
+plt.show()
+#</Visualize>
