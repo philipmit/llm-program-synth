@@ -71,3 +71,20 @@ print(len(seq_data1))
 
 # Since we received a 404 error for city2 (Santa Ana), we cannot continue with the data extraction for city2
 #</PrepData>
+#<Analysis>
+print('********** Perform the analysis to answer the question in the prompt')
+##### extract data from the specified year
+seq_data_in_year1=[x for x in seq_data1 if x['date'] == year]
+print('seq_data_in_year1')
+print(seq_data_in_year1)
+print('len(seq_data_in_year1)')
+print(len(seq_data_in_year1))
+if len(seq_data_in_year1)>0:
+    value1=seq_data_in_year1[0]['value']
+    print('value1')
+    print(value1)
+else:
+    print('No data for '+city1+' in '+year)
+
+# Since we received a 404 error for city2 (Santa Ana), we cannot continue with the data extraction for city2
+#</Analysis>
