@@ -21,28 +21,36 @@ for city in cities:
     }
     response = requests.post(url, headers=headers, json=data)
     res_data = json.loads(response.text)
-    entity = res_data['entities'][0]
-    variable = res_data['variables'][0]
-    url = "https://api.datacommons.org/v2/observation"
-    params = {
-    "key": API_KEY,
-    "entity.dcids": entity, # e.g. "country/USA",
-    "select": ["entity", "variable", "value", "date"],
-    "variable.dcids": variable
-    }
-    response = requests.get(url, params=params)
-    print(response.text)
-    obs_data = json.loads(response.text)
-    disease_data.append(obs_data)
+    entity = res_data['entities'][0] if 'entities' in res_data else None
+    variable = res_data['variables'][0] if 'variables' in res_data else None
+    if entity and variable: 
+        url = "https://api.datacommons.org/v2/observation"
+        params = {
+        "key": API_KEY,
+        "entity.dcids": entity, # e.g. "country/USA",
+        "select": ["entity", "variable", "value", "date"],
+        "variable.dcids": variable
+        }
+        response = requests.get(url, params=params)
+        print(response.text)
+        obs_data = json.loads(response.text)
+        disease_data.append(obs_data)
+    else:
+        print("No data for city %s"%city)
 #</PrevData>
+
 #<PrepData>
 print('********** Prepare the dataset for analysis and visualization')
 ##### extract the data for each city
 city_data=[]
 for obs_data, city in zip(disease_data, cities):
-    entity_data = obs_data["byVariable"][variable]["byEntity"][entity]
-    seq_data = entity_data["orderedFacets"][0]['observations']
-    city_data.append({"city":city, "seq_data":seq_data})
+    if 'byVariable' in obs_data:
+        city_entity = list(obs_data["byVariable"].keys())[0]
+        print(city_entity)
+        if city_entity in obs_data["byVariable"] and city_entity in obs_data["byVariable"][city_entity]["byEntity"]:
+            entity_data = obs_data["byVariable"][city_entity]["byEntity"][city_entity]['orderedFacets'][0]
+            seq_data = entity_data['observations']
+            city_data.append({"city":city, "seq_data":seq_data})
 print('city_data')
 print(city_data)
 #</PrepData>
