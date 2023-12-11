@@ -35,3 +35,25 @@ for city in cities:
     response = requests.get(url, params=params)
     print(response.text)
 #</PrevData>
+#<PrepData>
+print('********** Prepare the dataset for analysis and visualization')
+##### extract the data from the response
+obs_data_city1 = json.loads(response.text)
+obs_data_city2 = json.loads(response.text)
+print('obs_data_city1 and obs_data_city2')
+print(obs_data_city1,"\n", obs_data_city2)
+
+entity_data_city1 = obs_data_city1["byVariable"][variable]["byEntity"][entity]
+entity_data_city2 = obs_data_city2["byVariable"][variable]["byEntity"][entity]
+
+print('entity_data for City1 and City2')
+print(entity_data_city1,"\n",entity_data_city2 )
+
+seq_data_city1 = entity_data_city1["orderedFacets"][0]['observations']
+seq_data_city2 = entity_data_city2["orderedFacets"][0]['observations']
+
+print('Sequential data City1 and City2')
+print(seq_data_city1,"\n",seq_data_city2)
+print('len(seq_data_city1) and len(seq_data_city2)')
+print(len(seq_data_city1), len(seq_data_city2))
+#</PrepData>
