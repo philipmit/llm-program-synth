@@ -77,3 +77,19 @@ else:
     natural_language_answer = 'lower'
 print('The prevalence of chronic kidney disease in Seattle was', natural_language_answer, 'than in Boise in 2014.')
 #</Analysis>
+#<Visualize>
+print('********** Create visualization that demonstrates the answer to the question in the prompt')
+import matplotlib.pyplot as plt
+import numpy as np
+
+cities = [city1, city2]
+values = [city1_value, city2_value]
+
+plt.figure(figsize=(6, 4))
+plt.bar(cities, values, color=['blue', 'green'])
+plt.title(question+ '\nAnswer: The prevalence in Seattle was ' + natural_language_answer + ' than in Boise.')
+plt.xlabel("Cities")
+plt.ylabel(variable_text.capitalize())
+plt.ylim(0, max(values)+0.5)
+plt.show()
+#</Visualize>
