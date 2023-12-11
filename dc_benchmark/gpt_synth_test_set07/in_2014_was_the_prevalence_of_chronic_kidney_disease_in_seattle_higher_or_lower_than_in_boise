@@ -41,6 +41,7 @@ for city in cities:
     ##### save the data for each city
     entity_data[city] = json.loads(response.text)
 #</PrevData>
+
 #<PrepData>
 print('********** Prepare the dataset for analysis and visualization')
 ##### extract the data from the response
