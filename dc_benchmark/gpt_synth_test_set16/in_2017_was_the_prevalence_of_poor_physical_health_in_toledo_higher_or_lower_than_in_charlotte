@@ -41,15 +41,16 @@ url = f"https://datacommons.org/api/explore/detect?q={query}"
 response = requests.post(url, headers=headers, json=data)
 res_data = json.loads(response.text)
 entity2 = res_data['entities'][0]
+url = "https://api.datacommons.org/v2/observation"
 params = {
 "key": API_KEY,
 "entity.dcids": entity2, # e.g. "country/USA",
 "select": ["entity", "variable", "value", "date"],
 "variable.dcids": variable
 }
-response = requests.get(url, params=params)
+response2 = requests.get(url, params=params)
 print('response.text for city2')
-print(response.text)
+print(response2.text)
 #</PrevData>
 #<PrepData>
 print('********** Prepare the dataset for analysis and visualization')
@@ -71,9 +72,9 @@ print('len(seq_data1)')
 print(len(seq_data1))
 
 ##### extract the data from the response for city2
-# Since the response for city2 is a 404 error, we will handle this exception
+# Test if the response contains valid JSON
 try:
-    obs_data2 = json.loads(response.text)
+    obs_data2 = json.loads(response2.text)
     print('obs_data2')
     print(obs_data2)
     entity_data2 = obs_data2["byVariable"][variable]["byEntity"][entity2]
