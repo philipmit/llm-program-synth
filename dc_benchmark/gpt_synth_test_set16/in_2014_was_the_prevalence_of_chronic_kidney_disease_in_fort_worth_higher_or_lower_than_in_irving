@@ -1,44 +1,5 @@
 #<PrevData>
 print('********** Load and preview the dataset and datatypes')
-##### define variables based on prompt
-question='In 2014, was the prevalence of chronic kidney disease in Fort Worth higher or lower than in Irving?'
-variable_text='the prevalence of chronic kidney disease'
-city1='Fort Worth'
-city2='Irving'
-time='2014'
-
-##### collect data from Data Commons for city1
-import requests
-import json
-query=variable_text+' in '+city1
-url = f"https://datacommons.org/api/explore/detect?q={query}"
-headers = {
-    "Content-Type": "application/json"
-}
-data = {
-    "contextHistory": [],
-    "dc": ""
-}
-response = requests.post(url, headers=headers, json=data)
-res_data = json.loads(response.text)
-entity1 = res_data['entities'][0]
-variable = res_data['variables'][0]
-url = "https://api.datacommons.org/v2/observation"
-params = {
-"key": API_KEY,
-"entity.dcids": entity1, # e.g. "country/USA",
-"select": ["entity", "variable", "value", "date"],
-"variable.dcids": variable
-}
-response = requests.get(url, params=params)
-print(response.text)
-obs_data = json.loads(response.text)
-entity_data1 = obs_data["byVariable"][variable]["byEntity"][entity1]
-seq_data1 = entity_data1["orderedFacets"][0]['observations']
-#</PrevData>
-
-#<PrevData>
-print('********** Load and preview the dataset and datatypes')
 ##### collect data from Data Commons for city2
 query=variable_text+' in '+city2
 url = f"https://datacommons.org/api/explore/detect?q={query}"
@@ -81,3 +42,17 @@ else:
     natural_language_answer='lower'
 print(natural_language_answer)
 #</Analysis>
+#<Visualize>
+import matplotlib.pyplot as plt
+import numpy as np
+print('********** Create visualization that demonstrates the answer to the question in the prompt')
+plt.figure(figsize=(10, 6))
+plt.bar(city1, value1, label=city1, color="navy")
+plt.bar(city2, value2, label=city2, color="darkred")
+plt.xlabel("City")
+plt.ylabel(variable_text.capitalize())
+plt.legend()
+plt.xticks(rotation=45)
+plt.tight_layout()
+plt.show()
+#</Visualize>
