@@ -84,4 +84,23 @@ if entity_data1:
     for facet in entity_data1["orderedFacets"]:
         for obs in facet["observations"]:
             if obs["date"] == time:
-</Analysis>
+                value1 = obs["value"]
+                break
+
+##### extract data for the specified year for city2
+value2 = None
+if entity_data2:
+    for facet in entity_data2["orderedFacets"]:
+        for obs in facet["observations"]:
+            if obs["date"] == time:
+                value2 = obs["value"]
+                break
+
+##### the answer options are 'higher' or 'lower'
+if value1 and value2:
+    if float(value1) > float(value2):
+        natural_language_answer=city1 + ' is higher than ' + city2
+    else:
+        natural_language_answer=city1 + ' is lower than ' + city2
+print('The prevalence of chronic kidney disease in ' + natural_language_answer + ' in ' + time)
+#</Analysis>
