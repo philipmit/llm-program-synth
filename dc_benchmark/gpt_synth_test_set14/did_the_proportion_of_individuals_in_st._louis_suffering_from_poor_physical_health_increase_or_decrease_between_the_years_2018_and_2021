@@ -56,3 +56,28 @@ print(type(seq_data))
 print('len(seq_data)')
 print(len(seq_data))
 #</PrepData>
+#<Analysis>
+from scipy import stats
+print('********** Perform the analysis to answer the question in the prompt')
+##### extract data from the timeframe specified in the prompt
+seq_data_in_timeframe=[x for x in seq_data if int(x['date']) >= int(time1) and int(x['date']) <= int(time2)]
+print('seq_data_in_timeframe')
+print(seq_data_in_timeframe)
+print('len(seq_data_in_timeframe)')
+print(len(seq_data_in_timeframe))
+X=[int(x['date']) for x in seq_data_in_timeframe]
+print('X')
+print(X)
+y=[x['value'] for x in seq_data_in_timeframe]
+print('y')
+print(y)
+slope, intercept, r_value, p_value, std_err = stats.linregress(X, y)
+print('slope')
+print(slope)
+##### the answer options are 'increasing' or 'decreasing'
+if slope>0:
+    natural_language_answer='increasing'
+else:
+    natural_language_answer='decreasing'
+print(natural_language_answer)
+#</Analysis>
