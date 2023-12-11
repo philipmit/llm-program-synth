@@ -86,3 +86,18 @@ if value_city2 is None:
 if value_city1 is not None and value_city2 is not None:
     print(f"{city1}: {value_city1}, {city2}: {value_city2}") 
 #</PrepData>
+#<Analysis>
+print('********** Perform analysis to answer the question in the prompt')
+##### Compare the values and derive the answer
+if value_city1 is None or value_city2 is None:
+    natural_language_answer = 'Data is missing for one or both cities in the specified year.'
+else:
+    if value_city1 > value_city2:
+        natural_language_answer = f'In {time}, the prevalence of poor mental health in {city1} was higher than in {city2}.'
+    elif value_city1 < value_city2:
+        natural_language_answer = f'In {time}, the prevalence of poor mental health in {city1} was lower than in {city2}.'
+    else:
+        natural_language_answer = f'In {time}, the prevalence of poor mental health in {city1} and {city2} was equal.'
+
+print(natural_language_answer)
+#</Analysis>
