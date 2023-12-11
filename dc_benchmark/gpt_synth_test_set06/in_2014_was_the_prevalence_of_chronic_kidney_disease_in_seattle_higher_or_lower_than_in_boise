@@ -60,3 +60,20 @@ print(city1_data_in_time)
 print('city2_data_in_time')
 print(city2_data_in_time)
 #</PrepData>
+#<Analysis>
+print('********** Perform the analysis to answer the question in the prompt')
+##### compare the values between the two cities at the specified time
+city1_value = city1_data_in_time[0]['value']
+city2_value = city2_data_in_time[0]['value']
+print('city1_value')
+print(city1_value)
+print('city2_value')
+print(city2_value)
+
+##### the answer options are 'higher' or 'lower'
+if city1_value > city2_value:
+    natural_language_answer = 'higher'
+else:
+    natural_language_answer = 'lower'
+print('The prevalence of chronic kidney disease in Seattle was', natural_language_answer, 'than in Boise in 2014.')
+#</Analysis>
