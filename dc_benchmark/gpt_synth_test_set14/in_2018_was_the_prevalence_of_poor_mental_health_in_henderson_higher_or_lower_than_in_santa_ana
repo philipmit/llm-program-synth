@@ -101,3 +101,20 @@ else:
 
 print(natural_language_answer)
 #</Analysis>
+#<Visualize>
+import matplotlib.pyplot as plt
+
+print('********** Create visualization that demonstrates the answer to the question in the prompt')
+##### create bar plot for the values
+if value_city1 and value_city2:
+    cities = [city1, city2]
+    values = [value_city1, value_city2]
+    plt.figure(figsize=(8,5))
+    plt.bar(cities, values, color=['skyblue', 'salmon'])
+    plt.xlabel('Cities')
+    plt.ylabel(variable_text.capitalize())
+    plt.title('Comparison of prevalence of poor mental health')
+    plt.show()
+else:
+    print("Missing data for one or both cities, cannot create visualization.")
+#</Visualize>
