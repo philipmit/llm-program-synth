@@ -82,3 +82,29 @@ else:
         natural_language_answer='lower'
     print(natural_language_answer)
 #</Analysis>
+#<PrepData>
+print('********** Prepare the dataset for analysis and visualization')
+##### extract the dataset and convert them into acceptable forms for further analysis
+value1_data = [x["value"] for x in entity_data1["byVariable"][variable]["byEntity"][entity1]["orderedFacets"] if 'date' in x and x['date'] <= time] if entity_data1 else []
+value2_data = [x["value"] for x in entity_data2["byVariable"][variable]["byEntity"][entity2]["orderedFacets"] if 'date' in x and x['date'] <= time] if entity_data2 else []
+print('value1_data')
+print(value1_data)
+print('value2_data')
+print(value2_data)
+#</PrepData>
+
+#<Visualize>
+import matplotlib.pyplot as plt
+print('********** Create visualization that demonstrates the answer to the question in the prompt')
+##### plot dataset for both cities
+plt.figure(figsize=(10, 6))
+plt.plot(range(1,len(value1_data)+1), value1_data, marker='o', label=city1.capitalize(), color="navy")
+plt.plot(range(1,len(value2_data)+1), value2_data, marker='o', label=city2.capitalize(), color="darkred")
+plt.xlabel("Year")
+plt.ylabel(variable_text.capitalize())
+plt.legend()
+plt.xticks(rotation=45)
+plt.tight_layout()
+plt.grid()
+plt.show()
+#</Visualize>
