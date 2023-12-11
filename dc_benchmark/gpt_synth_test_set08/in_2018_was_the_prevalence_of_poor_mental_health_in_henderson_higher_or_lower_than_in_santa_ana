@@ -62,6 +62,8 @@ print('********** Perform the analysis to answer the question in the prompt')
 ##### extract data from the specified year
 seq_data_in_year1=[x for x in seq_data1 if x['date'] == year]
 seq_data_in_year2=[x for x in seq_data2 if x['date'] == year]
+value1 = None
+value2 = None
 
 if len(seq_data_in_year1)>0:
     value1=float(seq_data_in_year1[0]['value'])
@@ -74,11 +76,12 @@ else:
     print('No data for '+city2+' in '+year)
 
 # Compare the values for city1 and city2
-if value1 > value2:
-    natural_language_answer=city1+' had a higher '+variable_text+' than '+city2+' in '+year
-elif value1 < value2:
-    natural_language_answer=city1+' had a lower '+variable_text+' than '+city2+' in '+year
-else:
-    natural_language_answer=city1+' and '+city2+' had the same '+variable_text+' in '+year
-print(natural_language_answer)
+if value1 and value2:
+    if value1 > value2:
+        natural_language_answer=city1+' had a higher '+variable_text+' than '+city2+' in '+year
+    elif value1 < value2:
+        natural_language_answer=city1+' had a lower '+variable_text+' than '+city2+' in '+year
+    else:
+        natural_language_answer=city1+' and '+city2+' had the same '+variable_text+' in '+year
+    print(natural_language_answer)
 #</Analysis></Visualize>
