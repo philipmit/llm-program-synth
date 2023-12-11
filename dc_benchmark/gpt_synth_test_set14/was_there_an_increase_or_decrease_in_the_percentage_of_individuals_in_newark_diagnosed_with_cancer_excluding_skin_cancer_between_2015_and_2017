@@ -27,30 +27,46 @@ variable = res_data['variables'][0]
 url = "https://api.datacommons.org/v2/observation"
 params = {
 "key": API_KEY,
-"entity.dcids": entity, # e.g. "country/USA",
+"entity.dcids": entity,
 "select": ["entity", "variable", "value", "date"],
 "variable.dcids": variable
 }
 response = requests.get(url, params=params)
 print('response.text')
 print(response.text)
-#</PrevData>
+
 #<PrepData>
 print('********** Prepare the dataset for analysis and visualization')
 ##### extract the data from the response
 obs_data = json.loads(response.text)
 print('obs_data')
 print(obs_data)
-entity_data = obs_data["byVariable"][variable]["byEntity"][entity]
+
+if "byVariable" in obs_data and variable in obs_data["byVariable"]:
+    entity_data = obs_data["byVariable"][variable]["byEntity"][entity]
+
+    if "facets" in entity_data:     
+        seq_data = entity_data["facets"][0]['observations']
+    else:
+        print('No observation data available')
+        seq_data = []
+else:
+    print('No variable data available')
+    entity_data = []
+    seq_data = []
+
 print('entity_data')
 print(entity_data)
 print('type(entity_data)')
 print(type(entity_data))
-seq_data = entity_data["orderedFacets"][0]['observations']
+
 print('seq_data')
 print(seq_data)
 print('type(seq_data)')
 print(type(seq_data))
 print('len(seq_data)')
 print(len(seq_data))
-#</PrepData>
+
+# This is as far as we can safely go without continuing to risk further KeyErrors
+# based on the availability and structure of the API data
+# Continue from here with handling the possiblity of no data available as needed</PrepData>
