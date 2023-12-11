@@ -45,6 +45,10 @@ else:
 
     response = requests.get(url, params=params1)
     entity1_data = json.loads(response.text)
+    if 'data' in entity1_data: 
+        entity1_data = entity1_data['data']
+    else:
+        entity1_data = []
 
     params2 = {
         "key": API_KEY,
@@ -55,6 +59,11 @@ else:
 
     response = requests.get(url, params=params2)
     entity2_data = json.loads(response.text)
+    if 'data' in entity2_data: 
+        entity2_data = entity2_data['data']
+    else:
+        entity2_data = []
+
 #</PrevData>
 
 #<PrepData>
@@ -66,8 +75,8 @@ def get_value_for_year(observations, year):
             return float(observations[idx]['value'])
     return None
 
-value_city1 = get_value_for_year(entity1_data['data'], time)
-value_city2 = get_value_for_year(entity2_data['data'], time)
+value_city1 = get_value_for_year(entity1_data, time)
+value_city2 = get_value_for_year(entity2_data, time)
 
 if value_city1 is None:
     print(f"No data for {city1} in the year {time}")
@@ -75,5 +84,5 @@ if value_city2 is None:
     print(f"No data for {city2} in the year {time}")
 
 if value_city1 is not None and value_city2 is not None:
-    print(f"{city1}: {value_city1}, {city2}: {value_city2}")
+    print(f"{city1}: {value_city1}, {city2}: {value_city2}") 
 #</PrepData>
