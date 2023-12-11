@@ -50,3 +50,39 @@ print('response.text for city2')
 print(response.text)
 obs_data_city2 = json.loads(response.text)
 #</PrevData>
+#<PrepData>
+print('********** Prepare the dataset for analysis')
+##### extract the data from the response for city1
+obs_data_city1 = obs_data_city1["byVariable"][variable]["byEntity"][entity1]
+print('obs_data_city1')
+print(obs_data_city1)
+entity_data_city1 = obs_data_city1["orderedFacets"][0]['observations']
+print('entity_data_city1')
+print(entity_data_city1)
+print('type(entity_data_city1)')
+print(type(entity_data_city1))
+seq_data_city1 = [x for x in entity_data_city1 if x['date'] == time]
+print('seq_data_city1')
+print(seq_data_city1)
+print('type(seq_data_city1)')
+print(type(seq_data_city1))
+print('len(seq_data_city1)')
+print(len(seq_data_city1))
+
+##### extract the data from the response for city2
+obs_data_city2 = obs_data_city2["byVariable"][variable]["byEntity"][entity2]
+print('obs_data_city2')
+print(obs_data_city2)
+entity_data_city2 = obs_data_city2["orderedFacets"][0]['observations']
+print('entity_data_city2')
+print(entity_data_city2)
+print('type(entity_data_city2)')
+print(type(entity_data_city2))
+seq_data_city2 = [x for x in entity_data_city2 if x['date'] == time]
+print('seq_data_city2')
+print(seq_data_city2)
+print('type(seq_data_city2)')
+print(type(seq_data_city2))
+print('len(seq_data_city2)')
+print(len(seq_data_city2))
+#</PrepData>
