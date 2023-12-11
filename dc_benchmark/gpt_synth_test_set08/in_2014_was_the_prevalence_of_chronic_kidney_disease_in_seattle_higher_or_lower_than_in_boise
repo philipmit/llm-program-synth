@@ -1,0 +1,48 @@
+#<PrevData>
+print('********** Load and preview the dataset and datatypes')
+##### define variables based on prompt
+question='In 2014, was the prevalence of chronic kidney disease in Seattle higher or lower than in Boise?'
+variable_text='the prevalence of chronic kidney disease'
+time='2014'
+city1='Seattle'
+city2='Boise'
+
+##### collect data from Data Commons
+import requests
+import json
+url = f"https://datacommons.org/api/explore/detect?q={query}"
+headers = {
+    "Content-Type": "application/json"
+}
+data = {
+    "contextHistory": [],
+    "dc": ""
+}
+
+# data for city1
+query1=variable_text+' in '+city1
+response1 = requests.post(url, headers=headers, json=data)
+res_data1 = json.loads(response1.text)
+entity1 = res_data1['entities'][0]
+variable = res_data1['variables'][0]
+params1 = {
+"key": API_KEY,
+"entity.dcids": entity1, # e.g. "country/USA",
+"select": ["entity", "variable", "value", "date"],
+"variable.dcids": variable
+}
+response1 = requests.get(url, params=params1)
+
+# data for city2
+query2=variable_text+' in '+city2
+response2 = requests.post(url, headers=headers, json=data)
+res_data2 = json.loads(response2.text)
+entity2 = res_data2['entities'][0]
+params2 = {
+"key": API_KEY,
+"entity.dcids": entity2, # e.g. "country/USA",
+"select": ["entity", "variable", "value", "date"],
+"variable.dcids": variable
+}
+response2 = requests.get(url, params=params2)
+#</PrevData>
