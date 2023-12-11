@@ -53,14 +53,4 @@ print('city1_seq_data')
 print(city1_seq_data)
 print('city2_seq_data')
 print(city2_seq_data)
-
-#<Analysis>
-print('********** Perform the analysis to answer the question in the prompt')
-city1_val = [x for x in city1_seq_data if x['date'] == time][0]['value']
-city2_val = [x for x in city2_seq_data if x['date'] == time][0]['value']
-if city1_val > city2_val:
-    natural_language_answer = f"The prevalence of chronic kidney disease in {city1} was higher than in {city2} in {time}."
-else:
-    natural_language_answer = f"The prevalence of chronic kidney disease in {city1} was lower than in {city2} in {time}."
-print(natural_language_answer)
-#</Analysis></PrepData>
+#</PrepData>
