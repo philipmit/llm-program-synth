@@ -60,3 +60,20 @@ params = {
 response = requests.get(url, params=params)
 entity_data2 = json.loads(response.text)
 #</PrevData>
+#<Analysis>
+print('********** Perform the analysis to answer the question in the prompt')
+##### extract the relevant data
+value1 = [x["value"] for x in entity_data1["byVariable"][variable]["byEntity"][entity1]["orderedFacets"] if x['date'] == time][0]
+value2 = [x["value"] for x in entity_data2["byVariable"][variable]["byEntity"][entity2]["orderedFacets"] if x['date'] == time][0]
+print('value1')
+print(value1)
+print('value2')
+print(value2)
+
+##### the answer options are 'higher' or 'lower'
+if float(value1)>float(value2):
+    natural_language_answer='higher'
+else:
+    natural_language_answer='lower'
+print(natural_language_answer)
+#</Analysis></PrepData>
