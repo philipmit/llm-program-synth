@@ -38,17 +38,23 @@ for city in cities:
     response = requests.get(url, params=params)
     print('response.text')
     print(response.text)
-    ##### save the data for each city
+    ##### save the data for each city in dictionary
     entity_data[city] = json.loads(response.text)
 #</PrevData>
 
 #<PrepData>
 print('********** Prepare the dataset for analysis and visualization')
 ##### extract the data from the response
-city1_data = entity_data[city1]["byVariable"][variable]["byEntity"][entity]
-city2_data = entity_data[city2]["byVariable"][variable]["byEntity"][entity]
-city1_seq_data = city1_data["orderedFacets"][0]['observations']
-city2_seq_data = city2_data["orderedFacets"][0]['observations']
+city1_data = entity_data[city1]["byVariable"][variable]["byEntity"]
+city2_data = entity_data[city2]["byVariable"][variable]["byEntity"]
+
+##### get entity ids for both cities from the response data
+entity1_id = list(city1_data.keys())[0]
+entity2_id = list(city2_data.keys())[0]
+
+##### get data for both cities
+city1_seq_data = city1_data[entity1_id]["orderedFacets"][0]['observations']
+city2_seq_data = city2_data[entity2_id]["orderedFacets"][0]['observations']
 print('city1_seq_data')
 print(city1_seq_data)
 print('city2_seq_data')
