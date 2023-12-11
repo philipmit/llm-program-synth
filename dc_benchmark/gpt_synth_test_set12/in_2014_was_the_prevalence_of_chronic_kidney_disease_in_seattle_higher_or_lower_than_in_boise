@@ -48,3 +48,33 @@ for city in cities:
 print('values_city')
 print(values_city)
 #</PrevData>
+#<Analysis>
+print('********** Perform the analysis to answer the question in the prompt')
+##### the answer options are 'higher' or 'lower'
+if values_city[city1] > values_city[city2]:
+    natural_language_answer = city1+' had a higher prevalence of chronic kidney disease than '+city2+' in '+year
+elif values_city[city1] < values_city[city2]:
+    natural_language_answer = city1+' had a lower prevalence of chronic kidney disease than '+city2+' in '+year
+else:
+    natural_language_answer = 'Both cities had the same prevalence of chronic kidney disease in '+year
+print(natural_language_answer)
+#</Analysis>
+
+############/ Response 1 continued output
+********** Perform the analysis to answer the question in the prompt
+Seattle had a higher prevalence of chronic kidney disease than Boise in 2014
+
+############/
+
+#<Visualize>
+print('********** Create visualization that demonstrates the answer to the question in the prompt')
+import matplotlib.pyplot as plt
+import numpy as np
+
+city_values=list(values_city.values())
+city_names=list(values_city.keys())
+plt.title(variable_text.capitalize() + ' in ' + year)
+plt.bar(city_names, city_values, color=['b','r'])
+plt.ylabel(variable_text.capitalize())
+plt.show()
+#</Visualize></PrepData>
