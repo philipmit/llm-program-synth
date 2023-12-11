@@ -1,20 +1,10 @@
 #<PrevData>
-print('********** Load and preview the dataset and datatypes')
-##### define variables based on prompt
-question='In 2014, was the prevalence of chronic kidney disease in Seattle higher or lower than in Boise?'
-variable_text='the prevalence of chronic kidney disease'
-year='2014'
-city1='Seattle'
-city2='Boise'
-
-
-##### collect data from Data Commons
-import requests
-import json
-cities=[city1, city2]
-values_city={}
+print('********** Load and preview the dataset and datatypes for both cities over time')
+##### collect data from Data Commons for both cities and all available years
+values_city_year = {}
 for city in cities:
-    query=variable_text+' in '+city
+    year_val = {}
+    query = variable_text+' in '+city
     url = f"https://datacommons.org/api/explore/detect?q={query}"
     headers = {
         "Content-Type": "application/json"
@@ -29,10 +19,10 @@ for city in cities:
     variable = res_data['variables'][0]
     url = "https://api.datacommons.org/v2/observation"
     params = {
-    "key": API_KEY,
-    "entity.dcids": entity, # e.g. "country/USA",
-    "select": ["entity", "variable", "value", "date"],
-    "variable.dcids": variable
+        "key": API_KEY,
+        "entity.dcids": entity,
+        "select": ["entity", "variable", "value", "date"],
+        "variable.dcids": variable
     }
     response = requests.get(url, params=params)
     print('response.text')
@@ -40,35 +30,28 @@ for city in cities:
     obs_data = json.loads(response.text)
     entity_data = obs_data["byVariable"][variable]["byEntity"][entity]
     seq_data = entity_data["orderedFacets"][0]['observations']
-    seq_data_year=[x for x in seq_data if x['date'] == year]
-    if seq_data_year:
-        values_city[city]=seq_data_year[0]['value']
-    else:
-        values_city[city]=None
-print('values_city')
-print(values_city)
+    for element in seq_data:
+        year = element['date']
+        value = element['value']
+        year_val[year] = value
+    values_city_year[city] = year_val
+print('values_city_year')
+print(values_city_year)
 #</PrevData>
-#<Analysis>
-print('********** Perform the analysis to answer the question in the prompt')
-##### the answer options are 'higher' or 'lower'
-if values_city[city1] > values_city[city2]:
-    natural_language_answer = city1+' had a higher prevalence of chronic kidney disease than '+city2+' in '+year
-elif values_city[city1] < values_city[city2]:
-    natural_language_answer = city1+' had a lower prevalence of chronic kidney disease than '+city2+' in '+year
-else:
-    natural_language_answer = 'Both cities had the same prevalence of chronic kidney disease in '+year
-print(natural_language_answer)
-#</Analysis>
 
-#<Visualize>
-print('********** Create visualization that demonstrates the answer to the question in the prompt')
-import matplotlib.pyplot as plt
-import numpy as np
+# <Visualize>
+print('********** Create visualization that shows the trend over time for both cities')
+for city, year_data in values_city_year.items():
+    year = list(year_data.keys())
+    values = list(year_data.values())
+    plt.plot(year, values, label=city)
 
-city_values=list(values_city.values())
-city_names=list(values_city.keys())
-plt.title(variable_text.capitalize() + ' in ' + year)
-plt.bar(city_names, city_values, color=['b','r'])
+plt.title(variable_text.capitalize() + ' over time')
+plt.legend()
+plt.xlabel('Years')
+plt.xticks(rotation=45)
 plt.ylabel(variable_text.capitalize())
 plt.show()
-#</Visualize></PrepData>
+# </Visualize>
+```
+This additional step will provide a line chart comparing the trend of the prevalence of chronic kidney disease in both cities over the years.</Analysis>
