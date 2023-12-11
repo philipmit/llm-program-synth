@@ -20,10 +20,10 @@ data = {
     "contextHistory": [],
     "dc": ""
 }
-response1 = requests.post(url, headers=headers, json=data)
-res_data1 = json.loads(response1.text)
-entity1 = res_data1['entities'][0]
-variable = res_data1['variables'][0]
+response = requests.post(url, headers=headers, json=data)
+res_data = json.loads(response.text)
+entity1 = res_data['entities'][0]
+variable = res_data['variables'][0]
 url = "https://api.datacommons.org/v2/observation"
 params = {
     "key": API_KEY,
@@ -31,48 +31,32 @@ params = {
     "select": ["entity", "variable", "value", "date"],
     "variable.dcids": variable
 }
-response1 = requests.get(url, params=params)
-print('response1.text')
-print(response1.text)
+response = requests.get(url, params=params)
+obs_data1 = json.loads(response.text)
 
 ##### collect data from Data Commons for city2
 query=variable_text+' in '+city2
 url = f"https://datacommons.org/api/explore/detect?q={query}"
-response2 = requests.post(url, headers=headers, json=data)
-res_data2 = json.loads(response2.text)
-entity2 = res_data2['entities'][0]
-params2 = {
+response = requests.post(url, headers=headers, json=data)
+res_data = json.loads(response.text)
+entity2 = res_data['entities'][0]
+params = {
     "key": API_KEY,
     "entity.dcids": entity2,
     "select": ["entity", "variable", "value", "date"],
     "variable.dcids": variable
 }
-response2 = requests.get(url, params=params2)
-print('response2.text')
-print(response2.text)
+response = requests.get(url, params=params)
+obs_data2 = json.loads(response.text)
 #</PrevData>
 
 #<PrepData>
 print('********** Prepare the dataset for analysis and visualization')
 ##### extract the data from the response for city1
-obs_data1 = json.loads(response1.text)
-print('obs_data1')
-print(obs_data1)
 entity_data1 = obs_data1["byVariable"][variable]["byEntity"][entity1]
-print('entity_data1')
-print(entity_data1)
 seq_data1 = entity_data1["orderedFacets"][0]['observations']
-print('seq_data1')
-print(seq_data1)
 
 ##### extract the data from the response for city2
-obs_data2 = json.loads(response2.text)
-print('obs_data2')
-print(obs_data2)
 entity_data2 = obs_data2["byVariable"][variable]["byEntity"][entity2]
-print('entity_data2')
-print(entity_data2)
 seq_data2 = entity_data2["orderedFacets"][0]['observations']
-print('seq_data2')
-print(seq_data2)
 #</PrepData>
