@@ -61,13 +61,13 @@ else:
 print('********** Prepare the dataset for analysis')
 ##### filter the data to get the data for the year and cities specified in the prompt
 def get_value_for_year(observations, year):
-    for observation in observations:
-        if observation['date'] == year:
-            return float(observation['value'])
+    for idx in range(len(observations)):
+        if observations[idx]['date'] == year:
+            return float(observations[idx]['value'])
     return None
 
-value_city1 = get_value_for_year(entity1_data, time)
-value_city2 = get_value_for_year(entity2_data, time)
+value_city1 = get_value_for_year(entity1_data['data'], time)
+value_city2 = get_value_for_year(entity2_data['data'], time)
 
 if value_city1 is None:
     print(f"No data for {city1} in the year {time}")
