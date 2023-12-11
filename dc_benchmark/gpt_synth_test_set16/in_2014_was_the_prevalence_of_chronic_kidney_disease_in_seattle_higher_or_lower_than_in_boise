@@ -20,40 +20,35 @@ data = {
     "dc": ""
 }
 response = requests.post(url, headers=headers, json=data)
-if response.text.strip():  # to avoid JSONDecodeError if the response is an empty string
+if response.text.strip():  
     res_data = json.loads(response.text)
     entity1 = res_data['entities'][0]
     variable = res_data['variables'][0]
     url = "https://api.datacommons.org/v2/observation"
     params = {
     "key": API_KEY,
-    "entity.dcids": entity1, # e.g. "country/USA",
+    "entity.dcids": entity1, 
     "select": ["entity", "variable", "value", "date"],
     "variable.dcids": variable
     }
-    response = requests.get(url, params=params)
+    try:
+        response = requests.get(url, params=params)
+        print('response.text for city1')
+        print(response.text)
+    except:
+        print(f"No data found for {city1}")
+seq_data1 = []
+if response.text.strip():  
+    obs_data = json.loads(response.text)
+    entity_data1 = obs_data["byVariable"][variable]["byEntity"][entity1]
+    seq_data1 = entity_data1["orderedFacets"][0]['observations']
 
-    print('response.text')
-    print(response.text)
 
-    ##### extract the data from the response
-    if response.text.strip():  # to avoid JSONDecodeError if the response is an empty string
-        obs_data = json.loads(response.text)
-        print('obs_data')
-        print(obs_data)
-        entity_data1 = obs_data["byVariable"][variable]["byEntity"][entity1]
-        print('entity_data1')
-        print(entity_data1)
-        seq_data1 = entity_data1["orderedFacets"][0]['observations']
-        print('seq_data1')
-        print(seq_data1)
-
-##### The issue in the initial code is that it tries to make a json decode even if the response is empty.  
 ##### collect data from Data Commons for city2
 query=variable_text+' in '+city2
 url = f"https://datacommons.org/api/explore/detect?q={query}"
 response = requests.post(url, headers=headers, json=data)
-if response.text.strip():  # to avoid JSONDecodeError if the response is an empty string
+if response.text.strip():  
     res_data = json.loads(response.text)
     entity2 = res_data['entities'][0]
 
@@ -63,55 +58,37 @@ if response.text.strip():  # to avoid JSONDecodeError if the response is an empt
     "select": ["entity", "variable", "value", "date"],
     "variable.dcids": variable
     }
-    response = requests.get(url, params=params)
-    print('response.text')
-    print(response.text)
+    try:
+        response = requests.get(url, params=params)
+        print('response.text for city2')
+        print(response.text)
+    except:
+        print(f"No data found for {city2}")
 #</PrevData>
 
 #<PrepData>
 print('********** Prepare the dataset for analysis and visualization')
-##### extract the data for city2 from the response
-if response.text.strip():  # to avoid JSONDecodeError if the response is an empty string
+seq_data2 = []
+if response.text.strip():  
     obs_data2 = json.loads(response.text)
-    print('obs_data2')
-    print(obs_data2)
-
     entity_data2 = obs_data2["byVariable"][variable]["byEntity"][entity2]
-    print('entity_data2')
-    print(entity_data2)
-
     seq_data2 = entity_data2["orderedFacets"][0]['observations']
-    print('seq_data2')
-    print(seq_data2)
 #</PrepData>
+
 
 #<Analysis>
 print('********** Perform the analysis to answer the question in the prompt')
-##### extract data from the timeframe specified in the prompt
 seq_data1_in_time=[x for x in seq_data1 if x['date'] == time]
-print('seq_data1_in_time')
-print(seq_data1_in_time)
-print('len(seq_data1_in_time)')
-print(len(seq_data1_in_time))
-
 seq_data2_in_time=[x for x in seq_data2 if x['date'] == time]
-print('seq_data2_in_time')
-print(seq_data2_in_time)
-print('len(seq_data2_in_time)')
-print(len(seq_data2_in_time))
 
-value1=seq_data1_in_time[0]['value']
-print('value1')
-print(value1)
-
-value2=seq_data2_in_time[0]['value']
-print('value2')
-print(value2)
-
-##### the answer options are 'higher' or 'lower'
-if value1>value2:
-    natural_language_answer='higher'
+if len(seq_data1_in_time)>0 and len(seq_data2_in_time)>0:
+    value1=seq_data1_in_time[0]['value']
+    value2=seq_data2_in_time[0]['value']
+    if value1>value2:
+        natural_language_answer='higher'
+    else:
+        natural_language_answer='lower'
+    print(f"The prevalence of chronic kidney disease in {city1} was {natural_language_answer} than in {city2} in 2014.")
 else:
-    natural_language_answer='lower'
-print(natural_language_answer)
+    print("Data for 2014 not found for one or both cities")
 #</Analysis>
