@@ -76,3 +76,12 @@ if 'byVariable' in obs_data2:
 else:
     print('No data found for city2')
 #</PrepData>
+#<Analysis>
+print('********** Perform the analysis to answer the question in the prompt')
+##### extract data for the specified year for city1
+value1 = None
+if entity_data1:
+    for facet in entity_data1["orderedFacets"]:
+        for obs in facet["observations"]:
+            if obs["date"] == time:
+</Analysis>
