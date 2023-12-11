@@ -29,9 +29,9 @@ variable = res_data1['variables'][0]['dcid']
 url = "https://api.datacommons.org/v2/observation"
 params1 = {
 "key": API_KEY,
-"entity.dcids": entity1,
+"entity.dcids": [entity1],
 "select": ["entity", "variable", "value", "date"],
-"variable.dcids": variable
+"variable.dcids": [variable]
 }
 response1 = requests.get(url, params=params1)
 obs_data1 = json.loads(response1.text)
@@ -46,9 +46,9 @@ res_data2 = json.loads(response2.text)
 entity2 = res_data2['entities'][0]['dcid']
 params2 = {
 "key": API_KEY,
-"entity.dcids": entity2,
+"entity.dcids": [entity2],
 "select": ["entity", "variable", "value", "date"],
-"variable.dcids": variable
+"variable.dcids": [variable]
 }
 response2 = requests.get(url, params=params2)
 obs_data2 = json.loads(response2.text)
