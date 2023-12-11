@@ -88,3 +88,37 @@ print(type(seq_data_city2))
 print('len(seq_data_city2)')
 print(len(seq_data_city2))
 #</PrepData>
+#<Analysis>
+print('********** Perform the analysis to answer the question in the prompt')
+##### extract data for the specified time
+seq_data_city1_time=[x for x in seq_data_city1 if x['date'] == time]
+print('seq_data_city1_time')
+print(seq_data_city1_time)
+seq_data_city2_time=[x for x in seq_data_city2 if x['date'] == time]
+print('seq_data_city2_time')
+print(seq_data_city2_time)
+
+value_city1 = seq_data_city1_time[0]['value'] if seq_data_city1_time else None
+value_city2 = seq_data_city2_time[0]['value'] if seq_data_city2_time else None
+print('value_city1')
+print(value_city1)
+print('value_city2')
+print(value_city2)
+
+##### the answer options are 'higher' or 'lower'
+if value_city1 and value_city2: # both cities have data for the specified time
+    if value_city1 > value_city2:
+        natural_language_answer = f'{city1} was higher than {city2}'
+    elif value_city1 < value_city2:
+        natural_language_answer = f'{city1} was lower than {city2}'
+    else:
+        natural_language_answer = f'{city1} and {city2} were equal'
+elif value_city1: # only the first city has data for the specified time
+    natural_language_answer = f'Only {city1} has data for {time}. The value was {value_city1}.'
+elif value_city2: # only the second city has data for the specified time
+    natural_language_answer = f'Only {city2} has data for {time}. The value was {value_city2}.'
+else: # neither city has data for the specified time
+    natural_language_answer = f'Neither {city1} nor {city2} has data for {time}.'
+
+print(natural_language_answer)
+#</Analysis>
