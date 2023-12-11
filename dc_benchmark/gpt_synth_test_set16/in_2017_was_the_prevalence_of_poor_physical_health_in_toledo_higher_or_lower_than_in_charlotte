@@ -27,7 +27,7 @@ variable = res_data['variables'][0]
 url = "https://api.datacommons.org/v2/observation"
 params = {
 "key": API_KEY,
-"entity.dcids": entity1, # e.g. "country/USA",
+"entity.dcids": entity1,
 "select": ["entity", "variable", "value", "date"],
 "variable.dcids": variable
 }
@@ -44,7 +44,7 @@ entity2 = res_data['entities'][0]
 url = "https://api.datacommons.org/v2/observation"
 params = {
 "key": API_KEY,
-"entity.dcids": entity2, # e.g. "country/USA",
+"entity.dcids": entity2,
 "select": ["entity", "variable", "value", "date"],
 "variable.dcids": variable
 }
@@ -54,22 +54,23 @@ print(response2.text)
 #</PrevData>
 #<PrepData>
 print('********** Prepare the dataset for analysis and visualization')
+
 ##### extract the data from the response for city1
 obs_data1 = json.loads(response.text)
 print('obs_data1')
 print(obs_data1)
-entity_data1 = obs_data1["byVariable"][variable]["byEntity"][entity1]
-print('entity_data1')
-print(entity_data1)
-print('type(entity_data1)')
-print(type(entity_data1))
-seq_data1 = entity_data1["orderedFacets"][0]['observations']
-print('seq_data1')
-print(seq_data1)
-print('type(seq_data1)')
-print(type(seq_data1))
-print('len(seq_data1)')
-print(len(seq_data1))
+
+# Check if 'byVariable' key exists in obs_data1
+if 'byVariable' in obs_data1:
+    entity_data1 = obs_data1["byVariable"][variable]["byEntity"][entity1]
+    print('entity_data1')
+    print(entity_data1)
+    seq_data1 = entity_data1["orderedFacets"][0]['observations']
+    print('seq_data1')
+    print(seq_data1)
+else:
+    print('No data available for city1')
+    seq_data1 = []
 
 ##### extract the data from the response for city2
 # Test if the response contains valid JSON
@@ -77,19 +78,19 @@ try:
     obs_data2 = json.loads(response2.text)
     print('obs_data2')
     print(obs_data2)
-    entity_data2 = obs_data2["byVariable"][variable]["byEntity"][entity2]
-    print('entity_data2')
-    print(entity_data2)
-    print('type(entity_data2)')
-    print(type(entity_data2))
-    seq_data2 = entity_data2["orderedFacets"][0]['observations']
-    print('seq_data2')
-    print(seq_data2)
-    print('type(seq_data2)')
-    print(type(seq_data2))
-    print('len(seq_data2)')
-    print(len(seq_data2))
+    
+    # Check if 'byVariable' key exists in obs_data2
+    if 'byVariable' in obs_data2:
+        entity_data2 = obs_data2["byVariable"][variable]["byEntity"][entity2]
+        print('entity_data2')
+        print(entity_data2)
+        seq_data2 = entity_data2["orderedFacets"][0]['observations']
+        print('seq_data2')
+        print(seq_data2)
+    else:
+        print('No data available for city2')
+        seq_data2 = []
 except json.JSONDecodeError:
-    print('No data available for city2')
+    print('Invalid JSON in the response for city2')
     seq_data2 = []
 #</PrepData>
