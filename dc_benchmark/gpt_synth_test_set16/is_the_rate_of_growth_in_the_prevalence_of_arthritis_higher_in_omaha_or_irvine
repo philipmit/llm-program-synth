@@ -35,6 +35,8 @@ response = requests.get(url, params=params)
 obs_data1 = response.json()
 print('obs_data1')
 print(obs_data1)
+# handle absence of observations key in case of an error
+observations1 = obs_data1.get("observations", [])
 
 
 ##### collect data from Data Commons for city2
@@ -54,25 +56,19 @@ response = requests.get(url, params=params)
 obs_data2 = response.json()
 print('obs_data2')
 print(obs_data2)
+observations2 = obs_data2.get("observations", [])
 #</PrevData>
 
 
 #<PrepData>
 print('********** Prepare the dataset for analysis and visualization')
-##### extract the data from the response for city1
-seq_data1 = sorted(obs_data1['observations'], key=lambda x: x['date'])
+##### extract the data from the observations for city1
+seq_data1 = sorted(observations1, key=lambda x: x['date'])
 print('seq_data1')
 print(seq_data1)
-print('type(seq_data1)')
-print(type(seq_data1))
-print('len(seq_data1)')
-print(len(seq_data1))
-##### extract the data from the response for city2
-seq_data2 = sorted(obs_data2['observations'], key=lambda x: x['date'])
+
+##### extract the data from the observations for city2
+seq_data2 = sorted(observations2, key=lambda x: x['date'])
 print('seq_data2')
 print(seq_data2)
-print('type(seq_data2)')
-print(type(seq_data2))
-print('len(seq_data2)')
-print(len(seq_data2))
 #</PrepData>
