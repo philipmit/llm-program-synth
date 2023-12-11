@@ -57,3 +57,19 @@ print(seq_data_city1,"\n",seq_data_city2)
 print('len(seq_data_city1) and len(seq_data_city2)')
 print(len(seq_data_city1), len(seq_data_city2))
 #</PrepData>
+#<Analysis>
+print('********** Perform the analysis to answer the question in the prompt')
+##### calculate slope for each city
+for seq_data, city in zip([seq_data_city1, seq_data_city2], [city1, city2]):
+    X = [int(x['date']) for x in seq_data]
+    y = [x['value'] for x in seq_data]
+    slope, _, _, _, _ = stats.linregress(X, y)
+    slope_values[city] = slope
+print('Slope values:')
+print(slope_values)
+
+##### city with higher rate of growth
+city_higher_rate = max(slope_values, key=slope_values.get)
+natural_language_answer = f'The rate of growth in the prevalence of arthritis is higher in {city_higher_rate}'
+print(natural_language_answer)
+#</Analysis>
