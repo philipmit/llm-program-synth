@@ -29,9 +29,9 @@ params = {
 "select": ["entity", "variable", "value", "date"],
 "variable.dcids": variable
 }
-response = requests.get(url, params=params)
-print('response.text')
-print(response.text)
+response1 = requests.get(url, params=params)
+print('response1.text')
+print(response1.text)
 
 
 ##### collect data from Data Commons for the second city
@@ -46,15 +46,15 @@ params = {
 "select": ["entity", "variable", "value", "date"],
 "variable.dcids": variable
 }
-response = requests.get(url, params=params)
-print('response.text')
-print(response.text)
+response2 = requests.get(url, params=params)
+print('response2.text')
+print(response2.text)
 #</PrevData>
 
 #<PrepData>
 print('********** Prepare the dataset for analysis and visualization')
 ##### extract the data from the response
-obs_data_city1 = json.loads(response.text)
+obs_data_city1 = json.loads(response1.text)
 print('obs_data_city1')
 print(obs_data_city1)
 entity_data_city1 = obs_data_city1["byVariable"][variable]["byEntity"][entity1]
@@ -71,7 +71,7 @@ print('len(seq_data_city1)')
 print(len(seq_data_city1))
 
 ##### extract data for the second city
-obs_data_city2 = json.loads(response.text)
+obs_data_city2 = json.loads(response2.text)
 print('obs_data_city2')
 print(obs_data_city2)
 entity_data_city2 = obs_data_city2["byVariable"][variable]["byEntity"][entity2]
