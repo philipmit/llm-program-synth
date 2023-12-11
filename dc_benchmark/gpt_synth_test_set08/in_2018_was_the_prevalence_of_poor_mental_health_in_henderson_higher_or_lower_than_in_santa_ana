@@ -11,9 +11,10 @@ city2='Santa Ana'
 ##### collect data from Data Commons for each city
 import requests
 import json
+
+# Collect data for city1
 query1=variable_text+' in '+city1
-query2=variable_text+' in '+city2
-url = f"https://datacommons.org/api/explore/detect?q={query2}" # use the correct query variable for city2
+url = f"https://datacommons.org/api/explore/detect?q={query1}"
 headers = {
     "Content-Type": "application/json"
 }
@@ -21,55 +22,56 @@ data = {
     "contextHistory": [],
     "dc": ""
 }
-response2 = requests.post(url, headers=headers, json=data) # correct the response variable for city2
-res_data2 = json.loads(response2.text) # correct the response variable for city2
-entity2 = res_data2['entities'][0] # correct the entity variable for city2
-params2 = {
+response1 = requests.post(url, headers=headers, json=data)
+res_data1 = json.loads(response1.text)
+entity1 = res_data1['entities'][0]
+variable = res_data1['variables'][0]
+url = "https://api.datacommons.org/v2/observation"
+params1 = {
 "key": API_KEY,
-"entity.dcids": entity2, # correct the entity variable for city2
+"entity.dcids": entity1,
 "select": ["entity", "variable", "value", "date"],
 "variable.dcids": variable
 }
-response2 = requests.get(url, params=params2) # correct the response variable for city2
-print('response2.text')
-print(response2.text)
-#</PrevData>
+response1 = requests.get(url, params=params1)
+obs_data1 = json.loads(response1.text)
+entity_data1 = obs_data1["byVariable"][variable]["byEntity"][entity1]
+seq_data1 = entity_data1["orderedFacets"][0]['observations']
 
-#<PrepData>
-print('********** Prepare the dataset for analysis')
-##### extract the data from the response
-obs_data2 = json.loads(response2.text) # correct the response variable for city2
-print('obs_data2') # correct the obs_data variable for city2
-print(obs_data2) # correct the obs_data variable for city2
-entity_data2 = obs_data2["byVariable"][variable]["byEntity"][entity2] # correct the entity and obs_data variables for city2
-print('entity_data2') # correct the entity_data variable for city2
-print(entity_data2) # correct the entity_data variable for city2
-print('type(entity_data2)') # correct the entity_data variable for city2
-print(type(entity_data2)) # correct the entity_data variable for city2
-seq_data2 = entity_data2["orderedFacets"][0]['observations'] # correct the entity_data and seq_data variables for city2
-print('seq_data2') # correct the seq_data variable for city2
-print(seq_data2) # correct the seq_data variable for city2
-print('type(seq_data2)') # correct the seq_data variable for city2
-print(type(seq_data2)) # correct the seq_data variable for city2
-print('len(seq_data2)') # correct the seq_data variable for city2
-print(len(seq_data2)) # correct the seq_data variable for city2
-#</PrepData>
+# Collect data for city2
+query2=variable_text+' in '+city2
+url = f"https://datacommons.org/api/explore/detect?q={query2}"
+response2 = requests.post(url, headers=headers, json=data)
+res_data2 = json.loads(response2.text)
+entity2 = res_data2['entities'][0]
+params2 = {
+"key": API_KEY,
+"entity.dcids": entity2,
+"select": ["entity", "variable", "value", "date"],
+"variable.dcids": variable
+}
+response2 = requests.get(url, params=params2)
+obs_data2 = json.loads(response2.text)
+entity_data2 = obs_data2["byVariable"][variable]["byEntity"][entity2]
+seq_data2 = entity_data2["orderedFacets"][0]['observations']
+#</PrevData>
 
 
 #<Analysis>
 print('********** Perform the analysis to answer the question in the prompt')
 ##### extract data from the specified year
-seq_data_in_year2=[x for x in seq_data2 if x['date'] == year] # correct the seq_data variable for city2
-print('seq_data_in_year2') # correct the seq_data variable for city2
-print(seq_data_in_year2) # correct the seq_data variable for city2
-print('len(seq_data_in_year2)') # correct the seq_data variable for city2
-print(len(seq_data_in_year2)) # correct the seq_data variable for city2
-if len(seq_data_in_year2)>0: # correct the seq_data variable for city2
-    value2=seq_data_in_year2[0]['value'] # correct the seq_data variable for city2
-    print('value2') # correct the value variable for city2
-    print(value2) # correct the value variable for city2
+seq_data_in_year1=[x for x in seq_data1 if x['date'] == year]
+seq_data_in_year2=[x for x in seq_data2 if x['date'] == year]
+
+if len(seq_data_in_year1)>0:
+    value1=seq_data_in_year1[0]['value']
 else:
-    print('No data for '+city2+' in '+year) # correct the city variable for city2
+    print('No data for '+city1+' in '+year)
+
+if len(seq_data_in_year2)>0:
+    value2=seq_data_in_year2[0]['value']
+else:
+    print('No data for '+city2+' in '+year)
 
 # Compare the values for city1 and city2
 if value1 > value2:
