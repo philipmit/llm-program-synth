@@ -122,3 +122,25 @@ else: # neither city has data for the specified time
 
 print(natural_language_answer)
 #</Analysis>
+#<Visualize>
+print('********** Create visualization that demonstrates the answer to the question in the prompt')
+import matplotlib.pyplot as plt
+import numpy as np
+
+# Data for city1 and city2
+X1 = [int(x['date']) for x in seq_data_city1]
+Y1 = [x['value'] for x in seq_data_city1]
+X2 = [int(x['date']) for x in seq_data_city2]
+Y2 = [x['value'] for x in seq_data_city2]
+
+# Plot data
+plt.figure(figsize=(10, 6))
+plt.plot(X1, Y1, label=city1, color="navy")
+plt.plot(X2, Y2, label=city2, color="darkred")
+plt.xlabel("Year")
+plt.ylabel(variable_text.capitalize())
+plt.legend()
+plt.title(f'Comparison of {variable_text} between {city1} and {city2}')
+plt.grid(True)
+plt.show()
+#</Visualize>
