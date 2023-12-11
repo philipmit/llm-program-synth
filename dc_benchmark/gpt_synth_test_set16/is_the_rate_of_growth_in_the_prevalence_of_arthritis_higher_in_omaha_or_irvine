@@ -127,3 +127,26 @@ else:
 
 print(natural_language_answer)
 #</Analysis>
+#<Visualize>
+import matplotlib.pyplot as plt
+print('********** Create visualization that demonstrates the answer to the question in the prompt')
+
+plt.figure(figsize=(10, 6))
+
+# Plot data for city1 if available
+if X1 and y1:
+    plt.scatter(X1, y1, label=f'{city1} {variable_text.capitalize()}', color="navy")
+    plt.plot(X1, intercept1 + slope1 * np.array(X1), color="darkred", label=f"{city1} Trend line")
+
+# Plot data for city2 if available
+if X2 and y2:
+    plt.scatter(X2, y2, label=f'{city2} {variable_text.capitalize()}', color="green")
+    plt.plot(X2, intercept2 + slope2 * np.array(X2), color="darkgreen", label=f"{city2} Trend line")
+
+plt.xlabel("Year")
+plt.ylabel(variable_text.capitalize())
+plt.legend()
+plt.xticks(rotation=45)
+plt.tight_layout()
+plt.show()
+#</Visualize>
