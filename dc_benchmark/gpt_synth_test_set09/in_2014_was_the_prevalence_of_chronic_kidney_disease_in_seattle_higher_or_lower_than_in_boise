@@ -58,3 +58,39 @@ response2 = requests.get(url, params=params)
 print('response2.text')
 print(response2.text)
 #</PrevData>
+
+#<PrepData>
+print('********** Prepare the dataset for analysis and visualization')
+##### extract the data from the response
+obs_data1 = json.loads(response1.text)
+print('obs_data1')
+print(obs_data1)
+entity_data1 = obs_data1["byVariable"][variable]["byEntity"][entity1]
+print('entity_data1')
+print(entity_data1)
+print('type(entity_data1)')
+print(type(entity_data1))
+seq_data1 = entity_data1["orderedFacets"][0]['observations']
+print('seq_data1')
+print(seq_data1)
+print('type(seq_data1)')
+print(type(seq_data1))
+print('len(seq_data1)')
+print(len(seq_data1))
+
+obs_data2 = json.loads(response2.text)
+print('obs_data2')
+print(obs_data2)
+entity_data2 = obs_data2["byVariable"][variable]["byEntity"][entity2]
+print('entity_data2')
+print(entity_data2)
+print('type(entity_data2)')
+print(type(entity_data2))
+seq_data2 = entity_data2["orderedFacets"][0]['observations']
+print('seq_data2')
+print(seq_data2)
+print('type(seq_data2)')
+print(type(seq_data2))
+print('len(seq_data2)')
+print(len(seq_data2))
+#</PrepData>
