@@ -73,7 +73,6 @@ else:
     seq_data1 = []
 
 ##### extract the data from the response for city2
-# Test if the response contains valid JSON
 try:
     obs_data2 = json.loads(response2.text)
     print('obs_data2')
@@ -93,7 +92,9 @@ try:
 except json.JSONDecodeError:
     print('Invalid JSON in the response for city2')
     seq_data2 = []
+
 #</PrepData>
+
 #<Analysis>
 print('********** Perform the analysis to answer the question in the prompt')
 ##### extract data for the year specified in the prompt for city1
@@ -120,4 +121,11 @@ print(value2)
 
 ##### the answer options are 'higher' or 'lower'
 if value1 is not None and value2 is not None:
-    if value</Analysis>
+    if value1 > value2:
+        natural_language_answer = 'higher'
+    else:
+        natural_language_answer = 'lower'
+else:
+    natural_language_answer = 'Data unavailable for comparison'
+print('The prevalence of poor physical health in Toledo in 2017 was', natural_language_answer, 'than that in Charlotte.')
+#</Analysis>
