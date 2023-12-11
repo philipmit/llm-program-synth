@@ -94,3 +94,30 @@ except json.JSONDecodeError:
     print('Invalid JSON in the response for city2')
     seq_data2 = []
 #</PrepData>
+#<Analysis>
+print('********** Perform the analysis to answer the question in the prompt')
+##### extract data for the year specified in the prompt for city1
+seq_data1_in_time=[x for x in seq_data1 if x['date'] == time]
+print('seq_data1_in_time')
+print(seq_data1_in_time)
+if len(seq_data1_in_time)>0:
+    value1=seq_data1_in_time[0]['value']
+else:
+    value1=None
+print('value1')
+print(value1)
+
+##### extract data for the year specified in the prompt for city2
+seq_data2_in_time=[x for x in seq_data2 if x['date'] == time]
+print('seq_data2_in_time')
+print(seq_data2_in_time)
+if len(seq_data2_in_time)>0:
+    value2=seq_data2_in_time[0]['value']
+else:
+    value2=None
+print('value2')
+print(value2)
+
+##### the answer options are 'higher' or 'lower'
+if value1 is not None and value2 is not None:
+    if value</Analysis>
