@@ -56,3 +56,19 @@ entity_data2 = obs_data2["byVariable"][variable]["byEntity"][entity2]
 seq_data1 = entity_data1["orderedFacets"][0]['observations']
 seq_data2 = entity_data2["orderedFacets"][0]['observations']
 #</PrepData>
+#<Analysis>
+print('********** Perform the analysis to answer the question in the prompt')
+##### extract data from the year specified in the prompt
+value1=[x['value'] for x in seq_data1 if x['date']==year][0]
+value2=[x['value'] for x in seq_data2 if x['date']==year][0]
+print('value1')
+print(value1)
+print('value2')
+print(value2)
+##### the answer options are 'higher' or 'lower'
+if value1>value2:
+    natural_language_answer='higher'
+else:
+    natural_language_answer='lower'
+print(natural_language_answer)
+#</Analysis>
