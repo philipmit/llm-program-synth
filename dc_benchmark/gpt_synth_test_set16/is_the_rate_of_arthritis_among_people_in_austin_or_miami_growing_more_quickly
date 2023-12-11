@@ -114,3 +114,18 @@ else:
     natural_language_answer='Miami'
 print(natural_language_answer)
 #</Analysis>
+#<Visualize>
+import matplotlib.pyplot as plt
+print('********** Create visualization that demonstrates the answer to the question in the prompt')
+plt.figure(figsize=(10, 6))
+plt.scatter(X1, y1, label=city1, color="navy")
+plt.plot(X1, intercept1 + slope1 * np.array(X1), color="darkred", label=city1+" Trend line")
+plt.scatter(X2, y2, label=city2, color="green")
+plt.plot(X2, intercept2 + slope2 * np.array(X2), color="darkgreen", label=city2+" Trend line")
+plt.xlabel("Year")
+plt.ylabel(variable_text.capitalize())
+plt.legend()
+plt.xticks(rotation=45)
+plt.tight_layout()
+plt.show()
+#</Visualize>
