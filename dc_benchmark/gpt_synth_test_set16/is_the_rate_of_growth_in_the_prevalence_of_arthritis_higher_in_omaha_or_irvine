@@ -23,40 +23,37 @@ response = requests.post(url, headers=headers, json=data)
 res_data = json.loads(response.text)
 entity1 = res_data['entities'][0]
 variable = res_data['variables'][0]
+##### revision: correct get url and parameters for city1
 url = "https://api.datacommons.org/v2/observation"
 params = {
 "key": API_KEY,
-"entity.dcids": entity1, # e.g. "country/USA",
-"select": ["entity", "variable", "value", "date"],
-"variable.dcids": variable
+"entity.dcids": [entity1], # "country/USA",
+"select": ["entity", "variable", "value", "date"], 
+"variable.dcids": [variable]
 }
-response = requests.get(url, params=params)
+response = requests.post(url, json=params)
 print('response.text for city1')
 print(response.text)
 
 ##### collect data from Data Commons for city2
 query=variable_text+' in '+city2
 url = f"https://datacommons.org/api/explore/detect?q={query}"
-headers = {
-    "Content-Type": "application/json"
-}
-data = {
-    "contextHistory": [],
-    "dc": ""
-}
 response = requests.post(url, headers=headers, json=data)
 res_data = json.loads(response.text)
 entity2 = res_data['entities'][0]
+##### revision: correct get url and parameters for city2
 params = {
 "key": API_KEY,
-"entity.dcids": entity2, # e.g. "country/USA",
-"select": ["entity", "variable", "value", "date"],
-"variable.dcids": variable
+"entity.dcids": [entity2], # "country/USA",
+"select": ["entity", "variable", "value", "date"], 
+"variable.dcids": [variable]
 }
-response = requests.get(url, params=params)
+response = requests.post(url, json=params)
 print('response.text for city2')
 print(response.text)
 #</PrevData>
+
+
 #<PrepData>
 print('********** Prepare the dataset for analysis and visualization')
 ##### extract the data from the response for city1
@@ -75,6 +72,20 @@ print('type(seq_data1)')
 print(type(seq_data1))
 print('len(seq_data1)')
 print(len(seq_data1))
-
-##### since there is no data for city2, we will not extract data for city2
+##### Corrected: included extraction of data for city2
+obs_data2 = json.loads(response.text)
+print('obs_data2')
+print(obs_data2)
+entity_data2 = obs_data2["byVariable"][variable]["byEntity"][entity2]
+print('entity_data2')
+print(entity_data2)
+print('type(entity_data2)')
+print(type(entity_data2))
+seq_data2 = entity_data2["orderedFacets"][0]['observations']
+print('seq_data2')
+print(seq_data2)
+print('type(seq_data2)')
+print(type(seq_data2))
+print('len(seq_data2)')
+print(len(seq_data2))
 #</PrepData>
