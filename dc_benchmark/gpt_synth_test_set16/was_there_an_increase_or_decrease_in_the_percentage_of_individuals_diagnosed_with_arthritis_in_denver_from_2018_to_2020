@@ -46,7 +46,9 @@ print('entity_data')
 print(entity_data)
 print('type(entity_data)')
 print(type(entity_data))
-seq_data = entity_data["orderedFacets"][0]['observations']
+##### The error was in this line. We need to check if "orderedFacets" exists in entity_data using .get() function which won't produce KeyError. 
+##### It will return None if "orderedFacets" is not present.
+seq_data = entity_data.get("orderedFacets", {})[0].get('observations', []) if entity_data.get("orderedFacets", {}) else []
 print('seq_data')
 print(seq_data)
 print('type(seq_data)')
