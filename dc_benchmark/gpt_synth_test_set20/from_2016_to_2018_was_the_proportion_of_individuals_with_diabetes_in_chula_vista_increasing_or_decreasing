@@ -83,3 +83,20 @@ else:
     natural_language_answer='decreasing'
 print(natural_language_answer)
 #</Analysis>
+#<Visualize>
+print('********** Create visualization that demonstrates the answer to the question in the prompt')
+import matplotlib.pyplot as plt
+
+##### plot the raw data and the linear regression line
+plt.figure(figsize=(10, 6))
+plt.scatter(X, y, label=variable_text.capitalize(), color="navy")
+plt.plot(X, [slope*x + intercept for x in X], color="darkred", label="Trend line")
+plt.xlabel("Year")
+plt.ylabel('% '+variable_text.capitalize())
+plt.title('Trend in '+variable_text+' in '+city+' from '+time1+' to '+time2)
+plt.legend()
+plt.grid(True)
+plt.show()
+print("Answer: The proportion of individuals with diabetes in " + city + " was " + natural_language_answer + " from " + time1 + " to " + time2)
+
+#</Visualize>
