@@ -55,39 +55,48 @@ response = requests.get(URL2, params=params)
 print('response.text')
 print(response.text)
 #</PrevData>
+
 #<PrepData>
 print('********** Prepare the dataset for analysis and visualization')
 ##### extract the data from the response for city1
 obs_data1 = json.loads(response.text)
 print('obs_data1')
 print(obs_data1)
-entity_data1 = obs_data1["byVariable"][variable]["byEntity"][entity1]
-print('entity_data1')
-print(entity_data1)
-print('type(entity_data1)')
-print(type(entity_data1))
-seq_data1 = entity_data1["orderedFacets"][0]['observations']
-print('seq_data1')
-print(seq_data1)
-print('type(seq_data1)')
-print(type(seq_data1))
-print('len(seq_data1)')
-print(len(seq_data1))
+if variable in obs_data1["byVariable"] and entity1 in obs_data1["byVariable"][variable]["byEntity"]:
+    entity_data1 = obs_data1["byVariable"][variable]["byEntity"][entity1]
+    print('entity_data1')
+    print(entity_data1)
+    print('type(entity_data1)')
+    print(type(entity_data1))
+    seq_data1 = entity_data1["orderedFacets"][0]['observations']
+    print('seq_data1')
+    print(seq_data1)
+    print('type(seq_data1)')
+    print(type(seq_data1))
+    print('len(seq_data1)')
+    print(len(seq_data1))
+else:
+    print('No data available for city1 - Austin')
+    seq_data1 = []
 
 ##### extract the data from the response for city2
 obs_data2 = json.loads(response.text)
 print('obs_data2')
 print(obs_data2)
-entity_data2 = obs_data2["byVariable"][variable]["byEntity"][entity2]
-print('entity_data2')
-print(entity_data2)
-print('type(entity_data2)')
-print(type(entity_data2))
-seq_data2 = entity_data2["orderedFacets"][0]['observations']
-print('seq_data2')
-print(seq_data2)
-print('type(seq_data2)')
-print(type(seq_data2))
-print('len(seq_data2)')
-print(len(seq_data2))
+if variable in obs_data2["byVariable"] and entity2 in obs_data2["byVariable"][variable]["byEntity"]:
+    entity_data2 = obs_data2["byVariable"][variable]["byEntity"][entity2]
+    print('entity_data2')
+    print(entity_data2)
+    print('type(entity_data2)')
+    print(type(entity_data2))
+    seq_data2 = entity_data2["orderedFacets"][0]['observations']
+    print('seq_data2')
+    print(seq_data2)
+    print('type(seq_data2)')
+    print(type(seq_data2))
+    print('len(seq_data2)')
+    print(len(seq_data2))
+else:
+    print('No data available for city2 - Miami')
+    seq_data2 = []
 #</PrepData>
