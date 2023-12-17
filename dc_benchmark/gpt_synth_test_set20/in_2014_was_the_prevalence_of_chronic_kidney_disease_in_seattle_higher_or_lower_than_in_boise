@@ -82,3 +82,20 @@ print(seq_data1)
 print('seq_data2 for Boise')
 print(seq_data2)
 #</PrepData>
+#<Analysis>
+print('********** Perform the analysis to answer the question in the prompt')
+##### extract data from the year specified in the prompt
+value_seattle=[x['value'] for x in seq_data1 if int(x['date']) == int(time_awal)][0]
+print('value_seattle')
+print(value_seattle)
+value_boise=[x['value'] for x in seq_data2 if int(x['date']) == int(time_awal)][0]
+print('value_boise')
+print(value_boise)
+
+##### the answer options are 'higher' or 'lower'
+if value_seattle > value_boise:
+    natural_language_answer=city1+' was higher than '+city2
+else:
+    natural_language_answer=city1+' was lower than '+city2
+print(natural_language_answer)
+#</Analysis>
