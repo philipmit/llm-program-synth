@@ -90,3 +90,27 @@ else:
     natural_language_answer = city1 + ' had a lower ' + variable_text + ' than ' + city2 + ' in ' + time
 print(natural_language_answer)
 #</Analysis>
+#<Visualize>
+import matplotlib.pyplot as plt
+import numpy as np
+
+print('********** Create visualization that demonstrates the answer to the question in the prompt')
+
+# Define the city names
+cities = [city1, city2]
+
+# Define the proportions 
+proportions = [value1, value2]
+
+# Create a bar chart
+plt.figure(figsize=(10, 6))
+plt.bar(cities, proportions, color='blue')
+
+# Add title and labels
+plt.title('Proportion of Individuals Who Had Lost All Their Teeth in 2014')
+plt.xlabel('City')
+plt.ylabel('Proportion (%)')
+
+# Show the chart
+plt.show()
+#</Visualize>
