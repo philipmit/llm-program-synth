@@ -1,37 +1,14 @@
 #<PrevData>
 print('********** Load and preview the dataset and datatypes')
-##### define variables based on prompt
-question='In 2016, was the prevalence of poor physical health in Orlando higher or lower than in Fort Wayne?'
-variable_text='the prevalence of poor physical health'
-time='2016'
-city1='Orlando'
-city2='Fort Wayne'
-
-
-##### collect data from Data Commons for city1
-import requests
-import json
-query=variable_text+' in '+city1
-headers = {
-    "Content-Type": "application/json"
-}
-data = {
-    "contextHistory": [],
-    "dc": ""
-}
+##### collect data from Data Commons for city2
+query=variable_text+' in '+city2
 URL1_with_query=URL1+query
 response = requests.post(URL1_with_query, headers=headers, json=data)
 res_data = json.loads(response.text)
-entity1 = res_data['entities'][0]
-for variable_i in res_data['variables']:
-    if 'dc/' in variable_i:
-        continue
-    else:
-        variable = variable_i
-        break
+entity2 = res_data['entities'][0]
 params = {
 "key": API_KEY,
-"entity.dcids": entity1, 
+"entity.dcids": entity2, 
 "select": ["entity", "variable", "value", "date"],
 "variable.dcids": variable
 }
@@ -39,22 +16,46 @@ response = requests.get(URL2, params=params)
 print('response.text')
 print(response.text)
 #</PrevData>
+
 #<PrepData>
 print('********** Prepare the dataset for analysis and visualization')
 ##### extract the data from the response
 obs_data = json.loads(response.text)
 print('obs_data')
 print(obs_data)
-entity_data1 = obs_data["byVariable"][variable]["byEntity"][entity1]
-print('entity_data1')
-print(entity_data1)
-print('type(entity_data1)')
-print(type(entity_data1))
-seq_data1 = entity_data1["orderedFacets"][0]['observations']
-print('seq_data1')
-print(seq_data1)
-print('type(seq_data1)')
-print(type(seq_data1))
-print('len(seq_data1)')
-print(len(seq_data1))
+entity_data2 = obs_data["byVariable"][variable]["byEntity"][entity2]
+print('entity_data2')
+print(entity_data2)
+print('type(entity_data2)')
+print(type(entity_data2))
+seq_data2 = entity_data2["orderedFacets"][0]['observations']
+print('seq_data2')
+print(seq_data2)
+print('type(seq_data2)')
+print(type(seq_data2))
+print('len(seq_data2)')
+print(len(seq_data2))
 #</PrepData>
+
+#<Analysis>
+print('********** Perform the analysis to answer the question in the prompt')
+##### extract data from the timeframe specified in the prompt
+seq_data1_in_time=[x for x in seq_data1 if x['date'] == time]
+print('seq_data1_in_time')
+print(seq_data1_in_time)
+seq_data2_in_time=[x for x in seq_data2 if x['date'] == time]
+print('seq_data2_in_time')
+print(seq_data2_in_time)
+value1=seq_data1_in_time[0]['value']
+print('value1')
+print(value1)
+value2=seq_data2_in_time[0]['value']
+print('value2')
+print(value2)
+##### the answer options are 'higher' or 'lower'
+if value1>value2:
+    natural_language_answer='higher'
+else:
+    natural_language_answer='lower'
+print(natural_language_answer)
+#</Analysis>
