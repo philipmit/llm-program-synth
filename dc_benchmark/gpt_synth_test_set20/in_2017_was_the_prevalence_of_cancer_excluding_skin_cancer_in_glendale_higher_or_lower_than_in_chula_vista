@@ -95,3 +95,30 @@ else:
     natural_language_answer='lower'
 print(natural_language_answer)
 #</Analysis>
+#<Visualize>
+import matplotlib.pyplot as plt
+import numpy as np
+print('********** Create visualization that demonstrates the answer to the question in the prompt')
+# data to plot
+n_groups = 1
+values_city1 = (value_in_time1,)
+values_city2 = (value_in_time2,)
+
+# create plot
+fig, ax = plt.subplots()
+index = np.arange(n_groups)
+bar_width = 0.35
+opacity = 0.8
+
+rects1 = plt.bar(index, values_city1, bar_width, alpha=opacity, color='b', label=city1)
+rects2 = plt.bar(index + bar_width, values_city2, bar_width, alpha=opacity, color='g', label=city2)
+
+plt.xlabel('Cities')
+plt.ylabel('Values')
+plt.title('Values by city')
+plt.xticks(index + bar_width/2, ('2017',))
+plt.legend()
+
+plt.tight_layout()
+plt.show()
+#</Visualize>
