@@ -90,3 +90,22 @@ else:
     natural_language_answer=city1+' had lower '+variable_text+' than '+city2+' in '+time
 print(natural_language_answer)
 #</Analysis>
+#<Visualize>
+print('********** Create visualization that demonstrates the answer to the question in the prompt')
+import matplotlib.pyplot as plt
+
+# values to visualize
+values = [value1[0], value2[0]]
+cities = [city1, city2]
+
+# set the style and create the bar plot
+plt.style.use('ggplot')
+
+fig, ax = plt.subplots()
+ax.bar(cities, values, color=['navy', 'darkred'])
+ax.set_xlabel('Cities')
+ax.set_ylabel(variable_text)
+ax.set_title(variable_text + ' in ' + time)
+plt.tight_layout()
+plt.show()
+#</Visualize>
