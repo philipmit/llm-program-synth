@@ -68,3 +68,26 @@ obs_data_city2 = json.loads(response_city2.text)
 entity_data_city2 = obs_data_city2["byVariable"][variable]["byEntity"][entity2]
 seq_data_city2 = entity_data_city2["orderedFacets"][0]['observations']
 #</PrepData>
+#<Analysis>
+from scipy import stats
+import numpy as np
+print('********** Perform the analysis to answer the question in the prompt')
+##### calculate rate of growth for city1
+X_city1=[int(x['date']) for x in seq_data_city1]
+y_city1=[x['value'] for x in seq_data_city1]
+slope_city1, _, _, _, _ = stats.linregress(X_city1, y_city1)
+print('Rate of growth of arthritis in ', city1 , ' is: ', slope_city1 )
+
+##### calculate rate of growth for city2
+X_city2=[int(x['date']) for x in seq_data_city2]
+y_city2=[x['value'] for x in seq_data_city2]
+slope_city2, _, _, _, _ = stats.linregress(X_city2, y_city2)
+print('Rate of growth of arthritis in ', city2 , ' is: ', slope_city2 )
+
+##### the answer options are city1 name or city2 name
+if slope_city1 > slope_city2:
+    natural_language_answer=city1
+else: 
+    natural_language_answer=city2
+print('Prevalence of arthritis is growing faster in:', natural_language_answer)
+#</Analysis>
