@@ -6,88 +6,67 @@ variable_text='the prevalence of arthritis'
 city1='Omaha'
 city2='Irvine'
 
+##### function to fetch data
+def fetch_data(city):
+    query = variable_text+' in '+city
+    URL1_with_query = URL1+query
+    response = requests.post(URL1_with_query, headers=headers, json=data)
+    res_data = json.loads(response.text)
+    if not res_data['entities']:
+        return None
+    entity = res_data['entities'][0]
+    for variable_i in res_data['variables']:
+        if 'dc/' in variable_i:
+            continue
+        else:
+            variable = variable_i
+            break
+    params = {
+    "key": API_KEY,
+    "entity.dcids": entity, 
+    "select": ["entity", "variable", "value", "date"],
+    "variable.dcids": variable
+    }
+    response = requests.get(URL2, params=params)
+    print('response.text')
+    print(response.text)
+    return response.text, entity, variable
 
-##### collect data from Data Commons for city1
-import requests
-import json
-query=variable_text+' in '+city1
-headers = {
-    "Content-Type": "application/json"
-}
-data = {
-    "contextHistory": [],
-    "dc": ""
-}
-URL1_with_query=URL1+query
-response = requests.post(URL1_with_query, headers=headers, json=data)
-res_data = json.loads(response.text)
-entity1 = res_data['entities'][0]
-for variable_i in res_data['variables']:
-    if 'dc/' in variable_i:
-        continue
-    else:
-        variable = variable_i
-        break
-params = {
-"key": API_KEY,
-"entity.dcids": entity1, 
-"select": ["entity", "variable", "value", "date"],
-"variable.dcids": variable
-}
-response = requests.get(URL2, params=params)
-print('response.text')
-print(response.text)
-
-
-##### collect data from Data Commons for city2
-query=variable_text+' in '+city2
-URL1_with_query=URL1+query
-response = requests.post(URL1_with_query, headers=headers, json=data)
-res_data = json.loads(response.text)
-entity2 = res_data['entities'][0]
-params = {
-"key": API_KEY,
-"entity.dcids": entity2, 
-"select": ["entity", "variable", "value", "date"],
-"variable.dcids": variable
-}
-response = requests.get(URL2, params=params)
-print('response.text')
-print(response.text)
+# collect data from Data Commons for city1
+res1, entity1, variable1 = fetch_data(city1)
+if res1 is None:
+    print("No data available for city1:", city1)
+# collect data from Data Commons for city2
+res2, entity2, variable2 = fetch_data(city2)
+if res2 is None:
+    print("No data available for city2:", city2)
 #</PrevData>
+
 #<PrepData>
 print('********** Prepare the dataset for analysis and visualization')
-##### extract the data from the response for city1
-obs_data1 = json.loads(response.text)
-print('obs_data1')
-print(obs_data1)
-entity_data1 = obs_data1["byVariable"][variable]["byEntity"][entity1]
-print('entity_data1')
-print(entity_data1)
-print('type(entity_data1)')
-print(type(entity_data1))
-seq_data1 = entity_data1["orderedFacets"][0]['observations']
-print('seq_data1')
-print(seq_data1)
-print('type(seq_data1)')
-print(type(seq_data1))
-print('len(seq_data1)')
-print(len(seq_data1))
+# function to get individual data for analysis
+def get_data_for_analysis(res,entity,variable):
+    obs_data = json.loads(res)
+    print('obs_data')
+    print(obs_data)
+    entity_data = obs_data["byVariable"][variable]["byEntity"][entity]
+    print('entity_data')
+    print(entity_data)
+    print('type(entity_data)')
+    print(type(entity_data))
+    seq_data = entity_data["orderedFacets"][0]['observations']
+    print('seq_data')
+    print(seq_data)
+    print('type(seq_data)')
+    print(type(seq_data))
+    print('len(seq_data)')
+    print(len(seq_data))
+    return seq_data
 
-##### extract the data from the response for city2
-obs_data2 = json.loads(response.text)
-print('obs_data2')
-print(obs_data2)
-entity_data2 = obs_data2["byVariable"][variable]["byEntity"][entity2]
-print('entity_data2')
-print(entity_data2)
-print('type(entity_data2)')
-print(type(entity_data2))
-seq_data2 = entity_data2["orderedFacets"][0]['observations']
-print('seq_data2')
-print(seq_data2)
-print('type(seq_data2)')
-print(type(seq_data2))
-print('len(seq_data2)')
-print(len(seq_data2))
+# get data for city1
+if res1 is not None:
+    seq_data1 = get_data_for_analysis(res1, entity1, variable1)
+# get data for city2
+if res2 is not None:
+    seq_data2 = get_data_for_analysis(res2, entity2, variable2)
 #</PrepData>
