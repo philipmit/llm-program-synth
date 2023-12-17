@@ -7,6 +7,19 @@ time_awal='2014'
 city1='Seattle'
 city2='Boise'
 
+##### import the necessary packages
+import requests
+import json
+
+##### define the headers and data for the requests
+headers = {
+    "Content-Type": "application/json"
+}
+data = {
+    "contextHistory": [],
+    "dc": ""
+}
+
 ##### collect data from Data Commons for Seattle
 query=variable_text+' in '+city1
 URL1_with_query=URL1+query
