@@ -105,3 +105,25 @@ slope_Miami, _, _, _, _ = stats.linregress(X_Miami, y_Miami)
 natural_language_answer = city1 if slope_Austin>slope_Miami else city2
 print(natural_language_answer)
 #</Analysis>
+#<Visualize>
+import matplotlib.pyplot as plt
+import numpy as np
+print('********** Create visualization that demonstrates the answer to the question in the prompt')
+
+# Visualizing data for Austin
+plt.figure(figsize=(10, 6))
+plt.scatter(X_Austin, y_Austin, label='{}: {}'.format(city1, variable_text), color="navy")
+plt.plot(X_Austin, slope_Austin * np.array(X_Austin) + intercept, color="forestgreen", label="Trend line for "+city1)
+
+# Visualizing data for Miami
+plt.scatter(X_Miami, y_Miami, label='{}: {}'.format(city2, variable_text), color="skyblue")
+plt.plot(X_Miami, slope_Miami * np.array(X_Miami) + intercept, color="darkred", label="Trend line for "+city2)
+
+plt.xlabel("Year")
+plt.ylabel(variable_text.capitalize())
+plt.title("Comparative Analysis")
+plt.legend()
+plt.xticks(rotation=45)
+plt.tight_layout()
+plt.show()
+#</Visualize>
