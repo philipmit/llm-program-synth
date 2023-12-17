@@ -107,3 +107,22 @@ else:
     natural_language_answer = 'Data not available for either or both cities in the given year.'
 print(natural_language_answer)
 #</Analysis>
+#<Visualize>
+import matplotlib.pyplot as plt
+print('********** Create visualization that demonstrates the answer to the question in the prompt')
+years1 = [x['date'] for x in seq_data1]
+values1 = [x['value'] for x in seq_data1]
+years2 = [x['date'] for x in seq_data2]
+values2 = [x['value'] for x in seq_data2]
+
+plt.figure(figsize=(10, 6))
+plt.plot(years1, values1, label=city1, color="blue")
+plt.plot(years2, values2, label=city2, color="green")
+plt.scatter(year, year_data1['value'], color="red")
+plt.scatter(year, year_data2['value'], color="red")
+plt.xlabel("Year")
+plt.ylabel(variable_text)
+plt.legend()
+plt.grid(True)
+plt.show()
+#</Visualize>
