@@ -43,3 +43,18 @@ obs_data = json.loads(response.text)
 entity_data = obs_data["byVariable"][variable]["byEntity"][entity]
 seq_data = entity_data["orderedFacets"][0]['observations']
 #</PrepData>
+#<Analysis>
+from scipy import stats
+print('********** Perform the analysis to answer the question in the prompt')
+##### extract data from the time frame specified in the prompt
+seq_data_in_timeframe=[x for x in seq_data if int(x['date']) >= int(time1) and int(x['date']) <= int(time2)]
+X=[int(x['date']) for x in seq_data_in_timeframe]
+y=[x['value'] for x in seq_data_in_timeframe]
+slope, intercept, r_value, p_value, std_err = stats.linregress(X, y)
+##### the answer options are 'increasing' or 'decreasing'
+if slope>0:
+    natural_language_answer='increasing'
+else:
+    natural_language_answer='decreasing'
+print(natural_language_answer)
+#</Analysis>
