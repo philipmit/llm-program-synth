@@ -81,3 +81,12 @@ value2=[x['value'] for x in seq_data2 if x['date']==time]
 print('value2')
 print(value2)
 #</PrepData>
+#<Analysis>
+print('********** Perform the analysis to answer the question in the prompt')
+##### the answer options are 'higher' or 'lower'
+if value1>value2:
+    natural_language_answer=city1+' had higher '+variable_text+' than '+city2+' in '+time
+else:
+    natural_language_answer=city1+' had lower '+variable_text+' than '+city2+' in '+time
+print(natural_language_answer)
+#</Analysis>
