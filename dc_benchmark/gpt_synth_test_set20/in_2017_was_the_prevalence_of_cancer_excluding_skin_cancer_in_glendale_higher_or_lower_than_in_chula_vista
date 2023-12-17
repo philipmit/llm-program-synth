@@ -1,0 +1,64 @@
+#<PrevData>
+print('********** Load and preview the dataset and datatypes')
+##### define variables based on prompt
+question='In 2017, was the prevalence of cancer, excluding skin cancer, in Glendale higher or lower than in Chula Vista?'
+variable_text='the prevalence of cancer, excluding skin cancer'
+time='2017'
+city1='Glendale'
+city2='Chula Vista'
+
+
+##### collect data from Data Commons
+import requests
+import json
+query1=variable_text+' in '+city1
+query2=variable_text+' in '+city2
+headers = {
+    "Content-Type": "application/json"
+}
+data = {
+    "contextHistory": [],
+    "dc": ""
+}
+
+URL1_with_query1=URL1+query1
+URL1_with_query2=URL1+query2
+###### data collection for city1
+response1 = requests.post(URL1_with_query1, headers=headers, json=data)
+res_data1 = json.loads(response1.text)
+entity1 = res_data1['entities'][0]
+for variable_i1 in res_data1['variables']:
+    if 'dc/' in variable_i1:
+        continue
+    else:
+        variable1 = variable_i1
+        break
+params1 = {
+"key": API_KEY,
+"entity.dcids": entity1, 
+"select": ["entity", "variable", "value", "date"],
+"variable.dcids": variable1
+}
+response1 = requests.get(URL2, params=params1)
+print('response1.text')
+print(response1.text)
+###### data collection for city2
+response2 = requests.post(URL1_with_query2, headers=headers, json=data)
+res_data2 = json.loads(response2.text)
+entity2 = res_data2['entities'][0]
+for variable_i2 in res_data2['variables']:
+    if 'dc/' in variable_i2:
+        continue
+    else:
+        variable2 = variable_i2
+        break
+params2 = {
+"key": API_KEY,
+"entity.dcids": entity2, 
+"select": ["entity", "variable", "value", "date"],
+"variable.dcids": variable2
+}
+response2 = requests.get(URL2, params=params2)
+print('response2.text')
+print(response2.text)
+#</PrevData>
