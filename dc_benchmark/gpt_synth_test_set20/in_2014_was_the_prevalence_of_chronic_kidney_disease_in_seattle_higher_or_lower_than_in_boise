@@ -99,3 +99,25 @@ else:
     natural_language_answer=city1+' was lower than '+city2
 print(natural_language_answer)
 #</Analysis>
+#<Visualize>
+from matplotlib import pyplot as plt
+print('********** Create visualization that compares the data from the two cities')
+##### create lists of years and corresponding values for each city
+years_seattle = [int(x['date']) for x in seq_data1]
+values_seattle = [x['value'] for x in seq_data1]
+years_boise = [int(x['date']) for x in seq_data2]
+values_boise = [x['value'] for x in seq_data2]
+
+##### plot the data
+plt.figure(figsize=(10, 5))
+plt.plot(years_seattle, values_seattle, label=city1, color="blue")
+plt.plot(years_boise, values_boise, label=city2, color="green")
+plt.scatter(time_awal, value_seattle, color="red")
+plt.scatter(time_awal, value_boise, color="red")
+plt.xlabel('Year')
+plt.ylabel(variable_text.capitalize())
+plt.title(variable_text.capitalize() + ' in ' + city1 + ' and ' + city2 + ' over time')
+plt.legend()
+plt.grid(True)
+plt.show()
+#</Visualize>
