@@ -36,3 +36,10 @@ params = {
 }
 response = requests.get(URL2, params=params)
 #</PrevData>
+#<PrepData>
+print('********** Prepare the dataset for analysis and visualization')
+##### extract the data from the response
+obs_data = json.loads(response.text)
+entity_data = obs_data["byVariable"][variable]["byEntity"][entity]
+seq_data = entity_data["orderedFacets"][0]['observations']
+#</PrepData>
