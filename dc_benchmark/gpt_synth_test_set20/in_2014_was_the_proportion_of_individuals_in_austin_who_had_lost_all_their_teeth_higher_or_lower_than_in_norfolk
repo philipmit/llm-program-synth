@@ -1,0 +1,49 @@
+#<PrevData>
+print('********** Load and preview the dataset and datatypes')
+##### define variables based on prompt
+question='In 2014, was the proportion of individuals in Austin who had lost all their teeth higher or lower than in Norfolk?'
+variable_text='proportion of individuals who had lost all their teeth'
+time='2014'
+city1='Austin'
+city2='Norfolk'
+
+
+##### collect data from Data Commons for Austin
+query=variable_text+' in '+city1
+URL1_with_query1=URL1+query
+response1 = requests.post(URL1_with_query1, headers=headers, json=data)
+res_data1 = json.loads(response1.text)
+entity1 = res_data1['entities'][0]
+for variable_i in res_data1['variables']:
+    if 'dc/' in variable_i:
+        continue
+    else:
+        variable = variable_i
+        break
+params1 = {
+"key": API_KEY,
+"entity.dcids": entity1, 
+"select": ["entity", "variable", "value", "date"],
+"variable.dcids": variable
+}
+response1 = requests.get(URL2, params=params1)
+print('response1.text')
+print(response1.text)
+
+
+##### collect data from Data Commons for Norfolk
+query=variable_text+' in '+city2
+URL1_with_query2=URL1+query
+response2 = requests.post(URL1_with_query2, headers=headers, json=data)
+res_data2 = json.loads(response2.text)
+entity2 = res_data2['entities'][0]
+params2 = {
+"key": API_KEY,
+"entity.dcids": entity2, 
+"select": ["entity", "variable", "value", "date"],
+"variable.dcids": variable
+}
+response2 = requests.get(URL2, params=params2)
+print('response2.text')
+print(response2.text)
+#</PrevData>
