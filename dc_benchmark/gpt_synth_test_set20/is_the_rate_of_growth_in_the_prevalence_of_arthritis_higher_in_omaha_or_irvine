@@ -91,3 +91,23 @@ else:
     natural_language_answer=city2
 print('Prevalence of arthritis is growing faster in:', natural_language_answer)
 #</Analysis>
+#<Visualize>
+import matplotlib.pyplot as plt
+print('********** Create visualization that demonstrates the answer to the question in the prompt')
+plt.figure(figsize=(10, 6))
+
+# Plot data for city 1
+plt.scatter(X_city1, y_city1, label=city1, color="blue")
+plt.plot(X_city1, [slope_city1*x for x in X_city1], color="lightblue", label=f"Trend line {city1}")
+
+# Plot data for city 2
+plt.scatter(X_city2, y_city2, label=city2, color="red")
+plt.plot(X_city2, [slope_city2*x for x in X_city2], color="pink", label=f"Trend line {city2}")
+
+plt.xlabel("Year")
+plt.ylabel(variable_text.capitalize())
+plt.title("Rate of growth in prevalence of arthritis")
+plt.legend()
+plt.grid(True)
+plt.show()
+#</Visualize>
