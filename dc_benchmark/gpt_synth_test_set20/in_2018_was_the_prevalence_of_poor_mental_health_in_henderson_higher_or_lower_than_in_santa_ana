@@ -71,10 +71,16 @@ print('********** Prepare the dataset for analysis')
 obs_data1 = json.loads(response1.text)
 obs_data2 = json.loads(response2.text)
 entity_data1 = obs_data1["byVariable"][variable]["byEntity"][entity1]
-entity_data2 = obs_data1["byVariable"][variable]["byEntity"][entity2]
+
+# Check if the key exists in the dictionary before using it
+if entity2 in obs_data2["byVariable"][variable]["byEntity"]:
+    entity_data2 = obs_data2["byVariable"][variable]["byEntity"][entity2]
+else:
+    entity_data2 = {}
 
 seq_data1 = entity_data1["orderedFacets"][0]['observations']
-seq_data2 = entity_data2["orderedFacets"][0]['observations']
+seq_data2 = entity_data2["orderedFacets"][0]['observations'] if entity_data2 else []
+
 print('seq_data1:', seq_data1)
 print('seq_data2:', seq_data2)
 #</PrepData>
