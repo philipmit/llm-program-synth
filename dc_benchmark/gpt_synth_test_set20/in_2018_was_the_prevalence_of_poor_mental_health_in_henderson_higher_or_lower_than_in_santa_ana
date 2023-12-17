@@ -84,3 +84,25 @@ seq_data2 = entity_data2["orderedFacets"][0]['observations'] if entity_data2 els
 print('seq_data1:', seq_data1)
 print('seq_data2:', seq_data2)
 #</PrepData>
+#<Analysis>
+print('********** Perform the analysis to answer the question in the prompt')
+import numpy as np
+
+##### extract data for the year specified in the prompt
+value1 = [x['value'] for x in seq_data1 if x['date'] == time1]
+print('value1')
+print(value1)
+value2 = [x['value'] for x in seq_data2 if x['date'] == time1]
+print('value2')
+print(value2)
+
+##### the answer options are 'higher' or 'lower'
+if value1 > value2:
+    natural_language_answer='higher'
+elif value1 < value2:
+    natural_language_answer='lower'
+else:
+    natural_language_answer='equal'
+
+print('In 2018, the prevalence of poor mental health in {city1} was {comparison} than in {city2}'.format(city1=city1, comparison=natural_language_answer, city2=city2))
+#</Analysis>
