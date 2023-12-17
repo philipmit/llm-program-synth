@@ -78,3 +78,20 @@ seq_data2 = entity_data2["orderedFacets"][0]['observations']
 print('seq_data2')
 print(seq_data2)
 #</PrepData>
+#<Analysis>
+print('********** Perform the analysis to answer the question in the prompt')
+##### extract data for the year specified in the prompt for city1
+seq_data1_in_time=[x for x in seq_data1 if int(x['date']) == int(time)]
+value_in_time1=seq_data1_in_time[0]['value']
+
+##### extract data for the year specified in the prompt for city2
+seq_data2_in_time=[x for x in seq_data2 if int(x['date']) == int(time)]
+value_in_time2=seq_data2_in_time[0]['value']
+
+##### the answer options are 'higher' or 'lower'
+if value_in_time1>value_in_time2:
+    natural_language_answer='higher'
+else:
+    natural_language_answer='lower'
+print(natural_language_answer)
+#</Analysis>
