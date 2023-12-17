@@ -87,3 +87,23 @@ print(len(seq_data1))
 print('len(seq_data2)')
 print(len(seq_data2))
 #</PrepData>
+#<Analysis>
+print('********** Perform the analysis to answer the question in the prompt')
+##### extract data for the year specified in the prompt
+year_data1 = next((x for x in seq_data1 if x['date'] == year), None)
+year_data2 = next((x for x in seq_data2 if x['date'] == year), None)
+print('year_data1')
+print(year_data1)
+print('year_data2')
+print(year_data2)
+
+##### the answer options are 'higher' or 'lower'
+if year_data1 and year_data2:
+    if year_data1['value'] > year_data2['value']:
+        natural_language_answer = 'higher'
+    else:
+        natural_language_answer = 'lower'
+else:
+    natural_language_answer = 'Data not available for either or both cities in the given year.'
+print(natural_language_answer)
+#</Analysis>
