@@ -99,3 +99,32 @@ else:
     natural_language_answer = city2
 print(natural_language_answer)
 #</Analysis>
+#<Visualize>
+import matplotlib.pyplot as plt
+import numpy as np
+print('********** Create visualization that demonstrates the answer to the question in the prompt')
+
+# function to plot data
+def plot_data(seq_data, city, color):
+    X=[int(x['date']) for x in seq_data]
+    y=[x['value'] for x in seq_data]
+    plt.scatter(X, y, label=city, color=color)
+    slope, intercept, r_value, p_value, std_err = stats.linregress(X, y)
+    plt.plot(X, intercept + slope * np.array(X), color=color, label="Trend line for "+city)
+
+plt.figure(figsize=(10, 6))
+
+# plot data for city1
+if res1 is not None:
+    plot_data(seq_data1, city1, "navy")
+# plot data for city2
+if res2 is not None:
+    plot_data(seq_data2, city2, "darkred")
+
+plt.xlabel("Year")
+plt.ylabel(variable_text.capitalize())
+plt.legend()
+plt.xticks(rotation=45)
+plt.tight_layout()
+plt.show()
+#</Visualize>
