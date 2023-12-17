@@ -9,130 +9,99 @@ start_year='2011'
 end_year='2021'
 
 
-##### collect data from Data Commons for Austin
+##### collect data from Data Commons for both cities
 import requests
 import json
-query=variable_text+' in '+city1
-headers = {
-    "Content-Type": "application/json"
-}
-data = {
-    "contextHistory": [],
-    "dc": ""
-}
-URL1_with_query_Austin=URL1+query
+
+headers = {"Content-Type": "application/json"}
+data = {"contextHistory": [], "dc": ""}
+
+# Data for Austin
+query_Austin = variable_text+' in '+city1
+URL1_with_query_Austin = URL1 + query_Austin
 response_Austin = requests.post(URL1_with_query_Austin, headers=headers, json=data)
 res_data_Austin = json.loads(response_Austin.text)
 entity_Austin = res_data_Austin['entities'][0]
+
 for variable_i in res_data_Austin['variables']:
     if 'dc/' in variable_i:
         continue
     else:
-        variable = variable_i
+        variable_Austin = variable_i
         break
+
 params_Austin = {
 "key": API_KEY,
 "entity.dcids": entity_Austin, 
 "select": ["entity", "variable", "value", "date"],
-"variable.dcids": variable
+"variable.dcids": variable_Austin
 }
 response_Austin = requests.get(URL2, params=params_Austin)
 print('response.text for Austin')
 print(response_Austin.text)
 
 
-##### Collect data from Data Commons for Miami
-query=variable_text+' in '+city2
-URL1_with_query_Miami=URL1+query
+# Data for Miami
+query_Miami = variable_text+' in '+city2
+URL1_with_query_Miami = URL1 + query_Miami
 response_Miami = requests.post(URL1_with_query_Miami, headers=headers, json=data)
 res_data_Miami = json.loads(response_Miami.text)
 entity_Miami = res_data_Miami['entities'][0]
+
+for variable_i in res_data_Miami['variables']:
+    if 'dc/' in variable_i:
+        continue
+    else:
+        variable_Miami = variable_i
+        break
+
 params_Miami = {
 "key": API_KEY,
 "entity.dcids": entity_Miami, 
 "select": ["entity", "variable", "value", "date"],
-"variable.dcids": variable
+"variable.dcids": variable_Miami
 }
 response_Miami = requests.get(URL2, params=params_Miami)
 print('response.text for Miami')
 print(response_Miami.text)
 #</PrevData>
-#<PrepAustinData>
-print('********** Prepare the Austin dataset for analysis and visualization')
-##### extract the data from the Austin response
+
+#<PrepData>
+print('********** Prepare the dataset for analysis and visualization')
+
+# Data preparation for Austin
 obs_data_Austin = json.loads(response_Austin.text)
-print('obs_data_Austin')
-print(obs_data_Austin)
-entity_data_Austin = obs_data_Austin["byVariable"][variable]["byEntity"][entity_Austin]
-print('entity_data_Austin')
-print(entity_data_Austin)
-print('type(entity_data_Austin)')
-print(type(entity_data_Austin))
+entity_data_Austin = obs_data_Austin["byVariable"][variable_Austin]["byEntity"][entity_Austin]
 seq_data_Austin = entity_data_Austin["orderedFacets"][0]['observations']
+
 print('seq_data_Austin')
 print(seq_data_Austin)
-print('type(seq_data_Austin)')
-print(type(seq_data_Austin))
-print('len(seq_data_Austin)')
-print(len(seq_data_Austin))
-#</PrepAustinData>
 
-#<PrepMiamiData>
-print('********** Prepare the Miami dataset for analysis and visualization')
-##### extract data from the Miami response
+# Data preparation for Miami
 obs_data_Miami = json.loads(response_Miami.text)
-print('obs_data_Miami')
-print(obs_data_Miami)
-entity_data_Miami = obs_data_Miami["byVariable"][variable]["byEntity"][entity_Miami]
-print('entity_data_Miami')
-print(entity_data_Miami)
-print('type(entity_data_Miami)')
-print(type(entity_data_Miami))
+entity_data_Miami = obs_data_Miami["byVariable"][variable_Miami]["byEntity"][entity_Miami]
 seq_data_Miami = entity_data_Miami["orderedFacets"][0]['observations']
+
 print('seq_data_Miami')
 print(seq_data_Miami)
-print('type(seq_data_Miami)')
-print(type(seq_data_Miami))
-print('len(seq_data_Miami)')
-print(len(seq_data_Miami))
-#</PrepMiamiData>
-
+#</PrepData>
 
 #<Analysis>
 from scipy import stats
 print('********** Perform the analysis to answer the question in the prompt')
+
 ##### extract data from the timeframe specified in the prompt
 seq_data_Austin_in_timeframe=[x for x in seq_data_Austin if int(x['date']) >= int(start_year) and int(x['date']) <= int(end_year)]
 seq_data_Miami_in_timeframe=[x for x in seq_data_Miami if int(x['date']) >= int(start_year) and int(x['date']) <= int(end_year)]
 
-X_Austin=[int(x['date']) for x in seq_data_Austin_in_timeframe]
-y_Austin=[x['value'] for x in seq_data_Austin_in_timeframe]
+X_Austin = [int(x['date']) for x in seq_data_Austin_in_timeframe]
+y_Austin = [x['value'] for x in seq_data_Austin_in_timeframe]
 slope_Austin, _, _, _, _ = stats.linregress(X_Austin, y_Austin)
 
 X_Miami=[int(x['date']) for x in seq_data_Miami_in_timeframe]
 y_Miami=[x['value'] for x in seq_data_Miami_in_timeframe]
 slope_Miami, _, _, _, _ = stats.linregress(X_Miami, y_Miami)
 
-natural_language_answer=city1 if slope_Austin>slope_Miami else city2
+natural_language_answer = city1 if slope_Austin>slope_Miami else city2
 print(natural_language_answer)
 #</Analysis>
-
-
-#<Visualize>
-import matplotlib.pyplot as plt
-import numpy as np
-print('********** Create visualization that demonstrates the answer to the question in the prompt')
-plt.figure(figsize=(10, 6))
-
-plt.scatter(X_Austin, y_Austin, label=city1, color="blue")
-plt.plot(X_Austin, slope_Austin * np.array(X_Austin), color="darkblue", label=city1 + " Trend line")
-plt.scatter(X_Miami, y_Miami, label=city2, color="orange")
-plt.plot(X_Miami, slope_Miami * np.array(X_Miami), color="darkred", label=city2 + " Trend line")
-
-plt.xlabel("Year")
-plt.ylabel(variable_text)
-plt.legend()
-plt.xticks(rotation=45)
-plt.tight_layout()
-plt.show()
-#</Visualize></PrepData>
