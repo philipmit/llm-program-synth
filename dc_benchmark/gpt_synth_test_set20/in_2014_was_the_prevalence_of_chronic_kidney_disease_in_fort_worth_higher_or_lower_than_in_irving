@@ -12,7 +12,7 @@ query=variable_text+' in '+city1
 URL1_with_query=URL1+query
 response = requests.post(URL1_with_query, headers=headers, json=data)
 res_data = json.loads(response.text)
-entity = res_data['entities'][0]
+entity1 = res_data['entities'][0] # this related to city 1
 for variable_i in res_data['variables']:
     if 'dc/' in variable_i:
         continue
@@ -21,7 +21,7 @@ for variable_i in res_data['variables']:
         break
 params = {
 "key": API_KEY,
-"entity.dcids": entity, 
+"entity.dcids": entity1, 
 "select": ["entity", "variable", "value", "date"],
 "variable.dcids": variable
 }
@@ -34,7 +34,7 @@ query=variable_text+' in '+city2
 URL1_with_query=URL1+query
 response = requests.post(URL1_with_query, headers=headers, json=data)
 res_data = json.loads(response.text)
-entity = res_data['entities'][0]
+entity2 = res_data['entities'][0] # this related to city 2
 for variable_i in res_data['variables']:
     if 'dc/' in variable_i:
         continue
@@ -43,7 +43,7 @@ for variable_i in res_data['variables']:
         break
 params = {
 "key": API_KEY,
-"entity.dcids": entity, 
+"entity.dcids": entity2, 
 "select": ["entity", "variable", "value", "date"],
 "variable.dcids": variable
 }
@@ -53,37 +53,31 @@ print(response2.text)
 #</PrevData>
 #<PrepData>
 print('********** Prepare the dataset for analysis and visualization')
-##### extract the data from the response for city 1
+##### extract the value for the specified year for city 1
 obs_data1 = json.loads(response1.text)
 print('obs_data1')
 print(obs_data1)
-entity_data1 = obs_data1["byVariable"][variable]["byEntity"][entity]
+entity_data1 = obs_data1["byVariable"][variable]["byEntity"][entity1] # this related to city 1
 print('entity_data1')
 print(entity_data1)
-print('type(entity_data1)')
-print(type(entity_data1))
 seq_data1 = entity_data1["orderedFacets"][0]['observations']
 print('seq_data1')
 print(seq_data1)
-print('type(seq_data1)')
-print(type(seq_data1))
-print('len(seq_data1)')
-print(len(seq_data1))
+value1=[x['value'] for x in seq_data1 if x['date']==time]
+print('value1')
+print(value1)
 
-##### extract the data from the response for city 2
+##### extract the value for the specified year for city 2
 obs_data2 = json.loads(response2.text)
 print('obs_data2')
 print(obs_data2)
-entity_data2 = obs_data2["byVariable"][variable]["byEntity"][entity]
-print('entity_data2')
+entity_data2 = obs_data2["byVariable"][variable]["byEntity"][entity2] # this related to city 2
+print('entity_data1')
 print(entity_data2)
-print('type(entity_data2)')
-print(type(entity_data2))
 seq_data2 = entity_data2["orderedFacets"][0]['observations']
-print('seq_data2')
+print('seq_data1')
 print(seq_data2)
-print('type(seq_data2)')
-print(type(seq_data2))
-print('len(seq_data2)')
-print(len(seq_data2))
+value2=[x['value'] for x in seq_data2 if x['date']==time]
+print('value2')
+print(value2)
 #</PrepData>
