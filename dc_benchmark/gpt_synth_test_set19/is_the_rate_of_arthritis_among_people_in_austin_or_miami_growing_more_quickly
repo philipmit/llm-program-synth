@@ -100,3 +100,50 @@ else:
     print('No data available for city2 - Miami')
     seq_data2 = []
 #</PrepData>
+#<Analysis>
+from scipy import stats
+print('********** Perform the analysis to answer the question in the prompt')
+##### calculate the slope for city1
+if seq_data1:
+    X1=[int(x['date']) for x in seq_data1]
+    print('X1')
+    print(X1)
+    y1=[x['value'] for x in seq_data1]
+    print('y1')
+    print(y1)
+    slope1, intercept1, r_value1, p_value1, std_err1 = stats.linregress(X1, y1)
+    print('slope1')
+    print(slope1)
+else:
+    print('No data available for city1 - Austin')
+    slope1 = None
+
+##### calculate the slope for city2
+if seq_data2:
+    X2=[int(x['date']) for x in seq_data2]
+    print('X2')
+    print(X2)
+    y2=[x['value'] for x in seq_data2]
+    print('y2')
+    print(y2)
+    slope2, intercept2, r_value2, p_value2, std_err2 = stats.linregress(X2, y2)
+    print('slope2')
+    print(slope2)
+else:
+    print('No data available for city2 - Miami')
+    slope2 = None
+
+##### the answer options are city1 or city2
+if slope1 is not None and slope2 is not None:
+    if slope1>slope2:
+        natural_language_answer=city1
+    else:
+        natural_language_answer=city2
+elif slope1 is not None:
+    natural_language_answer=city1
+elif slope2 is not None:
+    natural_language_answer=city2
+else:
+    natural_language_answer='No data available for both cities'
+print(natural_language_answer)
+#</Analysis>
