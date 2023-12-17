@@ -109,3 +109,16 @@ else:
     natural_language_answer='lower'
 print(natural_language_answer)
 #</Analysis>
+#<Visualize>
+import matplotlib.pyplot as plt
+import numpy as np
+print('********** Create visualization that demonstrates the answer to the question in the prompt')
+plt.figure(figsize=(10, 6))
+X = np.array([1, 2])
+y = np.array([value1, value2])
+plt.bar(X, y, color=['blue', 'green'], width=0.2)
+plt.xticks(X, [city1, city2])
+plt.ylabel(variable_text.capitalize())
+plt.title('Comparison of ' + variable_text + ' in ' + city1 + ' and ' + city2 + ' in ' + time)
+plt.show()
+#</Visualize>
