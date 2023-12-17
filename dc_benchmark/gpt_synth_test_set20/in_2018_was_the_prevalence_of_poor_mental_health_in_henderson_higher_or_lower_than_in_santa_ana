@@ -106,3 +106,14 @@ else:
 
 print('In 2018, the prevalence of poor mental health in {city1} was {comparison} than in {city2}'.format(city1=city1, comparison=natural_language_answer, city2=city2))
 #</Analysis>
+#<Visualize>
+import matplotlib.pyplot as plt
+print('********** Create visualization that demonstrates the comparison in the question of the prompt')
+
+# Create bar graph for visualization
+plt.bar([city1, city2], [np.mean(value1), np.mean(value2)], color=['navy', 'orange'])
+plt.title('Prevalence of Poor Mental Health in 2018')
+plt.xlabel('City')
+plt.ylabel('Prevalence of Poor Mental Health (%)')
+plt.show()
+#</Visualize>
