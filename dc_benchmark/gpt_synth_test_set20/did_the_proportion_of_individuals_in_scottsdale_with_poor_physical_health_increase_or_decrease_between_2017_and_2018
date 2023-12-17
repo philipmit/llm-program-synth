@@ -1,0 +1,38 @@
+#<PrevData>
+print('********** Load and preview the dataset and datatypes')
+##### define variables based on prompt
+question='Did the proportion of individuals in Scottsdale with poor physical health increase or decrease between 2017 and 2018?'
+variable_text='the proportion of individuals with poor physical health'
+time1='2017'
+time2='2018'
+city='Scottsdale'
+
+##### collect data from Data Commons
+import requests
+import json
+query=variable_text+' in '+city
+headers = {
+    "Content-Type": "application/json"
+}
+data = {
+    "contextHistory": [],
+    "dc": ""
+}
+URL1_with_query=URL1+query
+response = requests.post(URL1_with_query, headers=headers, json=data)
+res_data = json.loads(response.text)
+entity = res_data['entities'][0]
+for variable_i in res_data['variables']:
+    if 'dc/' in variable_i:
+        continue
+    else:
+        variable = variable_i
+        break
+params = {
+"key": API_KEY,
+"entity.dcids": entity, 
+"select": ["entity", "variable", "value", "date"],
+"variable.dcids": variable
+}
+response = requests.get(URL2, params=params)
+#</PrevData>
